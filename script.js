@@ -342,3 +342,9 @@ document.getElementById('my-cvs-btn').addEventListener('click', () => {
     listContainer.appendChild(item);
   });
 });
+    // Seed with one empty entry of each kind so the form feels alive.
+addEntry(experienceList, experienceTemplate);
+addEntry(educationList, educationTemplate);
+
+render();
+})();
