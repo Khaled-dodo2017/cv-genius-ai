@@ -246,7 +246,17 @@ document.getElementById('cv-template').addEventListener('change', (e) => {
   });
 
   document.getElementById('download-pdf-btn').addEventListener('click', () => {
-  window.print();
+  const element = document.getElementById('cv-sheet');
+
+  const options = {
+    margin: 10,
+    filename: 'CV-Genius-AI.pdf',
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2 },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+
+  html2pdf().set(options).from(element).save();
 });
   
   // Seed with one empty entry of each kind so the form feels alive.
