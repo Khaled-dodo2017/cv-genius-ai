@@ -424,3 +424,22 @@ input:focus-visible, textarea:focus-visible, button:focus-visible{
   body{ background: #fff; background-image: none; }
   .sheet{ box-shadow: none; transform: none; padding: 0; }
 }
+
+/* CV Templates */
+
+.sheet[data-template="modern"]{
+  border-left: 6px solid var(--accent);
+}
+
+.sheet[data-template="modern"] .sheet__header{
+  border-bottom: 2px solid var(--accent);
+}
+
+.sheet[data-template="minimal"]{
+  box-shadow: none;
+  border: 1px solid var(--line);
+}
+
+.sheet[data-template="minimal"] .sheet__heading{
+  color: var(--ink);
+}
