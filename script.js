@@ -270,6 +270,25 @@ document.getElementById('cv-template').addEventListener('change', (e) => {
 
   render();
 });
+  document.getElementById('save-cv-btn').addEventListener('click', () => {
+  const formData = new FormData(form);
+  const cvData = {};
+
+  formData.forEach((value, key) => {
+    cvData[key] = value;
+  });
+
+  const savedCVs = JSON.parse(localStorage.getItem('savedCVs') || '[]');
+
+  cvData.id = Date.now();
+  cvData.savedAt = new Date().toLocaleString();
+
+  savedCVs.push(cvData);
+
+  localStorage.setItem('savedCVs', JSON.stringify(savedCVs));
+
+  alert('CV saved successfully!');
+});
   
   // Seed with one empty entry of each kind so the form feels alive.
   addEntry(experienceList, experienceTemplate);
