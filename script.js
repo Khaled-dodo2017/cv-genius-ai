@@ -271,45 +271,8 @@ document.getElementById('cv-template').addEventListener('change', (e) => {
   render();
 });
   document.getElementById('save-cv-btn').addEventListener('click', () => {
-    document.getElementById('my-cvs-btn').addEventListener('click', () => {
-  const savedCVs = JSON.parse(localStorage.getItem('savedCVs') || '[]');
-  const listContainer = document.getElementById('saved-cvs-list');
-
-  listContainer.innerHTML = '';
-
-  if (savedCVs.length === 0) {
-    listContainer.innerHTML = '<p>No saved CVs found.</p>';
-    return;
-  }
-
-  savedCVs.forEach((cv, index) => {
-    const item = document.createElement('div');
-    item.className = 'saved-cv-item';
-
-    item.innerHTML = `
-  <strong>${cv.fullName || 'Unnamed CV'}</strong>
-  <span>${cv.targetJob || cv.jobTitle || 'No job title'}</span>
-  <button type="button" class="btn btn--text open-cv-btn">Open</button>
-  <button type="button" class="btn btn--text delete-cv-btn">Delete</button>
-`;
-    `;
-
-    item.querySelector('button').addEventListener('click', () => {
-      Object.keys(cv).forEach(key => {
-        const field = document.getElementById(key);
-
-        if (field) {
-          field.value = cv[key];
-        }
-      });
-
-      render();
-      alert('CV loaded successfully!');
-    });
-
-    listContainer.appendChild(item);
-  });
-});
+  
+document.getElementById('save-cv-btn').addEventListener('click', () => {
   const formData = new FormData(form);
   const cvData = {};
 
@@ -328,10 +291,54 @@ document.getElementById('cv-template').addEventListener('change', (e) => {
 
   alert('CV saved successfully!');
 });
-  
-  // Seed with one empty entry of each kind so the form feels alive.
-  addEntry(experienceList, experienceTemplate);
-  addEntry(educationList, educationTemplate);
 
-  render();
-})();
+document.getElementById('my-cvs-btn').addEventListener('click', () => {
+  const savedCVs = JSON.parse(localStorage.getItem('savedCVs') || '[]');
+  const listContainer = document.getElementById('saved-cvs-list');
+
+  listContainer.innerHTML = '';
+
+  if (savedCVs.length === 0) {
+    listContainer.innerHTML = '<p>No saved CVs found.</p>';
+    return;
+  }
+
+  savedCVs.forEach((cv, index) => {
+    const item = document.createElement('div');
+    item.className = 'saved-cv-item';
+
+    item.innerHTML = `
+      <strong>${cv.fullName || 'Unnamed CV'}</strong>
+      <span>${cv.targetJob || cv.jobTitle || 'No job title'}</span>
+      <button type="button" class="btn btn--text open-cv-btn">Open</button>
+      <button type="button" class="btn btn--text delete-cv-btn">Delete</button>
+    `;
+
+    item.querySelector('.open-cv-btn').addEventListener('click', () => {
+      Object.keys(cv).forEach(key => {
+        const field = document.getElementById(key);
+
+        if (field) {
+          field.value = cv[key];
+        }
+      });
+
+      render();
+      alert('CV loaded successfully!');
+    });
+
+    item.querySelector('.delete-cv-btn').addEventListener('click', () => {
+      if (!confirm('Delete this CV?')) return;
+
+      const updatedCVs = savedCVs.filter((_, i) => i !== index);
+
+      localStorage.setItem('savedCVs', JSON.stringify(updatedCVs));
+
+      item.remove();
+
+      alert('CV deleted successfully!');
+    });
+
+    listContainer.appendChild(item);
+  });
+});
