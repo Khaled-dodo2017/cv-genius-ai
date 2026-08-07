@@ -208,7 +208,7 @@
 
   try {
     const response = await fetch(
-      "https://cv-genius-ai-eight.vercel.app/improve-cv",
+      "https://cv-genius-ai-api.vercel.app/improve-cv",
       {
         method: "POST",
         headers: {
