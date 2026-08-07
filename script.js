@@ -191,7 +191,10 @@
   });
 
   form.addEventListener('input', render);
-
+  
+document.getElementById('cv-template').addEventListener('change', (e) => {
+  sheet.dataset.template = e.target.value;
+});
   form.addEventListener('submit', async (e) => {
   e.preventDefault();
 
