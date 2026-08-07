@@ -258,6 +258,17 @@ document.getElementById('cv-template').addEventListener('change', (e) => {
 
   html2pdf().set(options).from(element).save();
 });
+  document.getElementById('new-cv-btn').addEventListener('click', () => {
+  document.getElementById('cv-form').reset();
+
+  experienceList.innerHTML = '';
+  educationList.innerHTML = '';
+
+  addEntry(experienceList, experienceTemplate);
+  addEntry(educationList, educationTemplate);
+
+  render();
+});
   
   // Seed with one empty entry of each kind so the form feels alive.
   addEntry(experienceList, experienceTemplate);
