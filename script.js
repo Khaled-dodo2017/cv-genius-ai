@@ -263,56 +263,63 @@
     });
   }
 
-  /* Generate CV */
+/* Generate CV */
 
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
 
-    const data = new FormData(form);
+  // Always keep the original CV preview
+  render();
 
-    const cvText = `
+  const data = new FormData(form);
+
+  const cvText = `
 الاسم: ${data.get('fullName')}
 الوظيفة: ${data.get('jobTitle')}
 الوظيفة المستهدفة: ${data.get('targetJob')}
+البريد الإلكتروني: ${data.get('email')}
+الهاتف: ${data.get('phone')}
 الموقع: ${data.get('location')}
 الملخص: ${data.get('summary')}
 المهارات: ${data.get('skills')}
 اللغات: ${data.get('languages')}
 `;
 
-    try {
-      const response = await fetch(
-        'https://cv-genius-ai-api.vercel.app/improve-cv',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            text: cvText
-          })
-        }
-      );
+  try {
+    const response = await fetch(
+      'https://cv-genius-ai-api.vercel.app/improve-cv',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          text: cvText
+        })
+      }
+    );
 
-      const result = await response.json();
-
-if (result.result) {
-  sheet.innerHTML = `
-    <div style="padding:30px; line-height:1.8;">
-      ${escapeHTML(result.result).replace(/\n/g, '<br>')}
-    </div>
-  `;
-} else {
-  render();
-}
-
-    } catch (error) {
-      console.error(error);
-      alert('Unable to generate CV. Please try again.');
+    if (!response.ok) {
+      throw new Error('API request failed');
     }
 
-    pulseSheet();
-  });
+    const result = await response.json();
+
+    // Put the AI result in the existing summary area
+    // without destroying the CV sheet.
+    if (result.result && out.summary) {
+      out.summary.textContent = result.result;
+      out.summary.hidden = false;
+    }
+
+  } catch (error) {
+    console.error('Generate CV error:', error);
+    // The normal CV preview remains visible even if AI fails.
+    render();
+  }
+
+  pulseSheet();
+});
 
   /* Print */
 
