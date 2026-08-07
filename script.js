@@ -223,9 +223,9 @@
     const result = await response.json();
 
     if (result.result) {
-      out.summary.textContent = result.result;
-      out.summary.hidden = false;
-    }
+  out.summary.innerHTML = result.result.replace(/\n/g, "<br>");
+  out.summary.hidden = false;
+}
 
   } catch (error) {
     console.error(error);
