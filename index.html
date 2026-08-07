@@ -88,7 +88,18 @@
           <input type="text" id="languages" name="languages" placeholder="English — Native, Portuguese — Fluent, French — Basic">
         </label>
       </fieldset>
+<fieldset class="field-group">
+  <legend>CV Template</legend>
 
+  <label class="field">
+    <span class="field__label">Choose a style</span>
+    <select id="cv-template" name="cv-template">
+      <option value="classic">Classic</option>
+      <option value="modern">Modern</option>
+      <option value="minimal">Minimal</option>
+    </select>
+  </label>
+</fieldset>
       <div class="editor__actions">
         <button type="submit" class="btn btn--primary" id="generate-btn">Generate CV</button>
         <button type="button" class="btn btn--text" id="print-btn">Print / Save PDF</button>
