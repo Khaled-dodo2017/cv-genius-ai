@@ -242,6 +242,10 @@
     window.print();
   });
 
+  document.getElementById('download-pdf-btn').addEventListener('click', () => {
+  window.print();
+});
+  
   // Seed with one empty entry of each kind so the form feels alive.
   addEntry(experienceList, experienceTemplate);
   addEntry(educationList, educationTemplate);
