@@ -203,6 +203,7 @@ document.getElementById('cv-template').addEventListener('change', (e) => {
   const cvText = `
 الاسم: ${data.get('fullName')}
 الوظيفة: ${data.get('jobTitle')}
+الوظيفة المستهدفة: ${data.get('targetJob')}
 الموقع: ${data.get('location')}
 الملخص: ${data.get('summary')}
 المهارات: ${data.get('skills')}
