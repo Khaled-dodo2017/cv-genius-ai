@@ -192,11 +192,48 @@
 
   form.addEventListener('input', render);
 
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    render();
-    pulseSheet();
-  });
+  form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const data = new FormData(form);
+
+  const cvText = `
+الاسم: ${data.get('fullName')}
+الوظيفة: ${data.get('jobTitle')}
+الموقع: ${data.get('location')}
+الملخص: ${data.get('summary')}
+المهارات: ${data.get('skills')}
+اللغات: ${data.get('languages')}
+`;
+
+  try {
+    const response = await fetch(
+      "https://cv-genius-ai-eight.vercel.app/improve-cv",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          text: cvText
+        })
+      }
+    );
+
+    const result = await response.json();
+
+    if (result.result) {
+      out.summary.textContent = result.result;
+      out.summary.hidden = false;
+    }
+
+  } catch (error) {
+    console.error(error);
+  }
+
+  render();
+  pulseSheet();
+});
 
   document.getElementById('print-btn').addEventListener('click', () => {
     window.print();
