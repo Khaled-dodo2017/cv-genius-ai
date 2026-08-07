@@ -271,6 +271,20 @@ document.getElementById('cv-template').addEventListener('change', (e) => {
   render();
 });
   document.getElementById('save-cv-btn').addEventListener('click', () => {
+    document.getElementById('my-cvs-btn').addEventListener('click', () => {
+  const savedCVs = JSON.parse(localStorage.getItem('savedCVs') || '[]');
+
+  if (savedCVs.length === 0) {
+    alert('No saved CVs found.');
+    return;
+  }
+
+  const list = savedCVs
+    .map((cv, index) => `${index + 1}. ${cv.fullName || 'Unnamed CV'} — ${cv.savedAt}`)
+    .join('\n');
+
+  alert('My CVs:\n\n' + list);
+});
   const formData = new FormData(form);
   const cvData = {};
 
