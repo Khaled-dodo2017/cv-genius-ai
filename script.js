@@ -296,13 +296,15 @@
 
       const result = await response.json();
 
-      if (result.result) {
-        sheet.innerHTML = `
-          <div style="padding:30px; line-height:1.8;">
-            ${escapeHTML(result.result).replace(/\n/g, '<br>')}
-          </div>
-        `;
-      }
+if (result.result) {
+  sheet.innerHTML = `
+    <div style="padding:30px; line-height:1.8;">
+      ${escapeHTML(result.result).replace(/\n/g, '<br>')}
+    </div>
+  `;
+} else {
+  render();
+}
 
     } catch (error) {
       console.error(error);
