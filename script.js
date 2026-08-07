@@ -231,7 +231,7 @@
     console.error(error);
   }
 
-  render();
+
   pulseSheet();
 });
 
