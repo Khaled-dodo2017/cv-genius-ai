@@ -287,9 +287,11 @@ document.getElementById('cv-template').addEventListener('change', (e) => {
     item.className = 'saved-cv-item';
 
     item.innerHTML = `
-      <strong>${cv.fullName || 'Unnamed CV'}</strong>
-      <span>${cv.targetJob || cv.jobTitle || 'No job title'}</span>
-      <button type="button" class="btn btn--text">Open</button>
+  <strong>${cv.fullName || 'Unnamed CV'}</strong>
+  <span>${cv.targetJob || cv.jobTitle || 'No job title'}</span>
+  <button type="button" class="btn btn--text open-cv-btn">Open</button>
+  <button type="button" class="btn btn--text delete-cv-btn">Delete</button>
+`;
     `;
 
     item.querySelector('button').addEventListener('click', () => {
