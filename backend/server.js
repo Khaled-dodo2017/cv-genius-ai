@@ -6,17 +6,48 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.post("/improve-cv", (req, res) => {
-  const { text } = req.body;
+app.post("/improve-cv", async (req, res) => {
+  try {
+    const { text } = req.body;
 
-  const improved = `
-${text}
+    const response = await fetch(
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" +
+        process.env.GEMINI_API_KEY,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                {
+                  text:
+                    "اكتب سيرة ذاتية احترافية من هذه المعلومات، نظمها إلى ملخص وخبرة ومهارات ولغات:\n\n" +
+                    text,
+                },
+              ],
+            },
+          ],
+        }),
+      }
+    );
 
-صياغة محسّنة:
-محترف لديه خبرة في المجال، يمتلك مهارات في التواصل والعمل ضمن فريق، ويسعى لتقديم قيمة مضافة وتحقيق أهداف المؤسسة.
-`;
+    const data = await response.json();
 
-  res.json({ result: improved });
+    const result =
+      data.candidates?.[0]?.content?.parts?.[0]?.text ||
+      "لم يتم إنشاء السيرة الذاتية";
+
+    res.json({ result });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      error: "حدث خطأ في الخادم",
+    });
+  }
 });
 
 app.get("/", (req, res) => {
