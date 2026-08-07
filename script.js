@@ -223,8 +223,11 @@
     const result = await response.json();
 
     if (result.result) {
-  out.summary.innerHTML = result.result.replace(/\n/g, "<br>");
-  out.summary.hidden = false;
+  sheet.innerHTML = `
+    <div style="padding:30px; line-height:1.8;">
+      ${result.result.replace(/\n/g, "<br>")}
+    </div>
+  `;
 }
 
   } catch (error) {
