@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ledger — CV Builder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ===== Editor column ===== -->
+  <section class="editor" aria-label="CV editor">
+
+    <header class="editor__masthead">
+      <span class="editor__mark">01</span>
+      <div>
+        <h1 class="editor__title">Ledger</h1>
+        <p class="editor__subtitle">Draft your CV on the left. Watch it typeset on the right.</p>
+      </div>
+    </header>
+
+    <form id="cv-form" novalidate>
+
+      <fieldset class="field-group">
+        <legend>Identity</legend>
+
+        <label class="field">
+          <span class="field__label">Full name</span>
+          <input type="text" id="fullName" name="fullName" placeholder="Amara Osei" autocomplete="name">
+        </label>
+
+        <label class="field">
+          <span class="field__label">Job title</span>
+          <input type="text" id="jobTitle" name="jobTitle" placeholder="Senior Product Designer">
+        </label>
+
+        <div class="field-row">
+          <label class="field">
+            <span class="field__label">Email</span>
+            <input type="email" id="email" name="email" placeholder="amara@example.com" autocomplete="email">
+          </label>
+          <label class="field">
+            <span class="field__label">Phone</span>
+            <input type="tel" id="phone" name="phone" placeholder="+1 555 010 2938" autocomplete="tel">
+          </label>
+        </div>
+
+        <label class="field">
+          <span class="field__label">Location</span>
+          <input type="text" id="location" name="location" placeholder="Lisbon, Portugal">
+        </label>
+
+        <label class="field">
+          <span class="field__label">Summary</span>
+          <textarea id="summary" name="summary" rows="3" placeholder="A brief line on who you are and what you're looking for."></textarea>
+        </label>
+      </fieldset>
+
+      <fieldset class="field-group">
+        <legend>Experience</legend>
+        <div id="experience-list" class="entry-list"></div>
+        <button type="button" class="btn btn--ghost" data-add="experience">+ Add position</button>
+      </fieldset>
+
+      <fieldset class="field-group">
+        <legend>Education</legend>
+        <div id="education-list" class="entry-list"></div>
+        <button type="button" class="btn btn--ghost" data-add="education">+ Add qualification</button>
+      </fieldset>
+
+      <fieldset class="field-group">
+        <legend>Skills</legend>
+        <label class="field">
+          <span class="field__label">Comma-separated</span>
+          <input type="text" id="skills" name="skills" placeholder="Figma, Design Systems, TypeScript, Prototyping">
+        </label>
+      </fieldset>
+
+      <fieldset class="field-group">
+        <legend>Languages</legend>
+        <label class="field">
+          <span class="field__label">Comma-separated, with fluency</span>
+          <input type="text" id="languages" name="languages" placeholder="English — Native, Portuguese — Fluent, French — Basic">
+        </label>
+      </fieldset>
+
+      <div class="editor__actions">
+        <button type="submit" class="btn btn--primary" id="generate-btn">Generate CV</button>
+        <button type="button" class="btn btn--text" id="print-btn">Print / Save PDF</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- ===== Preview column ===== -->
+  <section class="preview" aria-label="CV preview">
+    <div class="preview__stage">
+      <span class="preview__mark">02 — Live proof</span>
+
+      <article class="sheet" id="cv-sheet">
+        <header class="sheet__header">
+          <h2 class="sheet__name" id="out-name">Your Name</h2>
+          <p class="sheet__title" id="out-title">Job Title</p>
+          <p class="sheet__contact" id="out-contact">email · phone · location</p>
+        </header>
+
+        <p class="sheet__summary" id="out-summary" hidden></p>
+
+        <section class="sheet__section" id="section-experience" hidden>
+          <h3 class="sheet__heading"><span>Experience</span></h3>
+          <div id="out-experience"></div>
+        </section>
+
+        <section class="sheet__section" id="section-education" hidden>
+          <h3 class="sheet__heading"><span>Education</span></h3>
+          <div id="out-education"></div>
+        </section>
+
+        <section class="sheet__section" id="section-skills" hidden>
+          <h3 class="sheet__heading"><span>Skills</span></h3>
+          <ul class="sheet__tags" id="out-skills"></ul>
+        </section>
+
+        <section class="sheet__section" id="section-languages" hidden>
+          <h3 class="sheet__heading"><span>Languages</span></h3>
+          <ul class="sheet__tags" id="out-languages"></ul>
+        </section>
+      </article>
+    </div>
+  </section>
+
+</div>
+
+<template id="experience-entry-template">
+  <div class="entry" data-entry>
+    <button type="button" class="entry__remove" aria-label="Remove this position">×</button>
+    <div class="field-row">
+      <label class="field">
+        <span class="field__label">Role</span>
+        <input type="text" class="js-role" placeholder="Product Designer">
+      </label>
+      <label class="field">
+        <span class="field__label">Company</span>
+        <input type="text" class="js-company" placeholder="Northwind Studio">
+      </label>
+    </div>
+    <label class="field">
+      <span class="field__label">Dates</span>
+      <input type="text" class="js-dates" placeholder="2022 — Present">
+    </label>
+    <label class="field">
+      <span class="field__label">Description</span>
+      <textarea class="js-desc" rows="2" placeholder="What you owned and shipped."></textarea>
+    </label>
+  </div>
+</template>
+
+<template id="education-entry-template">
+  <div class="entry" data-entry>
+    <button type="button" class="entry__remove" aria-label="Remove this qualification">×</button>
+    <label class="field">
+      <span class="field__label">Qualification</span>
+      <input type="text" class="js-degree" placeholder="BA, Communication Design">
+    </label>
+    <div class="field-row">
+      <label class="field">
+        <span class="field__label">Institution</span>
+        <input type="text" class="js-school" placeholder="Central Saint Martins">
+      </label>
+      <label class="field">
+        <span class="field__label">Year</span>
+        <input type="text" class="js-year" placeholder="2019">
+      </label>
+    </div>
+  </div>
+</template>
+
+<script src="script.js"></script>
+</body>
+</html>
