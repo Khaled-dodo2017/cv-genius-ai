@@ -814,16 +814,6 @@
 
     function applyLanguage() {
 
-      document.documentElement.lang =
-        currentLanguage;
-
-      document.documentElement.dir =
-        t('direction');
-
-      document.title =
-        t('pageTitle');
-
-
       /* جميع أدوات اللغة */
 
       document
