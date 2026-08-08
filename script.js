@@ -656,7 +656,11 @@
   /* Initial render */
 
   render();
+console.log("CV GENIUS SCRIPT LOADED");
 
+if (!form) console.error("ERROR: cv-form not found");
+if (!sheet) console.error("ERROR: cv-sheet not found");
+if (!out.name) console.error("ERROR: out-name not found");
 })();
 
   
