@@ -443,3 +443,136 @@ input:focus-visible, textarea:focus-visible, button:focus-visible{
 .sheet[data-template="minimal"] .sheet__heading{
   color: var(--ink);
 }
+
+/* =====================================================
+   تحسين تجربة الهاتف
+===================================================== */
+
+@media (max-width: 560px) {
+
+  body {
+    font-size: 14px;
+    overflow-x: hidden;
+  }
+
+  .app {
+    width: 100%;
+    display: block;
+  }
+
+  .editor {
+    width: 100%;
+    padding: 22px 16px 40px;
+  }
+
+  .preview {
+    width: 100%;
+    padding: 24px 12px 40px;
+  }
+
+  .editor__masthead {
+    gap: 10px;
+    margin-bottom: 28px;
+    padding-bottom: 20px;
+  }
+
+  .editor__title {
+    font-size: 24px;
+    line-height: 1.25;
+  }
+
+  .editor__subtitle {
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .field-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="number"],
+  select,
+  textarea {
+    width: 100%;
+    min-height: 44px;
+    font-size: 16px;
+  }
+
+  textarea {
+    min-height: 100px;
+  }
+
+  .btn {
+    min-height: 44px;
+  }
+
+  .editor__actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .editor__actions .btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .entry {
+    padding: 18px 14px 6px;
+  }
+
+  .entry__remove {
+    width: 30px;
+    height: 30px;
+    top: 8px;
+    right: 8px;
+  }
+
+  .sheet {
+    width: 100%;
+    min-height: auto;
+    padding: 30px 20px 38px;
+    transform: none;
+    overflow-wrap: anywhere;
+  }
+
+  .sheet__name {
+    font-size: 27px;
+    line-height: 1.25;
+  }
+
+  .sheet__title {
+    font-size: 12px;
+    white-space: normal;
+  }
+
+  .sheet__contact {
+    font-size: 12px;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+  }
+
+  .sheet-entry__top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .sheet-entry__dates {
+    white-space: normal;
+  }
+
+  .sheet__tags {
+    gap: 6px;
+  }
+
+  .sheet__tags li {
+    font-size: 12px;
+    padding: 5px 10px;
+  }
+
+}
