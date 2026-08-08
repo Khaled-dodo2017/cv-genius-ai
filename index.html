@@ -1,1 +1,622 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<title>CV Genius AI — منشئ السيرة الذاتية</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Cairo:wght@400;500;600;700;800&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="app">
+
+  <!-- ===== محرر السيرة الذاتية ===== -->
+  <section class="editor" aria-label="محرر السيرة الذاتية">
+
+    <header class="editor__masthead">
+      <span class="editor__mark">01</span>
+
+      <div>
+        <h1 class="editor__title">CV Genius AI</h1>
+
+        <p class="editor__subtitle">
+          أنشئ سيرتك الذاتية الاحترافية باستخدام الذكاء الاصطناعي.
+          عدّل بياناتك وشاهد المعاينة مباشرة.
+        </p>
+      </div>
+    </header>
+
+
+    <form id="cv-form" novalidate>
+
+      <!-- ===== البيانات الشخصية ===== -->
+      <fieldset class="field-group">
+        <legend>البيانات الشخصية</legend>
+
+        <label class="field">
+          <span class="field__label">الوظيفة المستهدفة</span>
+
+          <select id="targetJob" name="targetJob">
+            <option value="">اختر وظيفة</option>
+            <option value="Software Engineer">مهندس برمجيات</option>
+            <option value="Receptionist">موظف استقبال</option>
+            <option value="Accountant">محاسب</option>
+            <option value="Teacher">مدرس</option>
+            <option value="Marketing Specialist">أخصائي تسويق</option>
+            <option value="Other">وظيفة أخرى</option>
+          </select>
+        </label>
+
+
+        <label class="field">
+          <span class="field__label">الاسم الكامل</span>
+
+          <input
+            type="text"
+            id="fullName"
+            name="fullName"
+            placeholder="مثال: أحمد محمد"
+            autocomplete="name"
+          >
+        </label>
+
+
+        <label class="field">
+          <span class="field__label">المسمى الوظيفي</span>
+
+          <input
+            type="text"
+            id="jobTitle"
+            name="jobTitle"
+            placeholder="مثال: مهندس برمجيات"
+          >
+        </label>
+
+
+        <div class="field-row">
+
+          <label class="field">
+            <span class="field__label">البريد الإلكتروني</span>
+
+            <input
+              type="email"
+              id="email"
+              name="email"
+              placeholder="name@example.com"
+              autocomplete="email"
+            >
+          </label>
+
+
+          <label class="field">
+            <span class="field__label">رقم الهاتف</span>
+
+            <input
+              type="tel"
+              id="phone"
+              name="phone"
+              placeholder="+213 555 123 456"
+              autocomplete="tel"
+            >
+          </label>
+
+        </div>
+
+
+        <label class="field">
+          <span class="field__label">الموقع</span>
+
+          <input
+            type="text"
+            id="location"
+            name="location"
+            placeholder="الجزائر، الجزائر"
+          >
+        </label>
+
+
+        <label class="field">
+          <span class="field__label">نبذة مختصرة</span>
+
+          <textarea
+            id="summary"
+            name="summary"
+            rows="3"
+            placeholder="اكتب نبذة قصيرة عن خبرتك وأهدافك المهنية..."
+          ></textarea>
+        </label>
+
+      </fieldset>
+
+
+      <!-- ===== الخبرة ===== -->
+      <fieldset class="field-group">
+
+        <legend>الخبرة المهنية</legend>
+
+        <div id="experience-list" class="entry-list"></div>
+
+        <button
+          type="button"
+          class="btn btn--ghost"
+          data-add="experience"
+        >
+          + إضافة خبرة
+        </button>
+
+      </fieldset>
+
+
+      <!-- ===== التعليم ===== -->
+      <fieldset class="field-group">
+
+        <legend>التعليم</legend>
+
+        <div id="education-list" class="entry-list"></div>
+
+        <button
+          type="button"
+          class="btn btn--ghost"
+          data-add="education"
+        >
+          + إضافة مؤهل تعليمي
+        </button>
+
+      </fieldset>
+
+
+      <!-- ===== المهارات ===== -->
+      <fieldset class="field-group">
+
+        <legend>المهارات</legend>
+
+        <label class="field">
+
+          <span class="field__label">
+            المهارات مفصولة بفواصل
+          </span>
+
+          <input
+            type="text"
+            id="skills"
+            name="skills"
+            placeholder="إدارة المشاريع، البرمجة، التصميم، التواصل"
+          >
+
+        </label>
+
+      </fieldset>
+
+
+      <!-- ===== اللغات ===== -->
+      <fieldset class="field-group">
+
+        <legend>اللغات</legend>
+
+        <label class="field">
+
+          <span class="field__label">
+            اللغات مع مستوى الإتقان
+          </span>
+
+          <input
+            type="text"
+            id="languages"
+            name="languages"
+            placeholder="العربية — ممتاز، الإنجليزية — متقدم، الفرنسية — متوسط"
+          >
+
+        </label>
+
+      </fieldset>
+
+
+      <!-- ===== قالب السيرة ===== -->
+      <fieldset class="field-group">
+
+        <legend>قالب السيرة الذاتية</legend>
+
+        <label class="field">
+
+          <span class="field__label">
+            اختر نمط السيرة
+          </span>
+
+          <select id="cv-template" name="cv-template">
+
+            <option value="classic">
+              كلاسيكي
+            </option>
+
+            <option value="modern">
+              حديث
+            </option>
+
+            <option value="minimal">
+              بسيط
+            </option>
+
+          </select>
+
+        </label>
+
+      </fieldset>
+
+
+      <!-- ===== أزرار التحكم ===== -->
+      <div class="editor__actions">
+
+        <button
+          type="submit"
+          class="btn btn--primary"
+          id="generate-btn"
+        >
+          إنشاء السيرة الذاتية
+        </button>
+
+
+        <button
+          type="button"
+          class="btn btn--text"
+          id="print-btn"
+        >
+          طباعة / حفظ PDF
+        </button>
+
+
+        <button
+          type="button"
+          class="btn btn--text"
+          id="download-pdf-btn"
+        >
+          تنزيل PDF
+        </button>
+
+
+        <button
+          type="button"
+          class="btn btn--text"
+          id="new-cv-btn"
+        >
+          سيرة ذاتية جديدة
+        </button>
+
+
+        <button
+          type="button"
+          class="btn btn--text"
+          id="save-cv-btn"
+        >
+          حفظ السيرة الذاتية
+        </button>
+
+
+        <button
+          type="button"
+          class="btn btn--text"
+          id="my-cvs-btn"
+        >
+          سيرتي الذاتية
+        </button>
+
+
+        <div id="saved-cvs-list"></div>
+
+      </div>
+
+    </form>
+
+  </section>
+
+
+  <!-- ===== معاينة السيرة ===== -->
+  <section
+    class="preview"
+    aria-label="معاينة السيرة الذاتية"
+  >
+
+    <div class="preview__stage">
+
+      <span class="preview__mark">
+        02 — المعاينة المباشرة
+      </span>
+
+
+      <article
+        class="sheet"
+        id="cv-sheet"
+        data-template="classic"
+      >
+
+        <header class="sheet__header">
+
+          <h2
+            class="sheet__name"
+            id="out-name"
+          >
+            اسمك
+          </h2>
+
+
+          <p
+            class="sheet__title"
+            id="out-title"
+          >
+            المسمى الوظيفي
+          </p>
+
+
+          <p
+            class="sheet__contact"
+            id="out-contact"
+          >
+            البريد الإلكتروني · الهاتف · الموقع
+          </p>
+
+        </header>
+
+
+        <p
+          class="sheet__summary"
+          id="out-summary"
+          hidden
+        ></p>
+
+
+        <!-- ===== الخبرة في المعاينة ===== -->
+        <section
+          class="sheet__section"
+          id="section-experience"
+          hidden
+        >
+
+          <h3 class="sheet__heading">
+            <span>الخبرة المهنية</span>
+          </h3>
+
+          <div id="out-experience"></div>
+
+        </section>
+
+
+        <!-- ===== التعليم في المعاينة ===== -->
+        <section
+          class="sheet__section"
+          id="section-education"
+          hidden
+        >
+
+          <h3 class="sheet__heading">
+            <span>التعليم</span>
+          </h3>
+
+          <div id="out-education"></div>
+
+        </section>
+
+
+        <!-- ===== المهارات في المعاينة ===== -->
+        <section
+          class="sheet__section"
+          id="section-skills"
+          hidden
+        >
+
+          <h3 class="sheet__heading">
+            <span>المهارات</span>
+          </h3>
+
+          <ul
+            class="sheet__tags"
+            id="out-skills"
+          ></ul>
+
+        </section>
+
+
+        <!-- ===== اللغات في المعاينة ===== -->
+        <section
+          class="sheet__section"
+          id="section-languages"
+          hidden
+        >
+
+          <h3 class="sheet__heading">
+            <span>اللغات</span>
+          </h3>
+
+          <ul
+            class="sheet__tags"
+            id="out-languages"
+          ></ul>
+
+        </section>
+
+      </article>
+
+    </div>
+
+  </section>
+
+</div>
+
+
+<!-- =====================================================
+     قالب إضافة خبرة
+===================================================== -->
+
+<template id="experience-entry-template">
+
+  <div
+    class="entry"
+    data-entry
+  >
+
+    <button
+      type="button"
+      class="entry__remove"
+      aria-label="حذف هذه الخبرة"
+    >
+      ×
+    </button>
+
+
+    <div class="field-row">
+
+      <label class="field">
+
+        <span class="field__label">
+          المسمى الوظيفي
+        </span>
+
+        <input
+          type="text"
+          class="js-role"
+          placeholder="مثال: مهندس برمجيات"
+        >
+
+      </label>
+
+
+      <label class="field">
+
+        <span class="field__label">
+          الشركة
+        </span>
+
+        <input
+          type="text"
+          class="js-company"
+          placeholder="مثال: شركة تقنية"
+        >
+
+      </label>
+
+    </div>
+
+
+    <label class="field">
+
+      <span class="field__label">
+        الفترة الزمنية
+      </span>
+
+      <input
+        type="text"
+        class="js-dates"
+        placeholder="2022 — حتى الآن"
+      >
+
+    </label>
+
+
+    <label class="field">
+
+      <span class="field__label">
+        الوصف والإنجازات
+      </span>
+
+      <textarea
+        class="js-desc"
+        rows="2"
+        placeholder="اكتب أهم المهام والإنجازات التي حققتها..."
+      ></textarea>
+
+    </label>
+
+  </div>
+
+</template>
+
+
+<!-- =====================================================
+     قالب إضافة التعليم
+===================================================== -->
+
+<template id="education-entry-template">
+
+  <div
+    class="entry"
+    data-entry
+  >
+
+    <button
+      type="button"
+      class="entry__remove"
+      aria-label="حذف هذا المؤهل"
+    >
+      ×
+    </button>
+
+
+    <label class="field">
+
+      <span class="field__label">
+        المؤهل أو التخصص
+      </span>
+
+      <input
+        type="text"
+        class="js-degree"
+        placeholder="مثال: ليسانس في علوم الحاسوب"
+      >
+
+    </label>
+
+
+    <div class="field-row">
+
+      <label class="field">
+
+        <span class="field__label">
+          المؤسسة التعليمية
+        </span>
+
+        <input
+          type="text"
+          class="js-school"
+          placeholder="مثال: جامعة الجزائر"
+        >
+
+      </label>
+
+
+      <label class="field">
+
+        <span class="field__label">
+          السنة
+        </span>
+
+        <input
+          type="text"
+          class="js-year"
+          placeholder="2024"
+        >
+
+      </label>
+
+    </div>
+
+  </div>
+
+</template>
+
+
+<!-- =====================================================
+     المكتبات والسكريبت
+===================================================== -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+<script src="script.js"></script>
+
+</body>
+</html>
