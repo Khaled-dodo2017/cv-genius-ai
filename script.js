@@ -1989,10 +1989,25 @@ ${getValue('languages')}
         );
       }
 
+if (data.result) {
 
+  const aiText = data.result.trim();
+
+  if (out.summary) {
+    out.summary.textContent = aiText;
+    out.summary.hidden = false;
+  }
+
+  generateBtn.textContent =
+    'تم تحسين السيرة بالذكاء الاصطناعي ✓';
+
+} else {
+
+  throw new Error(
+    'لم يتم الحصول على نتيجة من Gemini'
+  );
+}
       
-
-
       if (sheet) {
 
         sheet.scrollIntoView({
