@@ -2206,36 +2206,167 @@ document.body.dir =
 
             setTimeout(() => {
 
-              downloadPdfBtn.textContent =
-                t('download');
+/* =========================================================
+   PDF — MOBILE SAFE
+========================================================= */
 
-              downloadPdfBtn.disabled =
-                false;
+if (downloadPdfBtn) {
 
-            }, 1500);
+  downloadPdfBtn.addEventListener(
+    'click',
+    async () => {
 
-          } catch (error) {
+      render();
 
-            console.error(
-              'PDF error:',
-              error
-            );
+      if (typeof window.html2pdf !== 'function') {
 
+        alert(t('pdfLibraryError'));
 
-            downloadPdfBtn.disabled =
-              false;
+        return;
+      }
 
-            downloadPdfBtn.textContent =
-              t('download');
+      const fullName =
+        getValue('fullName') || 'CV';
 
 
-            alert(
-              t('pdfError')
-            );
-          }
+      /* اسم ملف آمن + رقم فريد
+         يمنع Chrome من طلب "تحميل الملف من جديد"
+         وإنشاء (1) و(2) و(3)... */
+
+      const safeName =
+        fullName
+          .replace(/[\\/:*?"<>|]/g, '')
+          .replace(/\s+/g, '-')
+          .substring(0, 50);
+
+
+      const uniqueId =
+        new Date()
+          .toISOString()
+          .replace(/[-:T.Z]/g, '')
+          .substring(0, 14);
+
+
+      const fileName =
+        `CV-Genius-AI-${safeName || 'CV'}-${uniqueId}.pdf`;
+
+
+      const options = {
+
+        margin: 0,
+
+        filename: fileName,
+
+        image: {
+          type: 'jpeg',
+          quality: 0.98
+        },
+
+        html2canvas: {
+
+          scale: 2,
+
+          useCORS: true,
+
+          allowTaint: false,
+
+          backgroundColor: '#ffffff',
+
+          logging: false,
+
+          scrollX: 0,
+
+          scrollY: 0
+
+        },
+
+        jsPDF: {
+
+          unit: 'mm',
+
+          format: 'a4',
+
+          orientation: 'portrait',
+
+          compress: true
+
+        },
+
+        pagebreak: {
+
+          mode: [
+            'css',
+            'legacy'
+          ]
+
         }
-      );
+
+      };
+
+
+      try {
+
+        downloadPdfBtn.disabled = true;
+
+        downloadPdfBtn.textContent =
+          t('creatingPdf');
+
+
+        /* ننتظر لحظة حتى تكتمل المعاينة
+           قبل التقاطها على الهاتف */
+
+        await new Promise(resolve =>
+          requestAnimationFrame(() =>
+            requestAnimationFrame(resolve)
+          )
+        );
+
+
+        await window
+          .html2pdf()
+          .set(options)
+          .from(sheet)
+          .save();
+
+
+        downloadPdfBtn.textContent =
+          t('downloaded');
+
+
+      } catch (error) {
+
+        console.error(
+          'PDF error:',
+          error
+        );
+
+
+        downloadPdfBtn.textContent =
+          t('download');
+
+
+        alert(
+          t('pdfError')
+        );
+
+      } finally {
+
+        setTimeout(() => {
+
+          downloadPdfBtn.disabled =
+            false;
+
+          downloadPdfBtn.textContent =
+            t('download');
+
+        }, 1500);
+
+      }
+
     }
+  );
+
+}
 
 
     /* =========================================================
