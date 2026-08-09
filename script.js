@@ -2247,86 +2247,144 @@ if (downloadPdfBtn) {
 
           format: 'a4',
 
-          orientation: 'portrait',
 
-          compress: true
+/* =========================================================
+PDF
+========================================================= */
 
-        },
+if (downloadPdfBtn) {  
 
-        pagebreak: {
+  downloadPdfBtn.addEventListener(  
+    'click',  
+    async () => {  
 
-          mode: [
-            'css',
-            'legacy'
-          ]
-
-        }
-
-      };
+      render();  
 
 
-      try {
+      if (  
+        typeof window.html2pdf !==  
+        'function'  
+      ) {  
 
-        downloadPdfBtn.disabled = true;
+        alert(  
+          t('pdfLibraryError')  
+        );  
 
-        downloadPdfBtn.textContent =
-          t('creatingPdf');
-
-
-        /* ننتظر لحظة حتى تكتمل المعاينة
-           قبل التقاطها على الهاتف */
-
-        await new Promise(resolve =>
-          requestAnimationFrame(() =>
-            requestAnimationFrame(resolve)
-          )
-        );
+        return;  
+      }  
 
 
-        await window
-          .html2pdf()
-          .set(options)
-          .from(sheet)
-          .save();
+      const fullName =  
+        getValue('fullName') ||  
+        'CV';  
 
 
-        downloadPdfBtn.textContent =
-          t('downloaded');
+      const safeName =  
+        fullName  
+          .replace(  
+            /[\\/:*?"<>|]/g,  
+            ''  
+          )  
+          .replace(  
+            /\s+/g,  
+            '-'  
+          )  
+          .substring(  
+            0,  
+            60  
+          );  
 
 
-      } catch (error) {
-
-        console.error(
-          'PDF error:',
-          error
-        );
+      const fileName =  
+        `CV-Genius-AI-${safeName || 'CV'}.pdf`;  
 
 
-        downloadPdfBtn.textContent =
-          t('download');
+      const options = {  
+
+        margin: 0,  
+
+        filename:  
+          fileName,  
+
+        image: {  
+          type: 'jpeg',  
+          quality: 0.98  
+        },  
+
+        html2canvas: {  
+          scale: 2,  
+          useCORS: true,  
+          backgroundColor:  
+            '#ffffff'  
+        },  
+
+        jsPDF: {  
+          unit: 'mm',  
+          format: 'a4',  
+          orientation:  
+            'portrait'  
+        },  
+
+        pagebreak: {  
+          mode: [  
+            'css',  
+            'legacy'  
+          ]  
+        }  
+      };  
 
 
-        alert(
-          t('pdfError')
-        );
+      try {  
 
-      } finally {
+        downloadPdfBtn.disabled =  
+          true;  
 
-        setTimeout(() => {
+        downloadPdfBtn.textContent =  
+          t('creatingPdf');  
 
-          downloadPdfBtn.disabled =
-            false;
 
-          downloadPdfBtn.textContent =
-            t('download');
+        await window  
+          .html2pdf()  
+          .set(options)  
+          .from(sheet)  
+          .save();  
 
-        }, 1500);
 
-      }
+        downloadPdfBtn.textContent =  
+          t('downloaded');  
 
-    }
-  );
 
+        setTimeout(() => {  
+
+          downloadPdfBtn.textContent =  
+            t('download');  
+
+          downloadPdfBtn.disabled =  
+            false;  
+
+        }, 1500);  
+
+      } catch (error) {  
+
+        console.error(  
+          'PDF error:',  
+          error  
+        );  
+
+
+        downloadPdfBtn.disabled =  
+          false;  
+
+        downloadPdfBtn.textContent =  
+          t('download');  
+
+
+        alert(  
+          t('pdfError')  
+        );  
+      }  
+    }  
+  );  
 }
 
 
