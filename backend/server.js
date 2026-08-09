@@ -30,7 +30,7 @@ app.post("/improve-cv", async (req, res) => {
             {
               parts: [
                 {
-                  text:
+                
                  text
                 }
               ]
