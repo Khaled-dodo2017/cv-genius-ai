@@ -813,7 +813,16 @@
     ========================================================= */
 
     function applyLanguage() {
+      
+document.documentElement.lang = currentLanguage;
 
+document.documentElement.dir =
+  currentLanguage === 'ar' ? 'rtl' : 'ltr';
+
+document.body.dir =
+  currentLanguage === 'ar' ? 'rtl' : 'ltr';
+
+      
       /* جميع أدوات اللغة */
 
       document
