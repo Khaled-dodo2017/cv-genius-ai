@@ -1990,18 +1990,7 @@ ${getValue('languages')}
       }
 
 
-      if (data.result) {
-
-        
-
-generateBtn.textContent =
-  'تم تحسين السيرة بالذكاء الاصطناعي ✓';
-      } else {
-
-        throw new Error(
-          'لم يتم الحصول على نتيجة من Gemini'
-        );
-      }
+      
 
 
       if (sheet) {
