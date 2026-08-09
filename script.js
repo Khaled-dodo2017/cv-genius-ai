@@ -1992,25 +1992,7 @@ ${getValue('languages')}
 
       if (data.result) {
 
-        const aiText = data.result.trim();
-
-const summaryMatch =
-  aiText.match(
-    /(?:الملخص|ملخص مهني|الملخص المهني|Professional Summary|Résumé professionnel)\s*[:：]?\s*([\s\S]*?)(?=\n(?:الخبرة|الخبرة المهنية|Work Experience|Expérience professionnelle|التعليم|Education|Formation|المهارات|Skills|Compétences|اللغات|Languages|Langues)\s*[:：]?|$)/i
-  );
-
-if (summaryMatch && out.summary) {
-  out.summary.textContent =
-    summaryMatch[1].trim();
-
-  out.summary.hidden = false;
-}
-
-/* عرض النتيجة الكاملة إذا لم نستطع تقسيمها */
-if (!summaryMatch && out.summary) {
-  out.summary.textContent = aiText;
-  out.summary.hidden = false;
-}
+        
 
 generateBtn.textContent =
   'تم تحسين السيرة بالذكاء الاصطناعي ✓';
