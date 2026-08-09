@@ -1906,40 +1906,151 @@
 
 
     /* =========================================================
-       GENERATE
-    ========================================================= */
+   GENERATE — GEMINI AI
+========================================================= */
 
-    form.addEventListener(
-      'submit',
-      event => {
+form.addEventListener(
+  'submit',
+  async event => {
 
-        event.preventDefault();
+    event.preventDefault();
 
-        render();
+    render();
 
-        if (generateBtn) {
+    if (!generateBtn) {
+      return;
+    }
 
-          generateBtn.textContent =
-            t('generated');
+    const originalText =
+      generateBtn.textContent;
 
-          setTimeout(() => {
+    generateBtn.disabled = true;
+    generateBtn.textContent = 'جارٍ تحسين السيرة بالذكاء الاصطناعي...';
 
-            generateBtn.textContent =
-              t('generate');
+    try {
 
-          }, 1400);
+      const cvText = `
+الاسم: ${getValue('fullName')}
+الوظيفة المستهدفة: ${getValue('targetJob')}
+المسمى الوظيفي: ${getValue('jobTitle')}
+البريد الإلكتروني: ${getValue('email')}
+الهاتف: ${getValue('phone')}
+الموقع: ${getValue('location')}
+
+الملخص:
+${getValue('summary')}
+
+الخبرة:
+${readExperience()
+  .map(item =>
+    `${item.role} - ${item.company} - ${item.dates}\n${item.description}`
+  )
+  .join('\n\n')}
+
+التعليم:
+${readEducation()
+  .map(item =>
+    `${item.degree} - ${item.school} - ${item.year}`
+  )
+  .join('\n')}
+
+المهارات:
+${getValue('skills')}
+
+اللغات:
+${getValue('languages')}
+      `.trim();
+
+
+      const response = await fetch(
+        'https://cv-genius-ai-api.vercel.app/improve-cv',
+        {
+          method: 'POST',
+
+          headers: {
+            'Content-Type': 'application/json'
+          },
+
+          body: JSON.stringify({
+            text: cvText
+          })
         }
+      );
 
 
-        if (sheet) {
+      const data =
+        await response.json();
 
-          sheet.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
-          });
-        }
+
+      if (!response.ok) {
+        throw new Error(
+          data.error ||
+          'حدث خطأ أثناء الاتصال بالذكاء الاصطناعي'
+        );
       }
-    );
+
+
+      if (data.result) {
+
+        if (out.summary) {
+          out.summary.textContent =
+            data.result;
+
+          out.summary.hidden =
+            false;
+        }
+
+        generateBtn.textContent =
+          'تم تحسين السيرة بالذكاء الاصطناعي ✓';
+
+      } else {
+
+        throw new Error(
+          'لم يتم الحصول على نتيجة من Gemini'
+        );
+      }
+
+
+      if (sheet) {
+
+        sheet.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
+
+      }
+
+
+    } catch (error) {
+
+      console.error(
+        'Gemini error:',
+        error
+      );
+
+      alert(
+        'تعذر الاتصال بالذكاء الاصطناعي. تأكد من إعداد Gemini API.'
+      );
+
+      generateBtn.textContent =
+        originalText;
+
+    } finally {
+
+      setTimeout(() => {
+
+        generateBtn.disabled =
+          false;
+
+        generateBtn.textContent =
+          t('generate');
+
+      }, 2000);
+
+    }
+
+  }
+);
 
 
     /* =========================================================
