@@ -2166,45 +2166,6 @@ document.body.dir =
               useCORS: true,
               backgroundColor:
                 '#ffffff'
-            },
-
-            jsPDF: {
-              unit: 'mm',
-              format: 'a4',
-              orientation:
-                'portrait'
-            },
-
-            pagebreak: {
-              mode: [
-                'css',
-                'legacy'
-              ]
-            }
-          };
-
-
-          try {
-
-            downloadPdfBtn.disabled =
-              true;
-
-            downloadPdfBtn.textContent =
-              t('creatingPdf');
-
-
-            await window
-              .html2pdf()
-              .set(options)
-              .from(sheet)
-              .save();
-
-
-            downloadPdfBtn.textContent =
-              t('downloaded');
-
-
-            setTimeout(() => {
 
 /* =========================================================
    PDF — MOBILE SAFE
