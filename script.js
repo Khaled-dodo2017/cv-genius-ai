@@ -1802,7 +1802,423 @@
 
 
 
-          
+          /* =========================================================
+       GEMINI AI
+    ========================================================= */
+
+    form.addEventListener(
+      'submit',
+      async event => {
+
+        event.preventDefault();
+
+        render();
+
+        if (!generateBtn) {
+          return;
+        }
+
+        const originalText =
+          generateBtn.textContent;
+
+        generateBtn.disabled = true;
+        generateBtn.textContent = t('improving');
+
+        try {
+
+          const experience = readExperience();
+          const education = readEducation();
+
+          const cvText = `
+${currentLanguage === 'ar'
+  ? 'الاسم'
+  : currentLanguage === 'fr'
+    ? 'Nom'
+    : 'Name'}: ${getValue('fullName')}
+
+${currentLanguage === 'ar'
+  ? 'الوظيفة المستهدفة'
+  : currentLanguage === 'fr'
+    ? 'Poste recherché'
+    : 'Target Job'}: ${getValue('targetJob')}
+
+${currentLanguage === 'ar'
+  ? 'المسمى الوظيفي'
+  : currentLanguage === 'fr'
+    ? 'Intitulé du poste'
+    : 'Job Title'}: ${getValue('jobTitle')}
+
+${currentLanguage === 'ar'
+  ? 'البريد الإلكتروني'
+  : currentLanguage === 'fr'
+    ? 'E-mail'
+    : 'Email'}: ${getValue('email')}
+
+${currentLanguage === 'ar'
+  ? 'الهاتف'
+  : currentLanguage === 'fr'
+    ? 'Téléphone'
+    : 'Phone'}: ${getValue('phone')}
+
+${currentLanguage === 'ar'
+  ? 'الموقع'
+  : currentLanguage === 'fr'
+    ? 'Localisation'
+    : 'Location'}: ${getValue('location')}
+
+${currentLanguage === 'ar'
+  ? 'الملخص'
+  : currentLanguage === 'fr'
+    ? 'Résumé'
+    : 'Summary'}:
+${getValue('summary')}
+
+${currentLanguage === 'ar'
+  ? 'الخبرة'
+  : currentLanguage === 'fr'
+    ? 'Expérience'
+    : 'Experience'}:
+${experience
+  .map(item =>
+    `${item.role} - ${item.company} - ${item.dates}\n${item.description}`
+  )
+  .join('\n\n')}
+
+${currentLanguage === 'ar'
+  ? 'التعليم'
+  : currentLanguage === 'fr'
+    ? 'Formation'
+    : 'Education'}:
+${education
+  .map(item =>
+    `${item.degree} - ${item.school} - ${item.year}`
+  )
+  .join('\n')}
+
+${currentLanguage === 'ar'
+  ? 'المهارات'
+  : currentLanguage === 'fr'
+    ? 'Compétences'
+    : 'Skills'}:
+${getValue('skills')}
+
+${currentLanguage === 'ar'
+  ? 'اللغات'
+  : currentLanguage === 'fr'
+    ? 'Langues'
+    : 'Languages'}:
+${getValue('languages')}
+          `.trim();
+
+
+          const response =
+            await fetch(
+              'https://cv-genius-ai-backend.vercel.app/improve-cv',
+              {
+                method: 'POST',
+
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+
+                body: JSON.stringify({
+                  text: cvText,
+                  language: currentLanguage
+                })
+              }
+            );
+
+
+          let data = null;
+
+          try {
+            data = await response.json();
+          } catch {
+            data = null;
+          }
+
+
+          if (!response.ok) {
+
+            throw new Error(
+              data?.error || t('aiError')
+            );
+          }
+
+
+          if (!data?.result) {
+
+            throw new Error(
+              t('aiEmpty')
+            );
+          }
+
+
+          /* =====================================================
+             AI RESULT
+          ===================================================== */
+
+          const aiResult =
+            String(data.result).trim();
+
+
+          sessionStorage.setItem(
+            'cvGeniusAI_lastAIResult',
+            aiResult
+          );
+
+
+          /*
+             نحاول قراءة JSON الذي أعاده Gemini.
+          */
+
+          let improvedCV = null;
+
+          try {
+
+            improvedCV =
+              JSON.parse(aiResult);
+
+          } catch (jsonError) {
+
+            console.warn(
+              'Gemini result is not valid JSON:',
+              jsonError
+            );
+
+          }
+
+
+          /*
+             إذا كانت النتيجة JSON صحيحة،
+             نضع البيانات المحسنة داخل حقول CV.
+          */
+
+          if (
+            improvedCV &&
+            typeof improvedCV === 'object'
+          ) {
+
+            /*
+               SUMMARY
+            */
+
+            if (
+              typeof improvedCV.summary === 'string'
+            ) {
+
+              const summaryInput =
+                document.getElementById('summary');
+
+              if (summaryInput) {
+
+                summaryInput.value =
+                  improvedCV.summary.trim();
+              }
+            }
+
+
+            /*
+               EXPERIENCE
+            */
+
+            if (
+              Array.isArray(improvedCV.experience)
+            ) {
+
+              if (experienceList) {
+
+                experienceList.innerHTML = '';
+
+              }
+
+              improvedCV.experience.forEach(
+                item => {
+
+                  addExperienceEntry({
+                    role:
+                      item?.role || '',
+
+                    company:
+                      item?.company || '',
+
+                    dates:
+                      item?.dates || '',
+
+                    description:
+                      item?.description || ''
+                  });
+
+                }
+              );
+            }
+
+
+            /*
+               EDUCATION
+            */
+
+            if (
+              Array.isArray(improvedCV.education)
+            ) {
+
+              if (educationList) {
+
+                educationList.innerHTML = '';
+
+              }
+
+              improvedCV.education.forEach(
+                item => {
+
+                  addEducationEntry({
+                    degree:
+                      item?.degree || '',
+
+                    school:
+                      item?.school || '',
+
+                    year:
+                      item?.year || ''
+                  });
+
+                }
+              );
+            }
+
+
+            /*
+               SKILLS
+            */
+
+            if (
+              Array.isArray(improvedCV.skills)
+            ) {
+
+              const skillsInput =
+                document.getElementById('skills');
+
+              if (skillsInput) {
+
+                skillsInput.value =
+                  improvedCV.skills
+                    .map(skill =>
+                      String(skill).trim()
+                    )
+                    .filter(Boolean)
+                    .join(', ');
+              }
+            }
+
+
+            /*
+               LANGUAGES
+            */
+
+            if (
+              Array.isArray(improvedCV.languages)
+            ) {
+
+              const languagesInput =
+                document.getElementById('languages');
+
+              if (languagesInput) {
+
+                languagesInput.value =
+                  improvedCV.languages
+                    .map(language =>
+                      String(language).trim()
+                    )
+                    .filter(Boolean)
+                    .join(', ');
+              }
+            }
+
+
+            /*
+               تحديث المعاينة بعد إدخال
+               النتيجة المحسنة.
+            */
+
+            render();
+
+
+            /*
+               حفظ نسخة JSON منظمة.
+            */
+
+            sessionStorage.setItem(
+              'cvGeniusAI_lastAIResult',
+              JSON.stringify(
+                improvedCV
+              )
+            );
+
+          }
+
+
+          /*
+             عرض النتيجة الخام فقط إذا كان
+             عنصر ai-result موجودًا.
+          */
+
+          const aiOutput =
+            document.getElementById('ai-result');
+
+          if (aiOutput) {
+
+            aiOutput.textContent =
+              improvedCV
+                ? ''
+                : aiResult;
+
+            aiOutput.hidden =
+              !aiOutput.textContent;
+          }
+
+
+          generateBtn.textContent =
+            t('generated');
+
+
+          if (sheet) {
+
+            sheet.scrollIntoView({
+              behavior: 'smooth',
+              block: 'start'
+            });
+          }
+
+
+        } catch (error) {
+
+          console.error(
+            'Gemini error:',
+            error
+          );
+
+          alert(
+            error?.message ||
+            t('aiError')
+          );
+
+          generateBtn.textContent =
+            originalText;
+
+        } finally {
+
+          setTimeout(() => {
+
+            generateBtn.disabled =
+              false;
+
+            generateBtn.textContent =
+              t('generate');
+
+          }, 2000);
+        }
+      }
+    );    
 
 
     /* =========================================================
