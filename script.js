@@ -1991,7 +1991,53 @@ ${getValue('languages')}
 
 if (data.result) {
 
-  
+  const aiData = JSON.parse(data.result);
+
+if (out.summary && aiData.summary) {
+  out.summary.textContent = aiData.summary;
+  out.summary.hidden = false;
+}
+
+if (Array.isArray(aiData.experience)) {
+  experienceList.innerHTML = '';
+
+  aiData.experience.forEach(item => {
+    addExperienceEntry(item);
+  });
+}
+
+if (Array.isArray(aiData.education)) {
+  educationList.innerHTML = '';
+
+  aiData.education.forEach(item => {
+    addEducationEntry(item);
+  });
+}
+
+if (Array.isArray(aiData.skills)) {
+  const skillsInput =
+    document.getElementById('skills');
+
+  if (skillsInput) {
+    skillsInput.value =
+      aiData.skills.join(', ');
+  }
+}
+
+if (Array.isArray(aiData.languages)) {
+  const languagesInput =
+    document.getElementById('languages');
+
+  if (languagesInput) {
+    languagesInput.value =
+      aiData.languages.join(', ');
+  }
+}
+
+render();
+
+generateBtn.textContent =
+  'تم تحسين السيرة بالذكاء الاصطناعي ✓';
 } else {
 
   throw new Error(
