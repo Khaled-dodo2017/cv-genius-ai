@@ -1962,24 +1962,22 @@ ${getValue('languages')}
       `.trim();
 
 
-      const response = await fetch(
-        'https://cv-genius-ai-backend-2a4m9929a-khaled-dodo2017s-projects.vercel.app/improve-cv'
-        {
-          method: 'POST',
+     const response = await fetch(
+  'https://cv-genius-ai-backend-2a4m9929a-khaled-dodo2017s-projects.vercel.app/improve-cv',
+  {
+    method: 'POST',
 
-          headers: {
-            'Content-Type': 'application/json'
-          },
+    headers: {
+      'Content-Type': 'application/json'
+    },
 
-          body: JSON.stringify({
-            text: cvText
-          })
-        }
-      );
+    body: JSON.stringify({
+      text: cvText
+    })
+  }
+);
 
-
-      const data =
-        await response.json();
+const data = await response.json();
 
 
       if (!response.ok) {
