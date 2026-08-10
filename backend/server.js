@@ -55,7 +55,7 @@ app.post("/improve-cv", async (req, res) => {
       en: "Write the result in English."
     }[language] || "اكتب النتيجة باللغة العربية.";
 
-    const prompt = `
+    const prompt = `نخير
 أنت مساعد متخصص في تحسين السير الذاتية.
 
 ${languageInstruction}
@@ -104,7 +104,7 @@ ${String(text).trim()}
     ===================================================== */
 
     const response = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent",
       {
         method: "POST",
 
