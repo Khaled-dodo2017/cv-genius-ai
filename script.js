@@ -2002,13 +2002,6 @@ if (sheet) {
 }
 
 
-        sheet.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start'
-        });
-
-      }
-
 
     } catch (error) {
 
