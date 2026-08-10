@@ -1878,7 +1878,7 @@ ${getValue('languages')}
 
           const response =
             await fetch(
-              'https://cv-genius-ai-backend-2a4m9929a-khaled-dodo2017s-projects.vercel.app/improve-cv',
+               'https://cv-genius-ai-backend.vercel.app/improve-cv',
               {
                 method: 'POST',
 
