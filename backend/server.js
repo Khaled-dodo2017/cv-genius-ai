@@ -72,11 +72,13 @@ ${text}
   }
 ]
             }
-          ]
+          ],
+          generationConfig: {
+            responseMimeType: "application/json"
+          }
         })
       }
     );
-
     const data = await response.json();
 
     if (!response.ok) {
