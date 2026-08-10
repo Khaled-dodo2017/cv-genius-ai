@@ -1986,7 +1986,20 @@ const data = await response.json();
         );
       }
 
+if (!data.result) {
+  throw new Error(
+    'لم يتم الحصول على نتيجة من Gemini'
+  );
+}
 
+if (sheet) {
+
+  sheet.scrollIntoView({
+    behavior: 'smooth',
+    block: 'start'
+  });
+
+}
 
 
         sheet.scrollIntoView({
