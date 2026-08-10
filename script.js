@@ -1991,7 +1991,12 @@ ${getValue('languages')}
 
 if (data.result) {
 
-  const aiData = JSON.parse(data.result);
+const aiData = JSON.parse(
+  data.result
+    .replace(/```json/gi, '')
+    .replace(/```/g, '')
+    .trim()
+);
 
 if (out.summary && aiData.summary) {
   out.summary.textContent = aiData.summary;
