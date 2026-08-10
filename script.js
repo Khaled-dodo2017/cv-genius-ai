@@ -1988,12 +1988,30 @@ const data = await response.json();
 
 if (data.result) {
 
-const aiData = JSON.parse(
-  data.result
-    .replace(/```json/gi, '')
-    .replace(/```/g, '')
-    .trim()
-);
+  let aiData;
+
+  try {
+
+    const cleanedResult =
+      String(data.result)
+        .replace(/```json/gi, '')
+        .replace(/```/g, '')
+        .trim();
+
+    aiData = JSON.parse(cleanedResult);
+
+  } catch (parseError) {
+
+    console.error(
+      'Gemini JSON parse error:',
+      parseError,
+      data.result
+    );
+
+    throw new Error(
+      'نتيجة الذكاء الاصطناعي ليست بصيغة JSON صحيحة.'
+    );
+  }
 
 if (out.summary && aiData.summary) {
   out.summary.textContent = aiData.summary;
