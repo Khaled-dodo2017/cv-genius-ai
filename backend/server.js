@@ -1,4 +1,3 @@
-
 import express from "express";
 import cors from "cors";
 
@@ -57,22 +56,22 @@ app.post("/improve-cv", async (req, res) => {
     }[language] || "اكتب النتيجة باللغة العربية.";
 
     const prompt = `
-أنت مساعد متخصص في إنشاء وتحسين السير الذاتية.
+أنت مساعد متخصص في تحسين السير الذاتية.
 
 ${languageInstruction}
 
-حوّل المعلومات التالية إلى بيانات سيرة ذاتية احترافية ومنظمة.
+حسّن السيرة الذاتية التالية بشكل احترافي.
 
 مهم جدًا:
-- لا تخترع أي معلومات غير موجودة.
-- حسّن صياغة المعلومات الموجودة فقط.
+- لا تخترع أي معلومات.
+- لا تحذف المعلومات الموجودة.
 - احتفظ بالاسم والوظيفة والبريد والهاتف والموقع كما هي.
-- نظّم الخبرة والتعليم والمهارات واللغات.
+- حسّن صياغة الملخص والخبرة والتعليم والمهارات واللغات فقط.
 - أعد JSON فقط.
 - لا تستخدم Markdown.
 - لا تضف أي شرح خارج JSON.
 
-استخدم هذا الشكل بالضبط:
+استخدم هذا الشكل:
 
 {
   "summary": "ملخص مهني",
@@ -100,19 +99,24 @@ ${languageInstruction}
 ${String(text).trim()}
 `;
 
+    /* =====================================================
+       GEMINI API
+    ===================================================== */
+
     const response = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=" +
-        encodeURIComponent(apiKey),
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
       {
         method: "POST",
 
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "x-goog-api-key": apiKey
         },
 
         body: JSON.stringify({
           contents: [
             {
+              role: "user",
               parts: [
                 {
                   text: prompt
@@ -136,8 +140,15 @@ ${String(text).trim()}
       data = null;
     }
 
+    /* =====================================================
+       GEMINI ERROR
+    ===================================================== */
+
     if (!response.ok) {
-      console.error("Gemini API error:", data);
+      console.error(
+        "Gemini API error:",
+        JSON.stringify(data, null, 2)
+      );
 
       return res.status(500).json({
         error:
@@ -146,10 +157,19 @@ ${String(text).trim()}
       });
     }
 
+    /* =====================================================
+       RESULT
+    ===================================================== */
+
     const result =
       data?.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (!result) {
+      console.error(
+        "Gemini returned no result:",
+        JSON.stringify(data, null, 2)
+      );
+
       return res.status(500).json({
         error: "لم يتم الحصول على نتيجة من Gemini"
       });
@@ -160,16 +180,22 @@ ${String(text).trim()}
     });
 
   } catch (error) {
-    console.error("Server error:", error);
+
+    console.error(
+      "Server error:",
+      error
+    );
 
     return res.status(500).json({
-      error: "حدث خطأ في الخادم"
+      error:
+        error?.message ||
+        "حدث خطأ في الخادم"
     });
   }
 });
 
 /* =========================================================
-   VERCEL EXPORT
+   VERCEL
 ========================================================= */
 
 export default app;
