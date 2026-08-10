@@ -2011,8 +2011,8 @@ if (sheet) {
       );
 
       alert(
-        'تعذر الاتصال بالذكاء الاصطناعي. تأكد من إعداد Gemini API.'
-      );
+  'خطأ Gemini: ' + (error.message || error)
+);
 
       generateBtn.textContent =
         originalText;
