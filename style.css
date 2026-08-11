@@ -276,9 +276,15 @@ input:focus-visible, textarea:focus-visible, button:focus-visible{
   background: var(--sheet);
   box-shadow: var(--shadow-sheet);
   border-radius: 2px;
-  padding: 56px 52px 64px;
-  min-height: 720px;
+
+  padding: 48px 52px 52px;
+
+  min-height: 0;
+  height: auto;
+
   transform: rotate(-0.35deg);
+
+  box-sizing: border-box;
 }
 
 .sheet__header{
