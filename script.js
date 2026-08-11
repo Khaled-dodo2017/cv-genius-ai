@@ -2314,12 +2314,11 @@ const options = {
   },
 
   pagebreak: {
-    mode: ['css', 'legacy'],
-    avoid: [
-      '.sheet-entry',
-      '.sheet__section'
-    ]
-  }
+  mode: ['css', 'legacy'],
+  avoid: [
+    '.sheet-entry'
+  ]
+}
 
 };
 
