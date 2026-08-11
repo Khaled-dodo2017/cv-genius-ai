@@ -1,18 +1,89 @@
-
 import express from "express";
 import cors from "cors";
 
 const app = express();
 
+/* =========================================================
+   BASIC SECURITY
+========================================================= */
+
+// السماح فقط بموقع CV Genius AI الحالي
+const ALLOWED_ORIGINS = new Set([
+  "https://cv-genius-ai-eight.vercel.app"
+]);
+
+app.set("trust proxy", 1);
+
 app.use(
   cors({
-    origin: true,
+    origin: (origin, callback) => {
+      // السماح بطلبات الخادم التي لا تحتوي Origin
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      if (ALLOWED_ORIGINS.has(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error("Origin not allowed"));
+    },
     methods: ["GET", "POST", "OPTIONS"],
-    allowedHeaders: ["Content-Type"]
+    allowedHeaders: ["Content-Type"],
+    optionsSuccessStatus: 204
   })
 );
 
-app.use(express.json({ limit: "1mb" }));
+// تقليل حجم الطلبات لمنع إساءة الاستخدام
+app.use(express.json({ limit: "100kb" }));
+
+/* =========================================================
+   RATE LIMIT
+========================================================= */
+
+// حماية أولية من إرسال عدد كبير من الطلبات
+const rateLimitStore = new Map();
+
+const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000; // 15 دقيقة
+const RATE_LIMIT_MAX = 10; // 10 طلبات
+
+function rateLimit(req, res, next) {
+  const now = Date.now();
+  const ip = req.ip || "unknown";
+
+  const current = rateLimitStore.get(ip);
+
+  if (
+    !current ||
+    now - current.start >= RATE_LIMIT_WINDOW_MS
+  ) {
+    rateLimitStore.set(ip, {
+      start: now,
+      count: 1
+    });
+
+    return next();
+  }
+
+  current.count += 1;
+
+  if (current.count > RATE_LIMIT_MAX) {
+    const retryAfter = Math.ceil(
+      (RATE_LIMIT_WINDOW_MS -
+        (now - current.start)) /
+        1000
+    );
+
+    res.set("Retry-After", String(retryAfter));
+
+    return res.status(429).json({
+      error:
+        "تم تجاوز عدد الطلبات المسموح بها مؤقتًا. حاول لاحقًا."
+    });
+  }
+
+  return next();
+}
 
 /* =========================================================
    HEALTH CHECK
@@ -30,31 +101,86 @@ app.get("/", (req, res) => {
    CV IMPROVEMENT
 ========================================================= */
 
-app.post("/improve-cv", async (req, res) => {
+app.post("/improve-cv", rateLimit, async (req, res) => {
   try {
-    const { text, language = "ar" } = req.body || {};
+    const {
+      text,
+      language = "ar"
+    } = req.body || {};
 
-    if (!text || !String(text).trim()) {
+    /* -------------------------------------------------------
+       INPUT VALIDATION
+    ------------------------------------------------------- */
+
+    if (typeof text !== "string") {
       return res.status(400).json({
-        error: "لم يتم إرسال نص السيرة الذاتية"
+        error: "نص السيرة الذاتية غير صالح."
       });
     }
 
-    const apiKey = process.env.GEMINI_API_KEY;
+    const cleanText = text.trim();
+
+    if (!cleanText) {
+      return res.status(400).json({
+        error: "لم يتم إرسال نص السيرة الذاتية."
+      });
+    }
+
+    // منع إرسال نصوص ضخمة تستهلك موارد Gemini
+    if (cleanText.length > 15000) {
+      return res.status(413).json({
+        error:
+          "السيرة الذاتية طويلة جدًا. اختصر النص وحاول مرة أخرى."
+      });
+    }
+
+    /* -------------------------------------------------------
+       LANGUAGE VALIDATION
+    ------------------------------------------------------- */
+
+    const allowedLanguages = new Set([
+      "ar",
+      "fr",
+      "en"
+    ]);
+
+    if (!allowedLanguages.has(language)) {
+      return res.status(400).json({
+        error: "لغة غير مدعومة."
+      });
+    }
+
+    /* -------------------------------------------------------
+       API KEY
+    ------------------------------------------------------- */
+
+    const apiKey =
+      process.env.GEMINI_API_KEY;
 
     if (!apiKey) {
-      console.error("GEMINI_API_KEY is missing");
+      console.error(
+        "GEMINI_API_KEY is missing"
+      );
 
       return res.status(500).json({
-        error: "مفتاح Gemini غير موجود في Environment Variables"
+        error:
+          "خدمة الذكاء الاصطناعي غير متاحة حاليًا."
       });
     }
+
+    /* -------------------------------------------------------
+       LANGUAGE
+    ------------------------------------------------------- */
 
     const languageInstruction = {
       ar: "اكتب النتيجة باللغة العربية.",
       fr: "Écrivez le résultat en français.",
       en: "Write the result in English."
-    }[language] || "اكتب النتيجة باللغة العربية.";
+    }[language];
+
+    /* -------------------------------------------------------
+       PROMPT
+    ------------------------------------------------------- */
 
     const prompt = `
 أنت مساعد متخصص في تحسين السير الذاتية.
@@ -97,7 +223,7 @@ ${languageInstruction}
 
 معلومات السيرة الذاتية:
 
-${String(text).trim()}
+${cleanText}
 `;
 
     /* =====================================================
@@ -109,7 +235,11 @@ ${String(text).trim()}
     let response = null;
     let data = null;
 
-    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    for (
+      let attempt = 1;
+      attempt <= maxAttempts;
+      attempt++
+    ) {
       try {
         response = await fetch(
           "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent",
@@ -134,7 +264,8 @@ ${String(text).trim()}
               ],
 
               generationConfig: {
-                responseMimeType: "application/json"
+                responseMimeType:
+                  "application/json"
               }
             })
           }
@@ -150,7 +281,10 @@ ${String(text).trim()}
         }
 
         await new Promise(resolve =>
-          setTimeout(resolve, 1000 * attempt)
+          setTimeout(
+            resolve,
+            1000 * attempt
+          )
         );
 
         continue;
@@ -164,26 +298,28 @@ ${String(text).trim()}
         data = null;
       }
 
-      /* ===================================================
-         RETRY FOR 503
-      =================================================== */
-
-      if (response.status === 503) {
+      // إعادة المحاولة عند الضغط أو تحديد المعدل
+      if (
+        response.status === 503 ||
+        response.status === 429
+      ) {
         console.error(
-          `Gemini 503 - attempt ${attempt}/${maxAttempts}:`,
-          JSON.stringify(data, null, 2)
+          `Gemini ${response.status} - attempt ${attempt}/${maxAttempts}`
         );
 
         if (attempt < maxAttempts) {
           const delay =
-            1500 * Math.pow(2, attempt - 1);
-
-          console.log(
-            `Retrying Gemini in ${delay}ms...`
-          );
+            1500 *
+            Math.pow(
+              2,
+              attempt - 1
+            );
 
           await new Promise(resolve =>
-            setTimeout(resolve, delay)
+            setTimeout(
+              resolve,
+              delay
+            )
           );
 
           continue;
@@ -200,13 +336,20 @@ ${String(text).trim()}
     if (!response || !response.ok) {
       console.error(
         "Gemini API error:",
-        JSON.stringify(data, null, 2)
+        JSON.stringify(
+          data,
+          null,
+          2
+        )
       );
 
-      return res.status(500).json({
+      return res.status(
+        response?.status === 429
+          ? 429
+          : 502
+      ).json({
         error:
-          data?.error?.message ||
-          "حدث خطأ أثناء الاتصال بـ Gemini"
+          "تعذر معالجة السيرة الذاتية حاليًا. حاول مرة أخرى."
       });
     }
 
@@ -215,21 +358,28 @@ ${String(text).trim()}
     ===================================================== */
 
     const result =
-      data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      data?.candidates?.[0]
+        ?.content?.parts?.[0]?.text;
 
     if (!result) {
       console.error(
         "Gemini returned no result:",
-        JSON.stringify(data, null, 2)
+        JSON.stringify(
+          data,
+          null,
+          2
+        )
       );
 
-      return res.status(500).json({
-        error: "لم يتم الحصول على نتيجة من Gemini"
+      return res.status(502).json({
+        error:
+          "لم يتم الحصول على نتيجة من Gemini."
       });
     }
 
     return res.status(200).json({
-      result: String(result).trim()
+      result:
+        String(result).trim()
     });
 
   } catch (error) {
@@ -240,8 +390,7 @@ ${String(text).trim()}
 
     return res.status(500).json({
       error:
-        error?.message ||
-        "حدث خطأ في الخادم"
+        "حدث خطأ غير متوقع في الخادم."
     });
   }
 });
