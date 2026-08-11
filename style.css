@@ -331,11 +331,11 @@ height: auto;
 }
 .sheet__heading{
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--accent-2);
-  margin: 0 0 14px;
+  margin: 0 0 16px;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -359,7 +359,7 @@ height: auto;
   align-items: baseline;
   gap: 12px;
   font-weight: 600;
-  font-size: 14.5px;
+  font-size: 16px;
 }
 
 .sheet-entry__dates{
@@ -376,10 +376,10 @@ height: auto;
 }
 
 .sheet-entry__desc{
-  font-size: 13.5px;
+  font-size: 14.5px;
   color: #40434B;
   margin: 0;
-  line-height: 1.55;
+  line-height: 1.65;
 }
 
 .sheet__tags{
@@ -392,10 +392,10 @@ height: auto;
 }
 
 .sheet__tags li{
-  font-size: 12.5px;
+  font-size: 13px;
   border: 1px solid var(--line);
   border-radius: 999px;
-  padding: 5px 12px;
+  padding: 6px 13px;
   color: var(--ink);
 }
 
