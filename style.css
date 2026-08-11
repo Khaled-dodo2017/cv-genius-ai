@@ -620,16 +620,6 @@ input:focus-visible, textarea:focus-visible, button:focus-visible{
   overflow-wrap: anywhere;
 }
 
-/* ---------- PDF / Print ---------- */
-
-@media print {
-
-  .sheet-entry {
-    break-inside: avoid;
-    page-break-inside: avoid;
-  }
-
-}
 
 /* ---------- Small Screens ---------- */
 
