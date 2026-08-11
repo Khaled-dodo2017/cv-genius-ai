@@ -1831,12 +1831,6 @@
 
           const cvText = `
 ${currentLanguage === 'ar'
-  ? 'الاسم'
-  : currentLanguage === 'fr'
-    ? 'Nom'
-    : 'Name'}: ${getValue('fullName')}
-
-${currentLanguage === 'ar'
   ? 'الوظيفة المستهدفة'
   : currentLanguage === 'fr'
     ? 'Poste recherché'
@@ -1847,24 +1841,6 @@ ${currentLanguage === 'ar'
   : currentLanguage === 'fr'
     ? 'Intitulé du poste'
     : 'Job Title'}: ${getValue('jobTitle')}
-
-${currentLanguage === 'ar'
-  ? 'البريد الإلكتروني'
-  : currentLanguage === 'fr'
-    ? 'E-mail'
-    : 'Email'}: ${getValue('email')}
-
-${currentLanguage === 'ar'
-  ? 'الهاتف'
-  : currentLanguage === 'fr'
-    ? 'Téléphone'
-    : 'Phone'}: ${getValue('phone')}
-
-${currentLanguage === 'ar'
-  ? 'الموقع'
-  : currentLanguage === 'fr'
-    ? 'Localisation'
-    : 'Location'}: ${getValue('location')}
 
 ${currentLanguage === 'ar'
   ? 'الملخص'
@@ -1908,7 +1884,7 @@ ${currentLanguage === 'ar'
     ? 'Langues'
     : 'Languages'}:
 ${getValue('languages')}
-          `.trim();
+`.trim();
 
 
           const response =
