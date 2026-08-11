@@ -9,7 +9,7 @@ const app = express();
 
 // السماح فقط بموقع CV Genius AI الحالي
 const ALLOWED_ORIGINS = new Set([
-  "https://cv-genius-ai-eight.vercel.app"
+  "https://khaled-dodo2017.github.io"
 ]);
 
 app.set("trust proxy", 1);
