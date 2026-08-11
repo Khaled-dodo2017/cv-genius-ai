@@ -2284,56 +2284,55 @@ ${getValue('languages')}
 
           const options = {
 
-            margin: 0,
+  margin: 0,
 
-            filename:
-              fileName,
+  filename: fileName,
 
-            image: {
-              type: 'jpeg',
-              quality: 0.98
-            },
+  image: {
+    type: 'jpeg',
+    quality: 0.98
+  },
 
-            html2canvas: {
+  html2canvas: {
 
-              scale: 2,
+    scale: 2,
 
-              useCORS: true,
+    useCORS: true,
 
-              allowTaint: false,
+    allowTaint: false,
 
-              backgroundColor:
-                '#ffffff',
+    backgroundColor: '#ffffff',
 
-              logging: false,
+    logging: false,
 
-              scrollX: 0,
+    scrollX: 0,
 
-              scrollY: 0
+    scrollY: 0,
 
-            },
+    windowWidth: sheet.scrollWidth,
 
-            jsPDF: {
+    windowHeight: sheet.scrollHeight
+  },
 
-              unit: 'mm',
+  jsPDF: {
 
-              format: 'a4',
+    unit: 'mm',
 
-              orientation:
-                'portrait'
+    format: 'a4',
 
-            },
+    orientation: 'portrait',
 
-            pagebreak: {
+    compress: true
+  },
 
-              mode: [
-                'css',
-                'legacy'
-              ]
+  pagebreak: {
 
-            }
-
-          };
+    mode: [
+      'css',
+      'legacy'
+    ]
+  }
+};
 
 
           try {
