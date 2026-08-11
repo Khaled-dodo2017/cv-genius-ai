@@ -634,11 +634,6 @@ input:focus-visible, textarea:focus-visible, button:focus-visible{
     page-break-inside: avoid;
   }
 
-  .sheet__section {
-    break-inside: avoid;
-    page-break-inside: avoid;
-  }
-
 }
 
 /* ---------- Small Screens ---------- */
