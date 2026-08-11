@@ -319,15 +319,16 @@ height: auto;
 .sheet__summary{
   font-family: var(--font-display);
   font-style: italic;
-  font-size: 16.5px;
-  line-height: 1.55;
+  font-size: 17px;
+  line-height: 1.7;
   color: #33363E;
-  margin: 0 0 28px;
-  max-width: 56ch;
+  margin: 0 0 34px;
+  max-width: 60ch;
 }
 
-.sheet__section{ margin-bottom: 26px; }
-
+.sheet__section{
+  margin-bottom: 34px;
+}
 .sheet__heading{
   font-family: var(--font-mono);
   font-size: 11px;
@@ -347,7 +348,9 @@ height: auto;
   background: var(--line);
 }
 
-.sheet-entry{ margin-bottom: 16px; }
+.sheet-entry{
+  margin-bottom: 24px;
+}
 .sheet-entry:last-child{ margin-bottom: 0; }
 
 .sheet-entry__top{
