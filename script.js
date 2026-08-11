@@ -2281,8 +2281,7 @@ ${getValue('languages')}
           const fileName =
             `CV-Genius-AI-${safeName || 'CV'}-${uniqueId}.pdf`;
 
-
-          const options = {
+const options = {
 
   margin: 0,
 
@@ -2294,44 +2293,34 @@ ${getValue('languages')}
   },
 
   html2canvas: {
-
     scale: 2,
-
     useCORS: true,
-
     allowTaint: false,
-
     backgroundColor: '#ffffff',
-
     logging: false,
 
     scrollX: 0,
-
     scrollY: 0,
 
     windowWidth: sheet.scrollWidth,
-
     windowHeight: sheet.scrollHeight
   },
 
   jsPDF: {
-
     unit: 'mm',
-
     format: 'a4',
-
     orientation: 'portrait',
-
     compress: true
   },
 
   pagebreak: {
-
-    mode: [
-      'css',
-      'legacy'
+    mode: ['css', 'legacy'],
+    avoid: [
+      '.sheet-entry',
+      '.sheet__section'
     ]
   }
+
 };
 
 
