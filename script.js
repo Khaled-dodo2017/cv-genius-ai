@@ -1127,7 +1127,7 @@ Object.entries(personalFields)
             translateTemplates();
       translateExistingEntries();
     }
-    }
+    
 
 
     /* =========================================================
