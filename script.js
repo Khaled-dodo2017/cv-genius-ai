@@ -1242,7 +1242,159 @@ Object.entries(personalFields)
       }
     }
 
+/* =====================================================
+   TRANSLATE EXISTING DYNAMIC ENTRIES
+===================================================== */
 
+function translateExistingEntries() {
+
+  /* ---------- Experience entries ---------- */
+
+  if (experienceList) {
+
+    experienceList
+      .querySelectorAll('[data-entry]')
+      .forEach(entry => {
+
+        const labels =
+          entry.querySelectorAll('.field__label');
+
+        if (labels[0])
+          labels[0].textContent =
+            t('position');
+
+        if (labels[1])
+          labels[1].textContent =
+            t('company');
+
+        if (labels[2])
+          labels[2].textContent =
+            t('dates');
+
+        if (labels[3])
+          labels[3].textContent =
+            t('description');
+
+
+        const inputs =
+          entry.querySelectorAll(
+            'input, textarea'
+          );
+
+        if (inputs[0])
+          inputs[0].placeholder =
+            t('jobTitlePlaceholder');
+
+        if (inputs[1])
+          inputs[1].placeholder =
+            t('companyPlaceholder');
+
+        if (inputs[2])
+          inputs[2].placeholder =
+            t('datesPlaceholder');
+
+        if (inputs[3])
+          inputs[3].placeholder =
+            t('descriptionPlaceholder');
+
+
+        const remove =
+          entry.querySelector('.entry__remove');
+
+        if (remove) {
+          remove.setAttribute(
+            'aria-label',
+            t('removeExperience')
+          );
+        }
+
+      });
+  }
+
+
+  /* ---------- Education entries ---------- */
+
+  if (educationList) {
+
+    educationList
+      .querySelectorAll('[data-entry]')
+      .forEach(entry => {
+
+        const labels =
+          entry.querySelectorAll('.field__label');
+
+        if (labels[0])
+          labels[0].textContent =
+            t('degree');
+
+        if (labels[1])
+          labels[1].textContent =
+            t('school');
+
+        if (labels[2])
+          labels[2].textContent =
+            t('year');
+
+
+        const inputs =
+          entry.querySelectorAll('input');
+
+        if (inputs[0])
+          inputs[0].placeholder =
+            t('degreePlaceholder');
+
+        if (inputs[1])
+          inputs[1].placeholder =
+            t('schoolPlaceholder');
+
+        if (inputs[2])
+          inputs[2].placeholder =
+            t('year');
+
+
+        const remove =
+          entry.querySelector('.entry__remove');
+
+        if (remove) {
+          remove.setAttribute(
+            'aria-label',
+            t('removeEducation')
+          );
+        }
+
+      });
+  }
+
+
+  /* ---------- Preview section headings ---------- */
+
+  const previewHeadings = {
+    '#section-experience .sheet__heading span':
+      'experience',
+
+    '#section-education .sheet__heading span':
+      'education',
+
+    '#section-skills .sheet__heading span':
+      'skills',
+
+    '#section-languages .sheet__heading span':
+      'languages'
+  };
+
+
+  Object.entries(previewHeadings)
+    .forEach(([selector, key]) => {
+
+      document
+        .querySelectorAll(selector)
+        .forEach(element => {
+          element.textContent =
+            t(key);
+        });
+
+    });
+}
     /* =========================================================
        EXPERIENCE
     ========================================================= */
