@@ -812,62 +812,108 @@
         );
       }
 
+/* =====================================================
+   TRANSLATE FORM SECTIONS & FIELD LABELS
+===================================================== */
 
-      const legends =
-        document.querySelectorAll(
-          '#cv-form > .field-group > legend'
-        );
+function setGroupLegend(elementId, translationKey) {
 
-      const legendKeys = [
-        'personal',
-        'experience',
-        'education',
-        'skills',
-        'languages',
-        'cvTemplate'
-      ];
+  const element =
+    document.getElementById(elementId);
 
-      legends.forEach((legend, index) => {
+  if (!element) {
+    return;
+  }
 
-        if (legendKeys[index]) {
-          legend.textContent =
-            t(legendKeys[index]);
-        }
-      });
+  const group =
+    element.closest('.field-group');
 
+  if (!group) {
+    return;
+  }
 
-      const personalGroup =
-        document.querySelector(
-          '#cv-form > .field-group:first-of-type'
-        );
+  const legend =
+    group.querySelector('legend');
 
-      if (personalGroup) {
-
-        const labels =
-          personalGroup.querySelectorAll(
-            '.field__label'
-          );
-
-        const keys = [
-          'targetJob',
-          'fullName',
-          'jobTitle',
-          'email',
-          'phone',
-          'location',
-          'summary'
-        ];
-
-        labels.forEach((label, index) => {
-
-          if (keys[index]) {
-            label.textContent =
-              t(keys[index]);
-          }
-        });
-      }
+  if (legend) {
+    legend.textContent =
+      t(translationKey);
+  }
+}
 
 
+/* ---------- Section legends ---------- */
+
+setGroupLegend(
+  'targetJob',
+  'personal'
+);
+
+setGroupLegend(
+  'experience-list',
+  'experience'
+);
+
+setGroupLegend(
+  'education-list',
+  'education'
+);
+
+setGroupLegend(
+  'skills',
+  'skills'
+);
+
+setGroupLegend(
+  'languages',
+  'languages'
+);
+
+setGroupLegend(
+  'cv-template',
+  'cvTemplate'
+);
+
+
+/* ---------- Personal information labels ---------- */
+
+const personalFields = {
+  targetJob: 'targetJob',
+  fullName: 'fullName',
+  jobTitle: 'jobTitle',
+  email: 'email',
+  phone: 'phone',
+  location: 'location',
+  summary: 'summary'
+};
+
+Object.entries(personalFields)
+  .forEach(([id, translationKey]) => {
+
+    const element =
+      document.getElementById(id);
+
+    if (!element) {
+      return;
+    }
+
+    const field =
+      element.closest('.field');
+
+    if (!field) {
+      return;
+    }
+
+    const label =
+      field.querySelector('.field__label');
+
+    if (label) {
+      label.textContent =
+        t(translationKey);
+    }
+
+  });
+      
       const jobSelect =
         document.getElementById('targetJob');
 
