@@ -424,13 +424,114 @@ input:focus-visible, textarea:focus-visible, button:focus-visible{
 
 /* ---------- Print ---------- */
 
-@media print{
-  .editor, .preview__mark{ display: none !important; }
-  .app{ display: block; }
-  .preview{ padding: 0; }
-  .preview__stage{ max-width: none; }
-  body{ background: #fff; background-image: none; }
-  .sheet{ box-shadow: none; transform: none; padding: 0; }
+@page {
+  size: A4 portrait;
+  margin: 0;
+}
+
+@media print {
+
+  html,
+  body {
+    width: 210mm !important;
+    min-width: 210mm !important;
+    height: auto !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+    background-image: none !important;
+    overflow: visible !important;
+  }
+
+  body {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .editor,
+  .preview__mark,
+  button,
+  .btn,
+  #language-selector,
+  #language-select,
+  .saved-cvs-list {
+    display: none !important;
+  }
+
+  .app {
+    display: block !important;
+    width: 210mm !important;
+    min-height: 0 !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .preview {
+    display: block !important;
+    width: 210mm !important;
+    min-height: 0 !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+    overflow: visible !important;
+  }
+
+  .preview__stage {
+    position: static !important;
+    width: 210mm !important;
+    max-width: none !important;
+    min-height: 0 !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .sheet {
+    display: block !important;
+    width: 210mm !important;
+    max-width: 210mm !important;
+    min-height: 0 !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 15mm 16mm 15mm !important;
+
+    background: #fff !important;
+    border-radius: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    transform: none !important;
+    overflow: visible !important;
+
+    break-before: auto !important;
+    break-after: avoid !important;
+    page-break-before: auto !important;
+    page-break-after: avoid !important;
+  }
+
+  .sheet__header,
+  .sheet__summary,
+  .sheet__section,
+  .sheet-entry {
+    break-before: auto !important;
+    break-after: auto !important;
+  }
+
+  .sheet-entry {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  .sheet > *:last-child {
+    margin-bottom: 0 !important;
+  }
+
+  .sheet,
+  .sheet * {
+    box-sizing: border-box;
+  }
 }
 
 /* CV Templates */
