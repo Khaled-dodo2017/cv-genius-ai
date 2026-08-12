@@ -2197,25 +2197,46 @@ ${getValue('languages')}
     );    
 
 
-    /* =========================================================
-       PRINT
-    ========================================================= */
+  /* =========================================================
+   PRINT
+========================================================= */
 
-    if (printBtn) {
+if (printBtn) {
 
-      printBtn.addEventListener(
-        'click',
-        () => {
+  printBtn.addEventListener(
+    'click',
+    () => {
 
-          render();
+      render();
 
-          setTimeout(
-            () => window.print(),
-            100
-          );
-        }
-      );
+      // منع المتصفح من اعتبار مساحة المعاينة
+      // صفحة إضافية أثناء الطباعة
+      const originalTitle =
+        document.title;
+
+      document.title =
+        getValue('fullName') ||
+        'CV';
+
+      requestAnimationFrame(() => {
+
+        requestAnimationFrame(() => {
+
+          window.print();
+
+          // إعادة العنوان بعد انتهاء نافذة الطباعة
+          setTimeout(() => {
+            document.title =
+              originalTitle;
+          }, 1000);
+
+        });
+
+      });
+
     }
+  );
+}
 
 
     /* =========================================================
