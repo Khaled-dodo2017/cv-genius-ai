@@ -449,15 +449,16 @@ input:focus-visible, textarea:focus-visible, button:focus-visible{
     print-color-adjust: exact !important;
   }
 
-  .editor,
-  .preview__mark,
-  button,
-  .btn,
-  #language-selector,
-  #language-select,
-  .saved-cvs-list {
-    display: none !important;
-  }
+.editor,
+#auth-section,
+.preview__mark,
+button,
+.btn,
+#language-selector,
+#language-select,
+.saved-cvs-list {
+  display: none !important;
+}
 
   .app {
     display: block !important;
