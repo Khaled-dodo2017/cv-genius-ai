@@ -3364,58 +3364,580 @@ const options = {
       if (!cvs[index]) {
         return;
       }
+/* =========================================================
+   SAVED CVS — SUPABASE
+========================================================= */
+
+async function getCurrentUser() {
+
+  const {
+    data: {
+      user
+    },
+    error
+  } = await supabaseClient.auth.getUser();
+
+  if (error) {
+    console.error('Get user error:', error);
+    return null;
+  }
+
+  return user;
+}
 
 
-      if (
-        !window.confirm(
-          t('deleteConfirm')
-        )
-      ) {
+/* =========================================================
+   SAVE CV
+========================================================= */
+
+if (saveCvBtn) {
+
+  saveCvBtn.addEventListener(
+    'click',
+    async () => {
+
+      const user =
+        await getCurrentUser();
+
+      if (!user) {
+
+        alert(
+          'يرجى تسجيل الدخول أولاً.'
+        );
+
         return;
       }
 
 
-      cvs.splice(index, 1);
-
-      saveCVs(cvs);
-
-      renderSavedCVs();
-    }
+      const cv =
+        collectCVData();
 
 
-    /* =========================================================
-       MY CVS
-    ========================================================= */
+      if (!cv.fullName) {
 
-    if (myCvsBtn) {
+        alert(
+          t('enterName')
+        );
 
-      myCvsBtn.addEventListener(
-        'click',
-        () => {
+        document
+          .getElementById('fullName')
+          ?.focus();
 
-          if (!savedCvsList) {
-            return;
-          }
-
-
-          const visible =
-            savedCvsList.style.display ===
-            'block';
+        return;
+      }
 
 
-          savedCvsList.style.display =
-            visible
-              ? 'none'
-              : 'block';
+      try {
+
+        saveCvBtn.disabled = true;
+
+        saveCvBtn.textContent =
+          'جارٍ الحفظ...';
 
 
-          if (!visible) {
-            renderSavedCVs();
-          }
+        const {
+          error
+        } =
+          await supabaseClient
+            .from('resumes')
+            .insert({
+              user_id: user.id,
+              data: cv
+            });
+
+
+        if (error) {
+          throw error;
         }
-      );
+
+
+        saveCvBtn.textContent =
+          t('saved');
+
+
+        await renderSavedCVs();
+
+
+        setTimeout(() => {
+
+          saveCvBtn.disabled = false;
+
+          saveCvBtn.textContent =
+            t('saveCv');
+
+        }, 1500);
+
+
+      } catch (error) {
+
+        console.error(
+          'Save CV error:',
+          error
+        );
+
+        saveCvBtn.disabled = false;
+
+        saveCvBtn.textContent =
+          t('saveCv');
+
+        alert(
+          'حدث خطأ أثناء حفظ السيرة الذاتية.'
+        );
+      }
+
+    }
+  );
+}
+
+
+/* =========================================================
+   RENDER SAVED CVS
+========================================================= */
+
+async function renderSavedCVs() {
+
+  if (!savedCvsList) {
+    return;
+  }
+
+
+  const user =
+    await getCurrentUser();
+
+
+  if (!user) {
+
+    savedCvsList.innerHTML = `
+      <p class="saved-cv-empty">
+        يرجى تسجيل الدخول لعرض سيرك الذاتية.
+      </p>
+    `;
+
+    return;
+  }
+
+
+  try {
+
+    const {
+      data: cvs,
+      error
+    } =
+      await supabaseClient
+        .from('resumes')
+        .select('id, data, created_at')
+        .eq('user_id', user.id)
+        .order(
+          'created_at',
+          {
+            ascending: false
+          }
+        );
+
+
+    if (error) {
+      throw error;
     }
 
+
+    if (!cvs || !cvs.length) {
+
+      savedCvsList.innerHTML = `
+        <p class="saved-cv-empty">
+          ${escapeHTML(
+            t('noSavedCvs')
+          )}
+        </p>
+      `;
+
+      return;
+    }
+
+
+    savedCvsList.innerHTML =
+      cvs.map(cvRow => {
+
+        const cv =
+          cvRow.data || {};
+
+
+        const name =
+          escapeHTML(
+            cv.fullName ||
+            'CV'
+          );
+
+
+        const job =
+          escapeHTML(
+            cv.jobTitle ||
+            cv.targetJob ||
+            t('titlePlaceholder')
+          );
+
+
+        return `
+          <div
+            class="saved-cv-item"
+            data-saved-id="${escapeHTML(
+              cvRow.id
+            )}"
+          >
+
+            <div class="saved-cv-info">
+
+              <strong>
+                ${name}
+              </strong>
+
+              <span>
+                ${job}
+              </span>
+
+            </div>
+
+
+            <div class="saved-cv-actions">
+
+              <button
+                type="button"
+                class="btn btn--text js-load-cv"
+                data-id="${escapeHTML(
+                  cvRow.id
+                )}"
+              >
+                ${escapeHTML(
+                  t('load')
+                )}
+              </button>
+
+
+              <button
+                type="button"
+                class="btn btn--text js-delete-cv"
+                data-id="${escapeHTML(
+                  cvRow.id
+                )}"
+              >
+                ${escapeHTML(
+                  t('delete')
+                )}
+              </button>
+
+            </div>
+
+          </div>
+        `;
+
+      }).join('');
+
+
+    savedCvsList
+      .querySelectorAll('.js-load-cv')
+      .forEach(button => {
+
+        button.addEventListener(
+          'click',
+          () => {
+
+            loadCV(
+              button.dataset.id
+            );
+
+          }
+        );
+
+      });
+
+
+    savedCvsList
+      .querySelectorAll('.js-delete-cv')
+      .forEach(button => {
+
+        button.addEventListener(
+          'click',
+          () => {
+
+            deleteCV(
+              button.dataset.id
+            );
+
+          }
+        );
+
+      });
+
+
+  } catch (error) {
+
+    console.error(
+      'Render saved CVs error:',
+      error
+    );
+
+    savedCvsList.innerHTML = `
+      <p class="saved-cv-empty">
+        حدث خطأ أثناء تحميل السير الذاتية.
+      </p>
+    `;
+  }
+}
+
+
+/* =========================================================
+   LOAD CV
+========================================================= */
+
+async function loadCV(id) {
+
+  const user =
+    await getCurrentUser();
+
+
+  if (!user) {
+
+    alert(
+      'يرجى تسجيل الدخول أولاً.'
+    );
+
+    return;
+  }
+
+
+  try {
+
+    const {
+      data: row,
+      error
+    } =
+      await supabaseClient
+        .from('resumes')
+        .select('id, data')
+        .eq('id', id)
+        .eq('user_id', user.id)
+        .single();
+
+
+    if (error) {
+      throw error;
+    }
+
+
+    const cv =
+      row?.data;
+
+
+    if (!cv) {
+      return;
+    }
+
+
+    const fields = [
+      'targetJob',
+      'fullName',
+      'jobTitle',
+      'email',
+      'phone',
+      'location',
+      'summary',
+      'skills',
+      'languages'
+    ];
+
+
+    fields.forEach(id => {
+
+      const element =
+        document.getElementById(id);
+
+      if (element) {
+
+        element.value =
+          cv[id] || '';
+
+      }
+
+    });
+
+
+    if (experienceList) {
+      experienceList.innerHTML = '';
+    }
+
+
+    if (educationList) {
+      educationList.innerHTML = '';
+    }
+
+
+    if (
+      Array.isArray(cv.experience) &&
+      cv.experience.length
+    ) {
+
+      cv.experience.forEach(
+        addExperienceEntry
+      );
+
+    } else {
+
+      addExperienceEntry();
+
+    }
+
+
+    if (
+      Array.isArray(cv.education) &&
+      cv.education.length
+    ) {
+
+      cv.education.forEach(
+        addEducationEntry
+      );
+
+    } else {
+
+      addEducationEntry();
+
+    }
+
+
+    if (templateSelect) {
+
+      templateSelect.value =
+        cv.template ||
+        'classic';
+
+    }
+
+
+    applyLanguage();
+
+    render();
+
+
+    savedCvsList.style.display =
+      'none';
+
+
+    sheet.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    });
+
+
+  } catch (error) {
+
+    console.error(
+      'Load CV error:',
+      error
+    );
+
+    alert(
+      'حدث خطأ أثناء تحميل السيرة الذاتية.'
+    );
+  }
+}
+
+
+/* =========================================================
+   DELETE CV
+========================================================= */
+
+async function deleteCV(id) {
+
+  const user =
+    await getCurrentUser();
+
+
+  if (!user) {
+
+    alert(
+      'يرجى تسجيل الدخول أولاً.'
+    );
+
+    return;
+  }
+
+
+  if (
+    !window.confirm(
+      t('deleteConfirm')
+    )
+  ) {
+    return;
+  }
+
+
+  try {
+
+    const {
+      error
+    } =
+      await supabaseClient
+        .from('resumes')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', user.id);
+
+
+    if (error) {
+      throw error;
+    }
+
+
+    await renderSavedCVs();
+
+
+  } catch (error) {
+
+    console.error(
+      'Delete CV error:',
+      error
+    );
+
+    alert(
+      'حدث خطأ أثناء حذف السيرة الذاتية.'
+    );
+  }
+}
+
+
+/* =========================================================
+   MY CVS
+========================================================= */
+
+if (myCvsBtn) {
+
+  myCvsBtn.addEventListener(
+    'click',
+    async () => {
+
+      if (!savedCvsList) {
+        return;
+      }
+
+
+      const visible =
+        savedCvsList.style.display ===
+        'block';
+
+
+      savedCvsList.style.display =
+        visible
+          ? 'none'
+          : 'block';
+
+
+      if (!visible) {
+
+        await renderSavedCVs();
+
+      }
+
+    }
+  );
+}
 
     /* =========================================================
        INITIALIZATION
