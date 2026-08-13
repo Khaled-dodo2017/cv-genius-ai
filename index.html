@@ -626,7 +626,43 @@
 
 </template>
 
+<!-- =====================================================
+     AUTH
+===================================================== -->
 
+<section id="auth-section" class="auth-section">
+
+  <h2>حسابي</h2>
+
+  <input
+    id="auth-email"
+    type="email"
+    placeholder="البريد الإلكتروني"
+    autocomplete="email"
+  >
+
+  <input
+    id="auth-password"
+    type="password"
+    placeholder="كلمة المرور"
+    autocomplete="current-password"
+  >
+
+  <button id="signup-btn" type="button">
+    إنشاء حساب
+  </button>
+
+  <button id="login-btn" type="button">
+    تسجيل الدخول
+  </button>
+
+  <button id="logout-btn" type="button" hidden>
+    تسجيل الخروج
+  </button>
+
+  <p id="auth-status"></p>
+
+</section>
 <!-- =====================================================
      المكتبات والسكريبت
 ===================================================== -->
