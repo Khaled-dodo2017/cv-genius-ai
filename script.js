@@ -1,7 +1,3 @@
-/* =========================================================
-   SUPABASE
-========================================================= */
-
 const SUPABASE_URL = 'https://nojgxttfaaayaosryruk.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_BToWA0CkSgL0OjpTtsnevQ_K7bwrYay';
 
@@ -9,256 +5,7 @@ const supabaseClient = window.supabase.createClient(
   SUPABASE_URL,
   SUPABASE_PUBLISHABLE_KEY
 );
-/* =========================================================
-   AUTHENTICATION
-========================================================= */
 
-const authEmail =
-  document.getElementById('auth-email');
-
-const authPassword =
-  document.getElementById('auth-password');
-
-const signupBtn =
-  document.getElementById('signup-btn');
-
-const loginBtn =
-  document.getElementById('login-btn');
-
-const logoutBtn =
-  document.getElementById('logout-btn');
-
-const authStatus =
-  document.getElementById('auth-status');
-
-
-function showAuthStatus(message) {
-
-  if (authStatus) {
-    authStatus.textContent = message;
-  }
-
-}
-
-
-async function signUp() {
-
-  const email =
-    authEmail?.value.trim();
-
-  const password =
-    authPassword?.value || '';
-
-  if (!email || !password) {
-
-    showAuthStatus(
-      'أدخل البريد الإلكتروني وكلمة المرور.'
-    );
-
-    return;
-  }
-
-  try {
-
-    const { data, error } =
-      await supabaseClient.auth.signUp({
-        email,
-        password
-      });
-
-    if (error) {
-      throw error;
-    }
-
-    if (data.user) {
-
-      showAuthStatus(
-        'تم إنشاء الحساب بنجاح.'
-      );
-
-    }
-
-  } catch (error) {
-
-    console.error(
-      'Sign up error:',
-      error
-    );
-
-    showAuthStatus(
-      error.message ||
-      'حدث خطأ أثناء إنشاء الحساب.'
-    );
-
-  }
-
-}
-
-
-async function login() {
-
-  const email =
-    authEmail?.value.trim();
-
-  const password =
-    authPassword?.value || '';
-
-  if (!email || !password) {
-
-    showAuthStatus(
-      'أدخل البريد الإلكتروني وكلمة المرور.'
-    );
-
-    return;
-  }
-
-  try {
-
-    const { error } =
-      await supabaseClient.auth.signInWithPassword({
-        email,
-        password
-      });
-
-    if (error) {
-      throw error;
-    }
-
-    showAuthStatus(
-      'تم تسجيل الدخول بنجاح.'
-    );
-
-  } catch (error) {
-
-    console.error(
-      'Login error:',
-      error
-    );
-
-    showAuthStatus(
-      error.message ||
-      'حدث خطأ أثناء تسجيل الدخول.'
-    );
-
-  }
-
-}
-
-
-async function logout() {
-
-  try {
-
-    const { error } =
-      await supabaseClient.auth.signOut();
-
-    if (error) {
-      throw error;
-    }
-
-    showAuthStatus(
-      'تم تسجيل الخروج.'
-    );
-
-  } catch (error) {
-
-    console.error(
-      'Logout error:',
-      error
-    );
-
-    showAuthStatus(
-      error.message ||
-      'حدث خطأ أثناء تسجيل الخروج.'
-    );
-
-  }
-
-}
-
-
-async function updateAuthUI() {
-
-  const {
-    data: {
-      session
-    }
-  } = await supabaseClient.auth.getSession();
-
-
-  if (session) {
-
-    if (signupBtn)
-      signupBtn.hidden = true;
-
-    if (loginBtn)
-      loginBtn.hidden = true;
-
-    if (logoutBtn)
-      logoutBtn.hidden = false;
-
-    showAuthStatus(
-      `تم تسجيل الدخول: ${session.user.email}`
-    );
-
-  } else {
-
-    if (signupBtn)
-      signupBtn.hidden = false;
-
-    if (loginBtn)
-      loginBtn.hidden = false;
-
-    if (logoutBtn)
-      logoutBtn.hidden = true;
-
-    showAuthStatus(
-      'لم يتم تسجيل الدخول.'
-    );
-
-  }
-
-}
-
-
-if (signupBtn) {
-
-  signupBtn.addEventListener(
-    'click',
-    signUp
-  );
-
-}
-
-
-if (loginBtn) {
-
-  loginBtn.addEventListener(
-    'click',
-    login
-  );
-
-}
-
-
-if (logoutBtn) {
-
-  logoutBtn.addEventListener(
-    'click',
-    logout
-  );
-
-}
-
-
-supabaseClient.auth.onAuthStateChange(
-  () => {
-    updateAuthUI();
-  }
-);
-
-
-updateAuthUI();
 (() => {
   'use strict';
 
@@ -285,24 +32,6 @@ updateAuthUI();
     const sheet =
       document.getElementById('cv-sheet');
 
-    const out = {
-      name: document.getElementById('out-name'),
-      title: document.getElementById('out-title'),
-      contact: document.getElementById('out-contact'),
-      summary: document.getElementById('out-summary'),
-      experience: document.getElementById('out-experience'),
-      education: document.getElementById('out-education'),
-      skills: document.getElementById('out-skills'),
-      languages: document.getElementById('out-languages')
-    };
-
-    const sections = {
-      experience: document.getElementById('section-experience'),
-      education: document.getElementById('section-education'),
-      skills: document.getElementById('section-skills'),
-      languages: document.getElementById('section-languages')
-    };
-
     const generateBtn =
       document.getElementById('generate-btn');
 
@@ -327,6 +56,50 @@ updateAuthUI();
     const templateSelect =
       document.getElementById('cv-template');
 
+    const authEmail =
+      document.getElementById('auth-email');
+
+    const authPassword =
+      document.getElementById('auth-password');
+
+    const signupBtn =
+      document.getElementById('signup-btn');
+
+    const loginBtn =
+      document.getElementById('login-btn');
+
+    const logoutBtn =
+      document.getElementById('logout-btn');
+
+    const authStatus =
+      document.getElementById('auth-status');
+
+    const out = {
+      name: document.getElementById('out-name'),
+      title: document.getElementById('out-title'),
+      contact: document.getElementById('out-contact'),
+      summary: document.getElementById('out-summary'),
+      experience: document.getElementById('out-experience'),
+      education: document.getElementById('out-education'),
+      skills: document.getElementById('out-skills'),
+      languages: document.getElementById('out-languages')
+    };
+
+    const sections = {
+      experience:
+        document.getElementById('section-experience'),
+
+      education:
+        document.getElementById('section-education'),
+
+      skills:
+        document.getElementById('section-skills'),
+
+      languages:
+        document.getElementById('section-languages')
+    };
+
+
     if (!form || !sheet) {
       console.error(
         'CV Genius AI: Required elements are missing.'
@@ -342,125 +115,224 @@ updateAuthUI();
     const translations = {
 
       ar: {
-        direction: 'rtl',
-        pageTitle: 'CV Genius AI — منشئ السيرة الذاتية',
 
-        chooseLanguage: 'اختر اللغة',
-        editorLabel: 'محرر السيرة الذاتية',
+        direction: 'rtl',
+
+        pageTitle:
+          'CV Genius AI — منشئ السيرة الذاتية',
+
+        chooseLanguage:
+          'اختر اللغة',
+
+        editorLabel:
+          'محرر السيرة الذاتية',
 
         subtitle:
           'أنشئ سيرتك الذاتية الاحترافية باستخدام الذكاء الاصطناعي. عدّل بياناتك وشاهد المعاينة مباشرة.',
 
-        personal: 'البيانات الشخصية',
+        personal:
+          'البيانات الشخصية',
 
-        targetJob: 'الوظيفة المستهدفة',
-        chooseJob: 'اختر وظيفة',
+        targetJob:
+          'الوظيفة المستهدفة',
 
-        softwareEngineer: 'مهندس برمجيات',
-        receptionist: 'موظف استقبال',
-        accountant: 'محاسب',
-        teacher: 'مدرس',
-        marketing: 'أخصائي تسويق',
-        other: 'وظيفة أخرى',
+        chooseJob:
+          'اختر وظيفة',
 
-        fullName: 'الاسم الكامل',
-        fullNamePlaceholder: 'مثال: أحمد محمد',
+        softwareEngineer:
+          'مهندس برمجيات',
 
-        jobTitle: 'المسمى الوظيفي',
-        jobTitlePlaceholder: 'مثال: مهندس برمجيات',
+        receptionist:
+          'موظف استقبال',
 
-        email: 'البريد الإلكتروني',
-        phone: 'رقم الهاتف',
+        accountant:
+          'محاسب',
 
-        location: 'الموقع',
-        locationPlaceholder: 'الجزائر، الجزائر',
+        teacher:
+          'مدرس',
 
-        summary: 'نبذة مختصرة',
+        marketing:
+          'أخصائي تسويق',
+
+        other:
+          'وظيفة أخرى',
+
+        fullName:
+          'الاسم الكامل',
+
+        fullNamePlaceholder:
+          'مثال: أحمد محمد',
+
+        jobTitle:
+          'المسمى الوظيفي',
+
+        jobTitlePlaceholder:
+          'مثال: مهندس برمجيات',
+
+        email:
+          'البريد الإلكتروني',
+
+        phone:
+          'رقم الهاتف',
+
+        location:
+          'الموقع',
+
+        locationPlaceholder:
+          'الجزائر، الجزائر',
+
+        summary:
+          'نبذة مختصرة',
+
         summaryPlaceholder:
           'اكتب نبذة قصيرة عن خبرتك وأهدافك المهنية...',
 
-        experience: 'الخبرة المهنية',
-        addExperience: '+ إضافة خبرة',
+        experience:
+          'الخبرة المهنية',
 
-        education: 'التعليم',
-        addEducation: '+ إضافة مؤهل تعليمي',
+        addExperience:
+          '+ إضافة خبرة',
 
-        skills: 'المهارات',
-        skillsLabel: 'المهارات مفصولة بفواصل',
+        education:
+          'التعليم',
+
+        addEducation:
+          '+ إضافة مؤهل تعليمي',
+
+        skills:
+          'المهارات',
+
+        skillsLabel:
+          'المهارات مفصولة بفواصل',
 
         skillsPlaceholder:
           'إدارة المشاريع، البرمجة، التصميم، التواصل',
 
-        languages: 'اللغات',
-        languagesLabel: 'اللغات مع مستوى الإتقان',
+        languages:
+          'اللغات',
+
+        languagesLabel:
+          'اللغات مع مستوى الإتقان',
 
         languagesPlaceholder:
           'العربية — ممتاز، الإنجليزية — متقدم، الفرنسية — متوسط',
 
-        cvTemplate: 'قالب السيرة الذاتية',
-        templateLabel: 'اختر نمط السيرة',
+        cvTemplate:
+          'قالب السيرة الذاتية',
 
-        classic: 'كلاسيكي',
-        modern: 'حديث',
-        minimal: 'بسيط',
+        templateLabel:
+          'اختر نمط السيرة',
 
-        generate: 'إنشاء السيرة الذاتية',
-        improving: 'جارٍ تحسين السيرة بالذكاء الاصطناعي...',
-        generated: 'تم إنشاء السيرة الذاتية ✓',
+        classic:
+          'كلاسيكي',
 
-        print: 'طباعة / حفظ PDF',
+        modern:
+          'حديث',
 
-        download: 'تنزيل PDF',
-        creatingPdf: 'جارٍ إنشاء PDF...',
-        downloaded: 'تم تنزيل PDF ✓',
+        minimal:
+          'بسيط',
 
-        newCv: 'سيرة ذاتية جديدة',
+        generate:
+          'إنشاء السيرة الذاتية',
 
-        saveCv: 'حفظ السيرة الذاتية',
-        saved: 'تم الحفظ ✓',
+        improving:
+          'جارٍ تحسين السيرة بالذكاء الاصطناعي...',
 
-        myCvs: 'سيرتي الذاتية',
+        generated:
+          'تم إنشاء السيرة الذاتية ✓',
 
-        preview: '02 — المعاينة المباشرة',
-        previewAria: 'معاينة السيرة الذاتية',
+        print:
+          'طباعة / حفظ PDF',
 
-        namePlaceholder: 'اسمك',
-        titlePlaceholder: 'المسمى الوظيفي',
+        download:
+          'تنزيل PDF',
+
+        creatingPdf:
+          'جارٍ إنشاء PDF...',
+
+        downloaded:
+          'تم تنزيل PDF ✓',
+
+        newCv:
+          'سيرة ذاتية جديدة',
+
+        saveCv:
+          'حفظ السيرة الذاتية',
+
+        saved:
+          'تم الحفظ ✓',
+
+        myCvs:
+          'سيرتي الذاتية',
+
+        preview:
+          '02 — المعاينة المباشرة',
+
+        previewAria:
+          'معاينة السيرة الذاتية',
+
+        namePlaceholder:
+          'اسمك',
+
+        titlePlaceholder:
+          'المسمى الوظيفي',
+
         contactPlaceholder:
           'البريد الإلكتروني · الهاتف · الموقع',
 
-        position: 'المسمى الوظيفي',
+        position:
+          'المسمى الوظيفي',
 
-        company: 'الشركة',
-        companyPlaceholder: 'مثال: شركة تقنية',
+        company:
+          'الشركة',
 
-        dates: 'الفترة الزمنية',
-        datesPlaceholder: '2022 — حتى الآن',
+        companyPlaceholder:
+          'مثال: شركة تقنية',
 
-        description: 'الوصف والإنجازات',
+        dates:
+          'الفترة الزمنية',
+
+        datesPlaceholder:
+          '2022 — حتى الآن',
+
+        description:
+          'الوصف والإنجازات',
+
         descriptionPlaceholder:
           'اكتب أهم المهام والإنجازات التي حققتها...',
 
-        removeExperience: 'حذف هذه الخبرة',
+        removeExperience:
+          'حذف هذه الخبرة',
 
-        degree: 'المؤهل أو التخصص',
+        degree:
+          'المؤهل أو التخصص',
+
         degreePlaceholder:
           'مثال: ليسانس في علوم الحاسوب',
 
-        school: 'المؤسسة التعليمية',
+        school:
+          'المؤسسة التعليمية',
+
         schoolPlaceholder:
           'مثال: جامعة الجزائر',
 
-        year: 'السنة',
-        removeEducation: 'حذف هذا المؤهل',
+        year:
+          'السنة',
 
-        qualification: 'المؤهل',
+        removeEducation:
+          'حذف هذا المؤهل',
+
+        qualification:
+          'المؤهل',
 
         noSavedCvs:
           'لا توجد سير ذاتية محفوظة حتى الآن.',
 
-        load: 'تحميل',
-        delete: 'حذف',
+        load:
+          'تحميل',
+
+        delete:
+          'حذف',
 
         enterName:
           'يرجى إدخال اسمك الكامل قبل حفظ السيرة الذاتية.',
@@ -484,134 +356,227 @@ updateAuthUI();
           'لم يتم الحصول على نتيجة من الذكاء الاصطناعي.'
       },
 
-      fr: {
-        direction: 'ltr',
-        pageTitle: 'CV Genius AI — Créateur de CV',
 
-        chooseLanguage: 'Choisir la langue',
-        editorLabel: 'Éditeur de CV',
+      fr: {
+
+        direction:
+          'ltr',
+
+        pageTitle:
+          'CV Genius AI — Créateur de CV',
+
+        chooseLanguage:
+          'Choisir la langue',
+
+        editorLabel:
+          'Éditeur de CV',
 
         subtitle:
           'Créez votre CV professionnel avec l’intelligence artificielle. Modifiez vos informations et visualisez le résultat en direct.',
 
-        personal: 'Informations personnelles',
+        personal:
+          'Informations personnelles',
 
-        targetJob: 'Poste recherché',
-        chooseJob: 'Choisir un poste',
+        targetJob:
+          'Poste recherché',
 
-        softwareEngineer: 'Ingénieur logiciel',
-        receptionist: 'Réceptionniste',
-        accountant: 'Comptable',
-        teacher: 'Enseignant',
-        marketing: 'Spécialiste marketing',
-        other: 'Autre poste',
+        chooseJob:
+          'Choisir un poste',
 
-        fullName: 'Nom complet',
-        fullNamePlaceholder: 'Exemple : Ahmed Mohamed',
+        softwareEngineer:
+          'Ingénieur logiciel',
 
-        jobTitle: 'Intitulé du poste',
-        jobTitlePlaceholder: 'Exemple : Ingénieur logiciel',
+        receptionist:
+          'Réceptionniste',
 
-        email: 'E-mail',
-        phone: 'Téléphone',
+        accountant:
+          'Comptable',
 
-        location: 'Localisation',
-        locationPlaceholder: 'Alger, Algérie',
+        teacher:
+          'Enseignant',
 
-        summary: 'Résumé professionnel',
+        marketing:
+          'Spécialiste marketing',
+
+        other:
+          'Autre poste',
+
+        fullName:
+          'Nom complet',
+
+        fullNamePlaceholder:
+          'Exemple : Ahmed Mohamed',
+
+        jobTitle:
+          'Intitulé du poste',
+
+        jobTitlePlaceholder:
+          'Exemple : Ingénieur logiciel',
+
+        email:
+          'E-mail',
+
+        phone:
+          'Téléphone',
+
+        location:
+          'Localisation',
+
+        locationPlaceholder:
+          'Alger, Algérie',
+
+        summary:
+          'Résumé professionnel',
+
         summaryPlaceholder:
           'Écrivez un court résumé de votre expérience et de vos objectifs professionnels...',
 
-        experience: 'Expérience professionnelle',
-        addExperience: '+ Ajouter une expérience',
+        experience:
+          'Expérience professionnelle',
 
-        education: 'Formation',
-        addEducation: '+ Ajouter une formation',
+        addExperience:
+          '+ Ajouter une expérience',
 
-        skills: 'Compétences',
+        education:
+          'Formation',
+
+        addEducation:
+          '+ Ajouter une formation',
+
+        skills:
+          'Compétences',
+
         skillsLabel:
           'Compétences séparées par des virgules',
 
         skillsPlaceholder:
           'Gestion de projet, programmation, design, communication',
 
-        languages: 'Langues',
+        languages:
+          'Langues',
+
         languagesLabel:
           'Langues avec niveau de maîtrise',
 
         languagesPlaceholder:
           'Arabe — Excellent, Anglais — Avancé, Français — Intermédiaire',
 
-        cvTemplate: 'Modèle de CV',
+        cvTemplate:
+          'Modèle de CV',
+
         templateLabel:
           'Choisir le style du CV',
 
-        classic: 'Classique',
-        modern: 'Moderne',
-        minimal: 'Minimaliste',
+        classic:
+          'Classique',
 
-        generate: 'Créer le CV',
-        improving: 'Amélioration du CV par IA...',
-        generated: 'CV créé ✓',
+        modern:
+          'Moderne',
 
-        print: 'Imprimer / Enregistrer en PDF',
+        minimal:
+          'Minimaliste',
 
-        download: 'Télécharger PDF',
-        creatingPdf: 'Création du PDF...',
-        downloaded: 'PDF téléchargé ✓',
+        generate:
+          'Créer le CV',
 
-        newCv: 'Nouveau CV',
+        improving:
+          'Amélioration du CV par IA...',
 
-        saveCv: 'Enregistrer le CV',
-        saved: 'Enregistré ✓',
+        generated:
+          'CV créé ✓',
 
-        myCvs: 'Mes CV',
+        print:
+          'Imprimer / Enregistrer en PDF',
 
-        preview: '02 — Aperçu en direct',
-        previewAria: 'Aperçu du CV',
+        download:
+          'Télécharger PDF',
 
-        namePlaceholder: 'Votre nom',
-        titlePlaceholder: 'Intitulé du poste',
+        creatingPdf:
+          'Création du PDF...',
+
+        downloaded:
+          'PDF téléchargé ✓',
+
+        newCv:
+          'Nouveau CV',
+
+        saveCv:
+          'Enregistrer le CV',
+
+        saved:
+          'Enregistré ✓',
+
+        myCvs:
+          'Mes CV',
+
+        preview:
+          '02 — Aperçu en direct',
+
+        previewAria:
+          'Aperçu du CV',
+
+        namePlaceholder:
+          'Votre nom',
+
+        titlePlaceholder:
+          'Intitulé du poste',
 
         contactPlaceholder:
           'E-mail · téléphone · localisation',
 
-        position: 'Intitulé du poste',
+        position:
+          'Intitulé du poste',
 
-        company: 'Entreprise',
+        company:
+          'Entreprise',
+
         companyPlaceholder:
           'Exemple : Entreprise technologique',
 
-        dates: 'Période',
+        dates:
+          'Période',
+
         datesPlaceholder:
           '2022 — Aujourd’hui',
 
-        description: 'Description et réalisations',
+        description:
+          'Description et réalisations',
+
         descriptionPlaceholder:
           'Décrivez vos principales tâches et réalisations...',
 
         removeExperience:
           'Supprimer cette expérience',
 
-        degree: 'Diplôme ou spécialité',
+        degree:
+          'Diplôme ou spécialité',
+
         degreePlaceholder:
           'Exemple : Licence en informatique',
 
-        school: 'Établissement',
+        school:
+          'Établissement',
+
         schoolPlaceholder:
           'Exemple : Université d’Alger',
 
-        year: 'Année',
+        year:
+          'Année',
+
         removeEducation:
           'Supprimer cette formation',
 
-        qualification: 'Diplôme',
+        qualification:
+          'Diplôme',
 
         noSavedCvs:
           'Aucun CV enregistré pour le moment.',
 
-        load: 'Charger',
-        delete: 'Supprimer',
+        load:
+          'Charger',
+
+        delete:
+          'Supprimer',
 
         enterName:
           'Veuillez saisir votre nom complet avant d’enregistrer le CV.',
@@ -635,137 +600,227 @@ updateAuthUI();
           'Aucun résultat reçu de l’intelligence artificielle.'
       },
 
-      en: {
-        direction: 'ltr',
-        pageTitle: 'CV Genius AI — Resume Builder',
 
-        chooseLanguage: 'Choose language',
-        editorLabel: 'Resume Editor',
+      en: {
+
+        direction:
+          'ltr',
+
+        pageTitle:
+          'CV Genius AI — Resume Builder',
+
+        chooseLanguage:
+          'Choose language',
+
+        editorLabel:
+          'Resume Editor',
 
         subtitle:
           'Create your professional resume with AI. Edit your information and see the preview instantly.',
 
-        personal: 'Personal Information',
+        personal:
+          'Personal Information',
 
-        targetJob: 'Target Job',
-        chooseJob: 'Choose a job',
+        targetJob:
+          'Target Job',
 
-        softwareEngineer: 'Software Engineer',
-        receptionist: 'Receptionist',
-        accountant: 'Accountant',
-        teacher: 'Teacher',
-        marketing: 'Marketing Specialist',
-        other: 'Other',
+        chooseJob:
+          'Choose a job',
 
-        fullName: 'Full Name',
+        softwareEngineer:
+          'Software Engineer',
+
+        receptionist:
+          'Receptionist',
+
+        accountant:
+          'Accountant',
+
+        teacher:
+          'Teacher',
+
+        marketing:
+          'Marketing Specialist',
+
+        other:
+          'Other',
+
+        fullName:
+          'Full Name',
+
         fullNamePlaceholder:
           'Example: Ahmed Mohamed',
 
-        jobTitle: 'Job Title',
+        jobTitle:
+          'Job Title',
+
         jobTitlePlaceholder:
           'Example: Software Engineer',
 
-        email: 'Email',
-        phone: 'Phone',
+        email:
+          'Email',
 
-        location: 'Location',
+        phone:
+          'Phone',
+
+        location:
+          'Location',
+
         locationPlaceholder:
           'Algiers, Algeria',
 
-        summary: 'Professional Summary',
+        summary:
+          'Professional Summary',
+
         summaryPlaceholder:
           'Write a short summary of your experience and career goals...',
 
-        experience: 'Work Experience',
-        addExperience: '+ Add Experience',
+        experience:
+          'Work Experience',
 
-        education: 'Education',
-        addEducation: '+ Add Education',
+        addExperience:
+          '+ Add Experience',
 
-        skills: 'Skills',
+        education:
+          'Education',
+
+        addEducation:
+          '+ Add Education',
+
+        skills:
+          'Skills',
+
         skillsLabel:
           'Skills separated by commas',
 
         skillsPlaceholder:
           'Project management, programming, design, communication',
 
-        languages: 'Languages',
+        languages:
+          'Languages',
+
         languagesLabel:
           'Languages with proficiency level',
 
         languagesPlaceholder:
           'Arabic — Excellent, English — Advanced, French — Intermediate',
 
-        cvTemplate: 'Resume Template',
+        cvTemplate:
+          'Resume Template',
+
         templateLabel:
           'Choose resume style',
 
-        classic: 'Classic',
-        modern: 'Modern',
-        minimal: 'Minimal',
+        classic:
+          'Classic',
 
-        generate: 'Create Resume',
-        improving: 'Improving resume with AI...',
-        generated: 'Resume Created ✓',
+        modern:
+          'Modern',
 
-        print: 'Print / Save PDF',
+        minimal:
+          'Minimal',
 
-        download: 'Download PDF',
-        creatingPdf: 'Creating PDF...',
-        downloaded: 'PDF Downloaded ✓',
+        generate:
+          'Create Resume',
 
-        newCv: 'New Resume',
+        improving:
+          'Improving resume with AI...',
 
-        saveCv: 'Save Resume',
-        saved: 'Saved ✓',
+        generated:
+          'Resume Created ✓',
 
-        myCvs: 'My Resumes',
+        print:
+          'Print / Save PDF',
 
-        preview: '02 — Live Preview',
-        previewAria: 'Resume Preview',
+        download:
+          'Download PDF',
 
-        namePlaceholder: 'Your Name',
-        titlePlaceholder: 'Job Title',
+        creatingPdf:
+          'Creating PDF...',
+
+        downloaded:
+          'PDF Downloaded ✓',
+
+        newCv:
+          'New Resume',
+
+        saveCv:
+          'Save Resume',
+
+        saved:
+          'Saved ✓',
+
+        myCvs:
+          'My Resumes',
+
+        preview:
+          '02 — Live Preview',
+
+        previewAria:
+          'Resume Preview',
+
+        namePlaceholder:
+          'Your Name',
+
+        titlePlaceholder:
+          'Job Title',
 
         contactPlaceholder:
           'email · phone · location',
 
-        position: 'Job Title',
+        position:
+          'Job Title',
 
-        company: 'Company',
+        company:
+          'Company',
+
         companyPlaceholder:
           'Example: Technology Company',
 
-        dates: 'Dates',
+        dates:
+          'Dates',
+
         datesPlaceholder:
           '2022 — Present',
 
-        description: 'Description & Achievements',
+        description:
+          'Description & Achievements',
+
         descriptionPlaceholder:
           'Write your main responsibilities and achievements...',
 
         removeExperience:
           'Remove this experience',
 
-        degree: 'Degree or Specialization',
+        degree:
+          'Degree or Specialization',
+
         degreePlaceholder:
           'Example: Bachelor’s in Computer Science',
 
-        school: 'Educational Institution',
+        school:
+          'Educational Institution',
+
         schoolPlaceholder:
           'Example: University of Algiers',
 
-        year: 'Year',
+        year:
+          'Year',
+
         removeEducation:
           'Remove this education',
 
-        qualification: 'Qualification',
+        qualification:
+          'Qualification',
 
         noSavedCvs:
           'No saved resumes yet.',
 
-        load: 'Load',
-        delete: 'Delete',
+        load:
+          'Load',
+
+        delete:
+          'Delete',
 
         enterName:
           'Please enter your full name before saving the resume.',
@@ -788,11 +843,12 @@ updateAuthUI();
         aiEmpty:
           'No result was received from the AI.'
       }
+
     };
 
 
     /* =========================================================
-       CURRENT LANGUAGE
+       LANGUAGE
     ========================================================= */
 
     let currentLanguage =
@@ -804,11 +860,13 @@ updateAuthUI();
 
 
     function t(key) {
+
       return (
         translations[currentLanguage]?.[key] ||
         translations.ar[key] ||
         key
       );
+
     }
 
 
@@ -817,34 +875,41 @@ updateAuthUI();
     ========================================================= */
 
     function setText(selector, text) {
+
       document
         .querySelectorAll(selector)
         .forEach(element => {
           element.textContent = text;
         });
+
     }
 
 
     function setPlaceholder(selector, text) {
+
       document
         .querySelectorAll(selector)
         .forEach(element => {
           element.placeholder = text;
         });
+
     }
 
 
     function getValue(id) {
+
       const element =
         document.getElementById(id);
 
       return element
         ? String(element.value || '').trim()
         : '';
+
     }
 
 
     function escapeHTML(value) {
+
       const div =
         document.createElement('div');
 
@@ -852,15 +917,292 @@ updateAuthUI();
         value ?? '';
 
       return div.innerHTML;
+
     }
 
 
     function splitList(value) {
+
       return String(value || '')
         .split(',')
         .map(item => item.trim())
         .filter(Boolean);
+
     }
+
+
+    /* =========================================================
+       AUTH
+    ========================================================= */
+
+    function showAuthStatus(message) {
+
+      if (authStatus) {
+        authStatus.textContent = message;
+      }
+
+    }
+
+
+    async function getCurrentUser() {
+
+      try {
+
+        const {
+          data,
+          error
+        } =
+          await supabaseClient.auth.getUser();
+
+        if (error) {
+          console.error(
+            'Get user error:',
+            error
+          );
+
+          return null;
+        }
+
+        return data?.user || null;
+
+      } catch (error) {
+
+        console.error(
+          'Get user error:',
+          error
+        );
+
+        return null;
+      }
+
+    }
+
+
+    async function signUp() {
+
+      const email =
+        authEmail?.value.trim();
+
+      const password =
+        authPassword?.value || '';
+
+      if (!email || !password) {
+
+        showAuthStatus(
+          'أدخل البريد الإلكتروني وكلمة المرور.'
+        );
+
+        return;
+      }
+
+      try {
+
+        const {
+          data,
+          error
+        } =
+          await supabaseClient.auth.signUp({
+            email,
+            password
+          });
+
+        if (error) {
+          throw error;
+        }
+
+        if (data?.user) {
+
+          showAuthStatus(
+            'تم إنشاء الحساب بنجاح.'
+          );
+
+        }
+
+      } catch (error) {
+
+        console.error(
+          'Sign up error:',
+          error
+        );
+
+        showAuthStatus(
+          error.message ||
+          'حدث خطأ أثناء إنشاء الحساب.'
+        );
+
+      }
+
+    }
+
+
+    async function login() {
+
+      const email =
+        authEmail?.value.trim();
+
+      const password =
+        authPassword?.value || '';
+
+      if (!email || !password) {
+
+        showAuthStatus(
+          'أدخل البريد الإلكتروني وكلمة المرور.'
+        );
+
+        return;
+      }
+
+      try {
+
+        const {
+          error
+        } =
+          await supabaseClient.auth.signInWithPassword({
+            email,
+            password
+          });
+
+        if (error) {
+          throw error;
+        }
+
+        showAuthStatus(
+          'تم تسجيل الدخول بنجاح.'
+        );
+
+        await renderSavedCVs();
+
+      } catch (error) {
+
+        console.error(
+          'Login error:',
+          error
+        );
+
+        showAuthStatus(
+          error.message ||
+          'حدث خطأ أثناء تسجيل الدخول.'
+        );
+
+      }
+
+    }
+
+
+    async function logout() {
+
+      try {
+
+        const {
+          error
+        } =
+          await supabaseClient.auth.signOut();
+
+        if (error) {
+          throw error;
+        }
+
+        showAuthStatus(
+          'تم تسجيل الخروج.'
+        );
+
+        if (savedCvsList) {
+          savedCvsList.innerHTML = '';
+          savedCvsList.style.display = 'none';
+        }
+
+      } catch (error) {
+
+        console.error(
+          'Logout error:',
+          error
+        );
+
+        showAuthStatus(
+          error.message ||
+          'حدث خطأ أثناء تسجيل الخروج.'
+        );
+
+      }
+
+    }
+
+
+    async function updateAuthUI() {
+
+      const user =
+        await getCurrentUser();
+
+      if (user) {
+
+        if (signupBtn)
+          signupBtn.hidden = true;
+
+        if (loginBtn)
+          loginBtn.hidden = true;
+
+        if (logoutBtn)
+          logoutBtn.hidden = false;
+
+        showAuthStatus(
+          `تم تسجيل الدخول: ${user.email}`
+        );
+
+      } else {
+
+        if (signupBtn)
+          signupBtn.hidden = false;
+
+        if (loginBtn)
+          loginBtn.hidden = false;
+
+        if (logoutBtn)
+          logoutBtn.hidden = true;
+
+        showAuthStatus(
+          'لم يتم تسجيل الدخول.'
+        );
+
+      }
+
+    }
+
+
+    if (signupBtn) {
+
+      signupBtn.addEventListener(
+        'click',
+        signUp
+      );
+
+    }
+
+
+    if (loginBtn) {
+
+      loginBtn.addEventListener(
+        'click',
+        login
+      );
+
+    }
+
+
+    if (logoutBtn) {
+
+      logoutBtn.addEventListener(
+        'click',
+        logout
+      );
+
+    }
+
+
+    supabaseClient.auth.onAuthStateChange(
+      () => {
+        updateAuthUI();
+      }
+    );
 
 
     /* =========================================================
@@ -875,9 +1217,12 @@ updateAuthUI();
         );
 
       if (existingSelectors.length) {
+
         setupExistingLanguageSelectors();
+
         return;
       }
+
 
       const wrapper =
         document.createElement('div');
@@ -893,6 +1238,7 @@ updateAuthUI();
         flex-wrap:wrap;
       `;
 
+
       const label =
         document.createElement('span');
 
@@ -901,6 +1247,7 @@ updateAuthUI();
 
       label.textContent =
         t('chooseLanguage');
+
 
       const select =
         document.createElement('select');
@@ -914,83 +1261,94 @@ updateAuthUI();
         <option value="en">English</option>
       `;
 
+
       select.value =
         currentLanguage;
+
 
       select.addEventListener(
         'change',
         () => changeLanguage(select.value)
       );
 
+
       wrapper.appendChild(label);
       wrapper.appendChild(select);
+
 
       const editor =
         document.querySelector('.editor');
 
       if (editor) {
+
         editor.insertBefore(
           wrapper,
           editor.firstElementChild
         );
+
       }
+
     }
 
 
     function setupExistingLanguageSelectors() {
 
-      const selectors =
-        document.querySelectorAll(
+      document
+        .querySelectorAll(
           '#language-select, [data-language-select], .language-select'
-        );
+        )
+        .forEach(select => {
 
-      selectors.forEach(select => {
+          if (!select.dataset.languageReady) {
 
-        if (!select.dataset.languageReady) {
+            select.dataset.languageReady =
+              'true';
 
-          select.dataset.languageReady =
-            'true';
+            select.value =
+              currentLanguage;
 
-          select.value =
-            currentLanguage;
+            select.addEventListener(
+              'change',
+              () => changeLanguage(select.value)
+            );
 
-          select.addEventListener(
-            'change',
-            () => changeLanguage(select.value)
-          );
-        }
-      });
+          }
+
+        });
 
 
-      const buttons =
-        document.querySelectorAll(
+      document
+        .querySelectorAll(
           '[data-language], [data-lang]'
-        );
+        )
+        .forEach(button => {
 
-      buttons.forEach(button => {
+          if (!button.dataset.languageReady) {
 
-        if (!button.dataset.languageReady) {
+            button.dataset.languageReady =
+              'true';
 
-          button.dataset.languageReady =
-            'true';
+            button.addEventListener(
+              'click',
+              event => {
 
-          button.addEventListener(
-            'click',
-            event => {
+                event.preventDefault();
 
-              event.preventDefault();
+                const lang =
+                  button.dataset.language ||
+                  button.dataset.lang;
 
-              const lang =
-                button.dataset.language ||
-                button.dataset.lang;
+                if (translations[lang]) {
+                  changeLanguage(lang);
+                }
 
-              if (translations[lang]) {
-                changeLanguage(lang);
               }
-            }
-          );
-        }
-      });
+            );
+
+          }
+
+        });
+
     }
 
 
@@ -1009,8 +1367,11 @@ updateAuthUI();
       );
 
       applyLanguage();
+
       render();
+
       renderSavedCVs();
+
     }
 
 
@@ -1018,10 +1379,41 @@ updateAuthUI();
        APPLY LANGUAGE
     ========================================================= */
 
+    function setGroupLegend(
+      elementId,
+      translationKey
+    ) {
+
+      const element =
+        document.getElementById(elementId);
+
+      if (!element) {
+        return;
+      }
+
+      const group =
+        element.closest('.field-group');
+
+      if (!group) {
+        return;
+      }
+
+      const legend =
+        group.querySelector('legend');
+
+      if (legend) {
+        legend.textContent =
+          t(translationKey);
+      }
+
+    }
+
+
     function applyLanguage() {
 
       const isArabic =
         currentLanguage === 'ar';
+
 
       document.documentElement.lang =
         currentLanguage;
@@ -1036,14 +1428,10 @@ updateAuthUI();
         t('pageTitle');
 
 
-      document
-        .querySelectorAll(
-          '#language-label, [data-language-label]'
-        )
-        .forEach(element => {
-          element.textContent =
-            t('chooseLanguage');
-        });
+      setText(
+        '#language-label, [data-language-label]',
+        t('chooseLanguage')
+      );
 
 
       document
@@ -1066,128 +1454,131 @@ updateAuthUI();
         document.querySelector('.editor');
 
       if (editor) {
+
         editor.setAttribute(
           'aria-label',
           t('editorLabel')
         );
+
       }
 
-/* =====================================================
-   TRANSLATE FORM SECTIONS & FIELD LABELS
-===================================================== */
 
-function setGroupLegend(elementId, translationKey) {
+      setGroupLegend(
+        'targetJob',
+        'personal'
+      );
 
-  const element =
-    document.getElementById(elementId);
+      setGroupLegend(
+        'experience-list',
+        'experience'
+      );
 
-  if (!element) {
-    return;
-  }
+      setGroupLegend(
+        'education-list',
+        'education'
+      );
 
-  const group =
-    element.closest('.field-group');
+      setGroupLegend(
+        'skills',
+        'skills'
+      );
 
-  if (!group) {
-    return;
-  }
+      setGroupLegend(
+        'languages',
+        'languages'
+      );
 
-  const legend =
-    group.querySelector('legend');
-
-  if (legend) {
-    legend.textContent =
-      t(translationKey);
-  }
-}
-
-
-/* ---------- Section legends ---------- */
-
-setGroupLegend(
-  'targetJob',
-  'personal'
-);
-
-setGroupLegend(
-  'experience-list',
-  'experience'
-);
-
-setGroupLegend(
-  'education-list',
-  'education'
-);
-
-setGroupLegend(
-  'skills',
-  'skills'
-);
-
-setGroupLegend(
-  'languages',
-  'languages'
-);
-
-setGroupLegend(
-  'cv-template',
-  'cvTemplate'
-);
+      setGroupLegend(
+        'cv-template',
+        'cvTemplate'
+      );
 
 
-/* ---------- Personal information labels ---------- */
+      const personalFields = {
 
-const personalFields = {
-  targetJob: 'targetJob',
-  fullName: 'fullName',
-  jobTitle: 'jobTitle',
-  email: 'email',
-  phone: 'phone',
-  location: 'location',
-  summary: 'summary'
-};
+        targetJob:
+          'targetJob',
 
-Object.entries(personalFields)
-  .forEach(([id, translationKey]) => {
+        fullName:
+          'fullName',
 
-    const element =
-      document.getElementById(id);
+        jobTitle:
+          'jobTitle',
 
-    if (!element) {
-      return;
-    }
+        email:
+          'email',
 
-    const field =
-      element.closest('.field');
+        phone:
+          'phone',
 
-    if (!field) {
-      return;
-    }
+        location:
+          'location',
 
-    const label =
-      field.querySelector('.field__label');
+        summary:
+          'summary'
 
-    if (label) {
-      label.textContent =
-        t(translationKey);
-    }
+      };
 
-  });
-      
+
+      Object.entries(personalFields)
+        .forEach(([id, key]) => {
+
+          const element =
+            document.getElementById(id);
+
+          if (!element) {
+            return;
+          }
+
+          const field =
+            element.closest('.field');
+
+          if (!field) {
+            return;
+          }
+
+          const label =
+            field.querySelector('.field__label');
+
+          if (label) {
+            label.textContent =
+              t(key);
+          }
+
+        });
+
+
       const jobSelect =
         document.getElementById('targetJob');
+
 
       if (jobSelect) {
 
         const jobKeys = {
-          '': 'chooseJob',
-          'Software Engineer': 'softwareEngineer',
-          'Receptionist': 'receptionist',
-          'Accountant': 'accountant',
-          'Teacher': 'teacher',
-          'Marketing Specialist': 'marketing',
-          'Other': 'other'
+
+          '':
+            'chooseJob',
+
+          'Software Engineer':
+            'softwareEngineer',
+
+          'Receptionist':
+            'receptionist',
+
+          'Accountant':
+            'accountant',
+
+          'Teacher':
+            'teacher',
+
+          'Marketing Specialist':
+            'marketing',
+
+          'Other':
+            'other'
+
         };
+
 
         Array.from(jobSelect.options)
           .forEach(option => {
@@ -1199,7 +1590,9 @@ Object.entries(personalFields)
               option.textContent =
                 t(key);
             }
+
           });
+
       }
 
 
@@ -1238,6 +1631,7 @@ Object.entries(personalFields)
         document.getElementById('skills')
           ?.closest('.field-group');
 
+
       if (skillsGroup) {
 
         const label =
@@ -1247,7 +1641,9 @@ Object.entries(personalFields)
           label.textContent =
             t('skillsLabel');
         }
+
       }
+
 
       setPlaceholder(
         '#skills',
@@ -1259,6 +1655,7 @@ Object.entries(personalFields)
         document.getElementById('languages')
           ?.closest('.field-group');
 
+
       if (languagesGroup) {
 
         const label =
@@ -1268,7 +1665,9 @@ Object.entries(personalFields)
           label.textContent =
             t('languagesLabel');
         }
+
       }
+
 
       setPlaceholder(
         '#languages',
@@ -1280,6 +1679,7 @@ Object.entries(personalFields)
         document.getElementById('cv-template')
           ?.closest('.field-group');
 
+
       if (templateGroup) {
 
         const label =
@@ -1289,16 +1689,25 @@ Object.entries(personalFields)
           label.textContent =
             t('templateLabel');
         }
+
       }
 
 
       if (templateSelect) {
 
         const templateKeys = {
-          classic: 'classic',
-          modern: 'modern',
-          minimal: 'minimal'
+
+          classic:
+            'classic',
+
+          modern:
+            'modern',
+
+          minimal:
+            'minimal'
+
         };
+
 
         Array.from(templateSelect.options)
           .forEach(option => {
@@ -1310,23 +1719,33 @@ Object.entries(personalFields)
               option.textContent =
                 t(key);
             }
+
           });
+
       }
 
 
       document
-        .querySelectorAll('[data-add="experience"]')
+        .querySelectorAll(
+          '[data-add="experience"]'
+        )
         .forEach(button => {
+
           button.textContent =
             t('addExperience');
+
         });
 
 
       document
-        .querySelectorAll('[data-add="education"]')
+        .querySelectorAll(
+          '[data-add="education"]'
+        )
         .forEach(button => {
+
           button.textContent =
             t('addEducation');
+
         });
 
 
@@ -1335,31 +1754,40 @@ Object.entries(personalFields)
           t('generate');
       }
 
+
       if (printBtn) {
         printBtn.textContent =
           t('print');
       }
 
+
       if (
         downloadPdfBtn &&
         !downloadPdfBtn.disabled
       ) {
+
         downloadPdfBtn.textContent =
           t('download');
+
       }
+
 
       if (newCvBtn) {
         newCvBtn.textContent =
           t('newCv');
       }
 
+
       if (
         saveCvBtn &&
         !saveCvBtn.disabled
       ) {
+
         saveCvBtn.textContent =
           t('saveCv');
+
       }
+
 
       if (myCvsBtn) {
         myCvsBtn.textContent =
@@ -1370,11 +1798,14 @@ Object.entries(personalFields)
       const preview =
         document.querySelector('.preview');
 
+
       if (preview) {
+
         preview.setAttribute(
           'aria-label',
           t('previewAria')
         );
+
       }
 
 
@@ -1384,10 +1815,11 @@ Object.entries(personalFields)
       );
 
 
-            translateTemplates();
+      translateTemplates();
+
       translateExistingEntries();
+
     }
-    
 
 
     /* =========================================================
@@ -1402,7 +1834,10 @@ Object.entries(personalFields)
           experienceTemplate.content;
 
         const labels =
-          root.querySelectorAll('.field__label');
+          root.querySelectorAll(
+            '.field__label'
+          );
+
 
         if (labels[0])
           labels[0].textContent =
@@ -1426,6 +1861,7 @@ Object.entries(personalFields)
             'input, textarea'
           );
 
+
         if (inputs[0])
           inputs[0].placeholder =
             t('jobTitlePlaceholder');
@@ -1444,14 +1880,20 @@ Object.entries(personalFields)
 
 
         const remove =
-          root.querySelector('.entry__remove');
+          root.querySelector(
+            '.entry__remove'
+          );
+
 
         if (remove) {
+
           remove.setAttribute(
             'aria-label',
             t('removeExperience')
           );
+
         }
+
       }
 
 
@@ -1461,7 +1903,10 @@ Object.entries(personalFields)
           educationTemplate.content;
 
         const labels =
-          root.querySelectorAll('.field__label');
+          root.querySelectorAll(
+            '.field__label'
+          );
+
 
         if (labels[0])
           labels[0].textContent =
@@ -1477,7 +1922,10 @@ Object.entries(personalFields)
 
 
         const inputs =
-          root.querySelectorAll('input');
+          root.querySelectorAll(
+            'input'
+          );
+
 
         if (inputs[0])
           inputs[0].placeholder =
@@ -1493,170 +1941,201 @@ Object.entries(personalFields)
 
 
         const remove =
-          root.querySelector('.entry__remove');
+          root.querySelector(
+            '.entry__remove'
+          );
+
 
         if (remove) {
+
           remove.setAttribute(
             'aria-label',
             t('removeEducation')
           );
+
         }
+
       }
+
     }
 
-/* =====================================================
-   TRANSLATE EXISTING DYNAMIC ENTRIES
-===================================================== */
 
-function translateExistingEntries() {
+    /* =========================================================
+       TRANSLATE EXISTING ENTRIES
+    ========================================================= */
 
-  /* ---------- Experience entries ---------- */
+    function translateExistingEntries() {
 
-  if (experienceList) {
+      if (experienceList) {
 
-    experienceList
-      .querySelectorAll('[data-entry]')
-      .forEach(entry => {
+        experienceList
+          .querySelectorAll('[data-entry]')
+          .forEach(entry => {
 
-        const labels =
-          entry.querySelectorAll('.field__label');
-
-        if (labels[0])
-          labels[0].textContent =
-            t('position');
-
-        if (labels[1])
-          labels[1].textContent =
-            t('company');
-
-        if (labels[2])
-          labels[2].textContent =
-            t('dates');
-
-        if (labels[3])
-          labels[3].textContent =
-            t('description');
+            const labels =
+              entry.querySelectorAll(
+                '.field__label'
+              );
 
 
-        const inputs =
-          entry.querySelectorAll(
-            'input, textarea'
-          );
+            if (labels[0])
+              labels[0].textContent =
+                t('position');
 
-        if (inputs[0])
-          inputs[0].placeholder =
-            t('jobTitlePlaceholder');
+            if (labels[1])
+              labels[1].textContent =
+                t('company');
 
-        if (inputs[1])
-          inputs[1].placeholder =
-            t('companyPlaceholder');
+            if (labels[2])
+              labels[2].textContent =
+                t('dates');
 
-        if (inputs[2])
-          inputs[2].placeholder =
-            t('datesPlaceholder');
-
-        if (inputs[3])
-          inputs[3].placeholder =
-            t('descriptionPlaceholder');
+            if (labels[3])
+              labels[3].textContent =
+                t('description');
 
 
-        const remove =
-          entry.querySelector('.entry__remove');
-
-        if (remove) {
-          remove.setAttribute(
-            'aria-label',
-            t('removeExperience')
-          );
-        }
-
-      });
-  }
+            const inputs =
+              entry.querySelectorAll(
+                'input, textarea'
+              );
 
 
-  /* ---------- Education entries ---------- */
+            if (inputs[0])
+              inputs[0].placeholder =
+                t('jobTitlePlaceholder');
 
-  if (educationList) {
+            if (inputs[1])
+              inputs[1].placeholder =
+                t('companyPlaceholder');
 
-    educationList
-      .querySelectorAll('[data-entry]')
-      .forEach(entry => {
+            if (inputs[2])
+              inputs[2].placeholder =
+                t('datesPlaceholder');
 
-        const labels =
-          entry.querySelectorAll('.field__label');
-
-        if (labels[0])
-          labels[0].textContent =
-            t('degree');
-
-        if (labels[1])
-          labels[1].textContent =
-            t('school');
-
-        if (labels[2])
-          labels[2].textContent =
-            t('year');
+            if (inputs[3])
+              inputs[3].placeholder =
+                t('descriptionPlaceholder');
 
 
-        const inputs =
-          entry.querySelectorAll('input');
-
-        if (inputs[0])
-          inputs[0].placeholder =
-            t('degreePlaceholder');
-
-        if (inputs[1])
-          inputs[1].placeholder =
-            t('schoolPlaceholder');
-
-        if (inputs[2])
-          inputs[2].placeholder =
-            t('year');
+            const remove =
+              entry.querySelector(
+                '.entry__remove'
+              );
 
 
-        const remove =
-          entry.querySelector('.entry__remove');
+            if (remove) {
 
-        if (remove) {
-          remove.setAttribute(
-            'aria-label',
-            t('removeEducation')
-          );
-        }
+              remove.setAttribute(
+                'aria-label',
+                t('removeExperience')
+              );
 
-      });
-  }
+            }
 
+          });
 
-  /* ---------- Preview section headings ---------- */
-
-  const previewHeadings = {
-    '#section-experience .sheet__heading span':
-      'experience',
-
-    '#section-education .sheet__heading span':
-      'education',
-
-    '#section-skills .sheet__heading span':
-      'skills',
-
-    '#section-languages .sheet__heading span':
-      'languages'
-  };
+      }
 
 
-  Object.entries(previewHeadings)
-    .forEach(([selector, key]) => {
+      if (educationList) {
 
-      document
-        .querySelectorAll(selector)
-        .forEach(element => {
-          element.textContent =
-            t(key);
+        educationList
+          .querySelectorAll('[data-entry]')
+          .forEach(entry => {
+
+            const labels =
+              entry.querySelectorAll(
+                '.field__label'
+              );
+
+
+            if (labels[0])
+              labels[0].textContent =
+                t('degree');
+
+            if (labels[1])
+              labels[1].textContent =
+                t('school');
+
+            if (labels[2])
+              labels[2].textContent =
+                t('year');
+
+
+            const inputs =
+              entry.querySelectorAll(
+                'input'
+              );
+
+
+            if (inputs[0])
+              inputs[0].placeholder =
+                t('degreePlaceholder');
+
+            if (inputs[1])
+              inputs[1].placeholder =
+                t('schoolPlaceholder');
+
+            if (inputs[2])
+              inputs[2].placeholder =
+                t('year');
+
+
+            const remove =
+              entry.querySelector(
+                '.entry__remove'
+              );
+
+
+            if (remove) {
+
+              remove.setAttribute(
+                'aria-label',
+                t('removeEducation')
+              );
+
+            }
+
+          });
+
+      }
+
+
+      const previewHeadings = {
+
+        '#section-experience .sheet__heading span':
+          'experience',
+
+        '#section-education .sheet__heading span':
+          'education',
+
+        '#section-skills .sheet__heading span':
+          'skills',
+
+        '#section-languages .sheet__heading span':
+          'languages'
+
+      };
+
+
+      Object.entries(previewHeadings)
+        .forEach(([selector, key]) => {
+
+          document
+            .querySelectorAll(selector)
+            .forEach(element => {
+
+              element.textContent =
+                t(key);
+
+            });
+
         });
 
-    });
-}
+    }
+
+
     /* =========================================================
        EXPERIENCE
     ========================================================= */
@@ -1670,30 +2149,47 @@ function translateExistingEntries() {
         return;
       }
 
+
       const fragment =
-        experienceTemplate.content.cloneNode(true);
+        experienceTemplate.content
+          .cloneNode(true);
+
 
       const entry =
-        fragment.querySelector('[data-entry]');
+        fragment.querySelector(
+          '[data-entry]'
+        );
+
 
       if (!entry) {
         return;
       }
 
-      experienceList.appendChild(fragment);
+
+      experienceList.appendChild(
+        fragment
+      );
 
 
       const role =
-        entry.querySelector('.js-role');
+        entry.querySelector(
+          '.js-role'
+        );
 
       const company =
-        entry.querySelector('.js-company');
+        entry.querySelector(
+          '.js-company'
+        );
 
       const dates =
-        entry.querySelector('.js-dates');
+        entry.querySelector(
+          '.js-dates'
+        );
 
       const description =
-        entry.querySelector('.js-desc');
+        entry.querySelector(
+          '.js-desc'
+        );
 
 
       if (role)
@@ -1714,30 +2210,43 @@ function translateExistingEntries() {
 
 
       const removeButton =
-        entry.querySelector('.entry__remove');
+        entry.querySelector(
+          '.entry__remove'
+        );
+
 
       if (removeButton) {
 
         removeButton.addEventListener(
           'click',
           () => {
+
             entry.remove();
+
             render();
+
           }
         );
+
       }
 
 
       entry
-        .querySelectorAll('input, textarea')
+        .querySelectorAll(
+          'input, textarea'
+        )
         .forEach(element => {
+
           element.addEventListener(
             'input',
             render
           );
+
         });
 
-      translateTemplates();
+
+      translateExistingEntries();
+
     }
 
 
@@ -1754,27 +2263,42 @@ function translateExistingEntries() {
         return;
       }
 
+
       const fragment =
-        educationTemplate.content.cloneNode(true);
+        educationTemplate.content
+          .cloneNode(true);
+
 
       const entry =
-        fragment.querySelector('[data-entry]');
+        fragment.querySelector(
+          '[data-entry]'
+        );
+
 
       if (!entry) {
         return;
       }
 
-      educationList.appendChild(fragment);
+
+      educationList.appendChild(
+        fragment
+      );
 
 
       const degree =
-        entry.querySelector('.js-degree');
+        entry.querySelector(
+          '.js-degree'
+        );
 
       const school =
-        entry.querySelector('.js-school');
+        entry.querySelector(
+          '.js-school'
+        );
 
       const year =
-        entry.querySelector('.js-year');
+        entry.querySelector(
+          '.js-year'
+        );
 
 
       if (degree)
@@ -1791,30 +2315,43 @@ function translateExistingEntries() {
 
 
       const removeButton =
-        entry.querySelector('.entry__remove');
+        entry.querySelector(
+          '.entry__remove'
+        );
+
 
       if (removeButton) {
 
         removeButton.addEventListener(
           'click',
           () => {
+
             entry.remove();
+
             render();
+
           }
         );
+
       }
 
 
       entry
-        .querySelectorAll('input, textarea')
+        .querySelectorAll(
+          'input, textarea'
+        )
         .forEach(element => {
+
           element.addEventListener(
             'input',
             render
           );
+
         });
 
-      translateTemplates();
+
+      translateExistingEntries();
+
     }
 
 
@@ -1828,25 +2365,34 @@ function translateExistingEntries() {
         return [];
       }
 
+
       return Array.from(
-        experienceList.querySelectorAll('[data-entry]')
+        experienceList.querySelectorAll(
+          '[data-entry]'
+        )
       )
         .map(entry => ({
+
           role:
-            entry.querySelector('.js-role')
-              ?.value.trim() || '',
+            entry.querySelector(
+              '.js-role'
+            )?.value.trim() || '',
 
           company:
-            entry.querySelector('.js-company')
-              ?.value.trim() || '',
+            entry.querySelector(
+              '.js-company'
+            )?.value.trim() || '',
 
           dates:
-            entry.querySelector('.js-dates')
-              ?.value.trim() || '',
+            entry.querySelector(
+              '.js-dates'
+            )?.value.trim() || '',
 
           description:
-            entry.querySelector('.js-desc')
-              ?.value.trim() || ''
+            entry.querySelector(
+              '.js-desc'
+            )?.value.trim() || ''
+
         }))
         .filter(item =>
           item.role ||
@@ -1854,6 +2400,7 @@ function translateExistingEntries() {
           item.dates ||
           item.description
         );
+
     }
 
 
@@ -1867,32 +2414,41 @@ function translateExistingEntries() {
         return [];
       }
 
+
       return Array.from(
-        educationList.querySelectorAll('[data-entry]')
+        educationList.querySelectorAll(
+          '[data-entry]'
+        )
       )
         .map(entry => ({
+
           degree:
-            entry.querySelector('.js-degree')
-              ?.value.trim() || '',
+            entry.querySelector(
+              '.js-degree'
+            )?.value.trim() || '',
 
           school:
-            entry.querySelector('.js-school')
-              ?.value.trim() || '',
+            entry.querySelector(
+              '.js-school'
+            )?.value.trim() || '',
 
           year:
-            entry.querySelector('.js-year')
-              ?.value.trim() || ''
+            entry.querySelector(
+              '.js-year'
+            )?.value.trim() || ''
+
         }))
         .filter(item =>
           item.degree ||
           item.school ||
           item.year
         );
+
     }
 
 
     /* =========================================================
-       RENDER EXPERIENCE
+       RENDER
     ========================================================= */
 
     function renderExperience(items) {
@@ -1903,6 +2459,7 @@ function translateExistingEntries() {
       ) {
         return;
       }
+
 
       if (!items.length) {
 
@@ -1915,8 +2472,10 @@ function translateExistingEntries() {
         return;
       }
 
+
       sections.experience.hidden =
         false;
+
 
       out.experience.innerHTML =
         items.map(item => `
@@ -1967,12 +2526,9 @@ function translateExistingEntries() {
           </div>
 
         `).join('');
+
     }
 
-
-    /* =========================================================
-       RENDER EDUCATION
-    ========================================================= */
 
     function renderEducation(items) {
 
@@ -1982,6 +2538,7 @@ function translateExistingEntries() {
       ) {
         return;
       }
+
 
       if (!items.length) {
 
@@ -1994,8 +2551,10 @@ function translateExistingEntries() {
         return;
       }
 
+
       sections.education.hidden =
         false;
+
 
       out.education.innerHTML =
         items.map(item => `
@@ -2036,12 +2595,9 @@ function translateExistingEntries() {
           </div>
 
         `).join('');
+
     }
 
-
-    /* =========================================================
-       RENDER SKILLS
-    ========================================================= */
 
     function renderSkills(skills) {
 
@@ -2051,6 +2607,7 @@ function translateExistingEntries() {
       ) {
         return;
       }
+
 
       if (!skills.length) {
 
@@ -2063,19 +2620,20 @@ function translateExistingEntries() {
         return;
       }
 
+
       sections.skills.hidden =
         false;
 
+
       out.skills.innerHTML =
         skills.map(skill => `
-          <li>${escapeHTML(skill)}</li>
+          <li>
+            ${escapeHTML(skill)}
+          </li>
         `).join('');
+
     }
 
-
-    /* =========================================================
-       RENDER LANGUAGES
-    ========================================================= */
 
     function renderLanguages(languages) {
 
@@ -2085,6 +2643,7 @@ function translateExistingEntries() {
       ) {
         return;
       }
+
 
       if (!languages.length) {
 
@@ -2097,19 +2656,20 @@ function translateExistingEntries() {
         return;
       }
 
+
       sections.languages.hidden =
         false;
 
+
       out.languages.innerHTML =
         languages.map(language => `
-          <li>${escapeHTML(language)}</li>
+          <li>
+            ${escapeHTML(language)}
+          </li>
         `).join('');
+
     }
 
-
-    /* =========================================================
-       MAIN RENDER
-    ========================================================= */
 
     function render() {
 
@@ -2135,10 +2695,14 @@ function translateExistingEntries() {
         getValue('summary');
 
       const skills =
-        splitList(getValue('skills'));
+        splitList(
+          getValue('skills')
+        );
 
       const languages =
-        splitList(getValue('languages'));
+        splitList(
+          getValue('languages')
+        );
 
       const experience =
         readExperience();
@@ -2148,17 +2712,21 @@ function translateExistingEntries() {
 
 
       if (out.name) {
+
         out.name.textContent =
           fullName ||
           t('namePlaceholder');
+
       }
 
 
       if (out.title) {
+
         out.title.textContent =
           jobTitle ||
           targetJob ||
           t('titlePlaceholder');
+
       }
 
 
@@ -2170,10 +2738,12 @@ function translateExistingEntries() {
           location
         ].filter(Boolean);
 
+
         out.contact.textContent =
           contactParts.length
             ? contactParts.join('  ·  ')
             : t('contactPlaceholder');
+
       }
 
 
@@ -2184,36 +2754,38 @@ function translateExistingEntries() {
 
         out.summary.hidden =
           !summary;
+
       }
 
 
-      renderExperience(experience);
-      renderEducation(education);
-      renderSkills(skills);
-      renderLanguages(languages);
+      renderExperience(
+        experience
+      );
+
+      renderEducation(
+        education
+      );
+
+      renderSkills(
+        skills
+      );
+
+      renderLanguages(
+        languages
+      );
 
 
       if (
         templateSelect &&
         sheet
       ) {
+
         sheet.dataset.template =
           templateSelect.value ||
           'classic';
+
       }
-    }
 
-
-    /* =========================================================
-       TEMPLATE CHANGE
-    ========================================================= */
-
-    if (templateSelect) {
-
-      templateSelect.addEventListener(
-        'change',
-        render
-      );
     }
 
 
@@ -2230,30 +2802,52 @@ function translateExistingEntries() {
           () => {
 
             const type =
-              button.getAttribute('data-add');
+              button.getAttribute(
+                'data-add'
+              );
 
-            if (type === 'experience') {
+
+            if (
+              type === 'experience'
+            ) {
+
               addExperienceEntry();
+
             }
 
-            if (type === 'education') {
+
+            if (
+              type === 'education'
+            ) {
+
               addEducationEntry();
+
             }
+
 
             render();
+
           }
         );
+
       });
 
 
-    /* =========================================================
-       FORM INPUT
-    ========================================================= */
+    if (templateSelect) {
+
+      templateSelect.addEventListener(
+        'change',
+        render
+      );
+
+    }
+
 
     form.addEventListener(
       'input',
       render
     );
+
 
     form.addEventListener(
       'change',
@@ -2261,9 +2855,8 @@ function translateExistingEntries() {
     );
 
 
-
-          /* =========================================================
-       GEMINI AI
+    /* =========================================================
+       AI
     ========================================================= */
 
     form.addEventListener(
@@ -2274,20 +2867,31 @@ function translateExistingEntries() {
 
         render();
 
+
         if (!generateBtn) {
           return;
         }
 
+
         const originalText =
           generateBtn.textContent;
 
-        generateBtn.disabled = true;
-        generateBtn.textContent = t('improving');
+
+        generateBtn.disabled =
+          true;
+
+        generateBtn.textContent =
+          t('improving');
+
 
         try {
 
-          const experience = readExperience();
-          const education = readEducation();
+          const experience =
+            readExperience();
+
+          const education =
+            readEducation();
+
 
           const cvText = `
 ${currentLanguage === 'ar'
@@ -2354,31 +2958,43 @@ ${getValue('languages')}
                 method: 'POST',
 
                 headers: {
-                  'Content-Type': 'application/json'
+                  'Content-Type':
+                    'application/json'
                 },
 
-                body: JSON.stringify({
-                  text: cvText,
-                  language: currentLanguage
-                })
+                body:
+                  JSON.stringify({
+                    text: cvText,
+                    language:
+                      currentLanguage
+                  })
               }
             );
 
 
           let data = null;
 
+
           try {
-            data = await response.json();
+
+            data =
+              await response.json();
+
           } catch {
-            data = null;
+
+            data =
+              null;
+
           }
 
 
           if (!response.ok) {
 
             throw new Error(
-              data?.error || t('aiError')
+              data?.error ||
+              t('aiError')
             );
+
           }
 
 
@@ -2387,12 +3003,9 @@ ${getValue('languages')}
             throw new Error(
               t('aiEmpty')
             );
+
           }
 
-
-          /* =====================================================
-             AI RESULT
-          ===================================================== */
 
           const aiResult =
             String(data.result).trim();
@@ -2404,11 +3017,9 @@ ${getValue('languages')}
           );
 
 
-          /*
-             نحاول قراءة JSON الذي أعاده Gemini.
-          */
+          let improvedCV =
+            null;
 
-          let improvedCV = null;
 
           try {
 
@@ -2425,53 +3036,52 @@ ${getValue('languages')}
           }
 
 
-          /*
-             إذا كانت النتيجة JSON صحيحة،
-             نضع البيانات المحسنة داخل حقول CV.
-          */
-
           if (
             improvedCV &&
             typeof improvedCV === 'object'
           ) {
 
-            /*
-               SUMMARY
-            */
 
             if (
-              typeof improvedCV.summary === 'string'
+              typeof improvedCV.summary ===
+              'string'
             ) {
 
               const summaryInput =
-                document.getElementById('summary');
+                document.getElementById(
+                  'summary'
+                );
+
 
               if (summaryInput) {
 
                 summaryInput.value =
                   improvedCV.summary.trim();
+
               }
+
             }
 
 
-            /*
-               EXPERIENCE
-            */
-
             if (
-              Array.isArray(improvedCV.experience)
+              Array.isArray(
+                improvedCV.experience
+              )
             ) {
 
               if (experienceList) {
 
-                experienceList.innerHTML = '';
+                experienceList.innerHTML =
+                  '';
 
               }
 
-              improvedCV.experience.forEach(
-                item => {
+
+              improvedCV.experience
+                .forEach(item => {
 
                   addExperienceEntry({
+
                     role:
                       item?.role || '',
 
@@ -2483,31 +3093,33 @@ ${getValue('languages')}
 
                     description:
                       item?.description || ''
+
                   });
 
-                }
-              );
+                });
+
             }
 
 
-            /*
-               EDUCATION
-            */
-
             if (
-              Array.isArray(improvedCV.education)
+              Array.isArray(
+                improvedCV.education
+              )
             ) {
 
               if (educationList) {
 
-                educationList.innerHTML = '';
+                educationList.innerHTML =
+                  '';
 
               }
 
-              improvedCV.education.forEach(
-                item => {
+
+              improvedCV.education
+                .forEach(item => {
 
                   addEducationEntry({
+
                     degree:
                       item?.degree || '',
 
@@ -2516,23 +3128,25 @@ ${getValue('languages')}
 
                     year:
                       item?.year || ''
+
                   });
 
-                }
-              );
+                });
+
             }
 
 
-            /*
-               SKILLS
-            */
-
             if (
-              Array.isArray(improvedCV.skills)
+              Array.isArray(
+                improvedCV.skills
+              )
             ) {
 
               const skillsInput =
-                document.getElementById('skills');
+                document.getElementById(
+                  'skills'
+                );
+
 
               if (skillsInput) {
 
@@ -2543,20 +3157,23 @@ ${getValue('languages')}
                     )
                     .filter(Boolean)
                     .join(', ');
+
               }
+
             }
 
 
-            /*
-               LANGUAGES
-            */
-
             if (
-              Array.isArray(improvedCV.languages)
+              Array.isArray(
+                improvedCV.languages
+              )
             ) {
 
               const languagesInput =
-                document.getElementById('languages');
+                document.getElementById(
+                  'languages'
+                );
+
 
               if (languagesInput) {
 
@@ -2567,21 +3184,14 @@ ${getValue('languages')}
                     )
                     .filter(Boolean)
                     .join(', ');
+
               }
+
             }
 
 
-            /*
-               تحديث المعاينة بعد إدخال
-               النتيجة المحسنة.
-            */
-
             render();
 
-
-            /*
-               حفظ نسخة JSON منظمة.
-            */
 
             sessionStorage.setItem(
               'cvGeniusAI_lastAIResult',
@@ -2593,13 +3203,11 @@ ${getValue('languages')}
           }
 
 
-          /*
-             عرض النتيجة الخام فقط إذا كان
-             عنصر ai-result موجودًا.
-          */
-
           const aiOutput =
-            document.getElementById('ai-result');
+            document.getElementById(
+              'ai-result'
+            );
+
 
           if (aiOutput) {
 
@@ -2610,6 +3218,7 @@ ${getValue('languages')}
 
             aiOutput.hidden =
               !aiOutput.textContent;
+
           }
 
 
@@ -2623,6 +3232,7 @@ ${getValue('languages')}
               behavior: 'smooth',
               block: 'start'
             });
+
           }
 
 
@@ -2633,10 +3243,12 @@ ${getValue('languages')}
             error
           );
 
+
           alert(
             error?.message ||
             t('aiError')
           );
+
 
           generateBtn.textContent =
             originalText;
@@ -2652,55 +3264,61 @@ ${getValue('languages')}
               t('generate');
 
           }, 2000);
+
         }
+
       }
-    );    
-
-
-  /* =========================================================
-   PRINT
-========================================================= */
-
-if (printBtn) {
-
-  printBtn.addEventListener(
-    'click',
-    () => {
-
-      render();
-
-      // منع المتصفح من اعتبار مساحة المعاينة
-      // صفحة إضافية أثناء الطباعة
-      const originalTitle =
-        document.title;
-
-      document.title =
-        getValue('fullName') ||
-        'CV';
-
-      requestAnimationFrame(() => {
-
-        requestAnimationFrame(() => {
-
-          window.print();
-
-          // إعادة العنوان بعد انتهاء نافذة الطباعة
-          setTimeout(() => {
-            document.title =
-              originalTitle;
-          }, 1000);
-
-        });
-
-      });
-
-    }
-  );
-}
+    );
 
 
     /* =========================================================
-       PDF DOWNLOAD
+       PRINT
+    ========================================================= */
+
+    if (printBtn) {
+
+      printBtn.addEventListener(
+        'click',
+        () => {
+
+          render();
+
+
+          const originalTitle =
+            document.title;
+
+
+          document.title =
+            getValue('fullName') ||
+            'CV';
+
+
+          requestAnimationFrame(() => {
+
+            requestAnimationFrame(() => {
+
+              window.print();
+
+
+              setTimeout(() => {
+
+                document.title =
+                  originalTitle;
+
+              }, 1000);
+
+            });
+
+          });
+
+        }
+      );
+
+    }
+
+
+    /* =========================================================
+       PDF
     ========================================================= */
 
     if (downloadPdfBtn) {
@@ -2762,52 +3380,78 @@ if (printBtn) {
           const fileName =
             `CV-Genius-AI-${safeName || 'CV'}-${uniqueId}.pdf`;
 
-const options = {
 
-  margin: 0,
+          const options = {
 
-  filename: fileName,
+            margin: 0,
 
-  image: {
-    type: 'jpeg',
-    quality: 0.98
-  },
+            filename:
+              fileName,
 
-  html2canvas: {
-    scale: 2,
-    useCORS: true,
-    allowTaint: false,
-    backgroundColor: '#ffffff',
-    logging: false,
+            image: {
+              type: 'jpeg',
+              quality: 0.98
+            },
 
-    scrollX: 0,
-    scrollY: 0,
+            html2canvas: {
 
-    windowWidth: sheet.scrollWidth,
-    windowHeight: sheet.scrollHeight
-  },
+              scale: 2,
 
-  jsPDF: {
-    unit: 'mm',
-    format: 'a4',
-    orientation: 'portrait',
-    compress: true
-  },
+              useCORS: true,
 
-  pagebreak: {
-  mode: ['css', 'legacy'],
-  avoid: [
-    '.sheet-entry'
-  ]
-}
+              allowTaint: false,
 
-};
+              backgroundColor:
+                '#ffffff',
+
+              logging: false,
+
+              scrollX: 0,
+
+              scrollY: 0,
+
+              windowWidth:
+                sheet.scrollWidth,
+
+              windowHeight:
+                sheet.scrollHeight
+
+            },
+
+            jsPDF: {
+
+              unit: 'mm',
+
+              format: 'a4',
+
+              orientation:
+                'portrait',
+
+              compress: true
+
+            },
+
+            pagebreak: {
+
+              mode: [
+                'css',
+                'legacy'
+              ],
+
+              avoid: [
+                '.sheet-entry'
+              ]
+
+            }
+
+          };
 
 
           try {
 
             downloadPdfBtn.disabled =
               true;
+
 
             downloadPdfBtn.textContent =
               t('creatingPdf');
@@ -2846,6 +3490,7 @@ const options = {
             downloadPdfBtn.disabled =
               false;
 
+
             downloadPdfBtn.textContent =
               t('download');
 
@@ -2853,22 +3498,22 @@ const options = {
             alert(
               t('pdfError')
             );
+
           }
+
         }
       );
+
     }
 
 
     /* =========================================================
-       SAVED CVS
+       COLLECT CV
     ========================================================= */
 
     function collectCVData() {
 
       return {
-
-        id:
-          Date.now(),
 
         targetJob:
           getValue('targetJob'),
@@ -2906,78 +3551,36 @@ const options = {
           readExperience(),
 
         education:
-          readEducation(),
+          readEducation()
 
-        createdAt:
-          new Date().toISOString()
       };
-    }
 
-
-    function getSavedCVs() {
-
-      try {
-
-        const data =
-          localStorage.getItem(
-            'cvGeniusAI_CVs'
-          );
-
-        if (!data) {
-          return [];
-        }
-
-        const parsed =
-          JSON.parse(data);
-
-        return Array.isArray(parsed)
-          ? parsed
-          : [];
-
-      } catch (error) {
-
-        console.error(
-          'Saved CVs error:',
-          error
-        );
-
-        return [];
-      }
-    }
-
-
-    function saveCVs(cvs) {
-
-      try {
-
-        localStorage.setItem(
-          'cvGeniusAI_CVs',
-          JSON.stringify(cvs)
-        );
-
-        return true;
-
-      } catch (error) {
-
-        console.error(
-          'Save CVs error:',
-          error
-        );
-
-        return false;
-      }
     }
 
 
     /* =========================================================
-       SAVE CV
+       SAVE CV — SUPABASE ONLY
     ========================================================= */
 
     if (saveCvBtn) {
 
       saveCvBtn.addEventListener(
         'click',
-        () => {
+        async () => {
+
+          const user =
+            await getCurrentUser();
+
+
+          if (!user) {
+
+            alert(
+              'يرجى تسجيل الدخول أولاً.'
+            );
+
+            return;
+          }
+
 
           const cv =
             collectCVData();
@@ -2989,32 +3592,60 @@ const options = {
               t('enterName')
             );
 
+
             document
-              .getElementById('fullName')
+              .getElementById(
+                'fullName'
+              )
               ?.focus();
+
 
             return;
           }
 
 
-          const cvs =
-            getSavedCVs();
+          try {
+
+            saveCvBtn.disabled =
+              true;
 
 
-          cvs.unshift(cv);
+            saveCvBtn.textContent =
+              'جارٍ الحفظ...';
 
 
-          if (
-            saveCVs(
-              cvs.slice(0, 20)
-            )
-          ) {
+            const {
+              error
+            } =
+              await supabaseClient
+                .from('resumes')
+                .insert({
+
+                  user_id:
+                    user.id,
+
+                  data:
+                    cv
+
+                });
+
+
+            if (error) {
+              throw error;
+            }
+
 
             saveCvBtn.textContent =
               t('saved');
 
 
+            await renderSavedCVs();
+
+
             setTimeout(() => {
+
+              saveCvBtn.disabled =
+                false;
 
               saveCvBtn.textContent =
                 t('saveCv');
@@ -3022,10 +3653,553 @@ const options = {
             }, 1500);
 
 
-            renderSavedCVs();
+          } catch (error) {
+
+            console.error(
+              'Save CV error:',
+              error
+            );
+
+
+            saveCvBtn.disabled =
+              false;
+
+
+            saveCvBtn.textContent =
+              t('saveCv');
+
+
+            alert(
+              'حدث خطأ أثناء حفظ السيرة الذاتية.'
+            );
+
           }
+
         }
       );
+
+    }
+
+
+    /* =========================================================
+       RENDER SAVED CVS — SUPABASE ONLY
+    ========================================================= */
+
+    async function renderSavedCVs() {
+
+      if (!savedCvsList) {
+        return;
+      }
+
+
+      const user =
+        await getCurrentUser();
+
+
+      if (!user) {
+
+        savedCvsList.innerHTML = `
+          <p class="saved-cv-empty">
+            يرجى تسجيل الدخول لعرض سيرك الذاتية.
+          </p>
+        `;
+
+        return;
+      }
+
+
+      try {
+
+        const {
+          data: cvs,
+          error
+        } =
+          await supabaseClient
+            .from('resumes')
+            .select(
+              'id, data, created_at'
+            )
+            .eq(
+              'user_id',
+              user.id
+            )
+            .order(
+              'created_at',
+              {
+                ascending:
+                  false
+              }
+            );
+
+
+        if (error) {
+          throw error;
+        }
+
+
+        if (
+          !cvs ||
+          !cvs.length
+        ) {
+
+          savedCvsList.innerHTML = `
+            <p class="saved-cv-empty">
+              ${escapeHTML(
+                t('noSavedCvs')
+              )}
+            </p>
+          `;
+
+          return;
+        }
+
+
+        savedCvsList.innerHTML =
+          cvs.map(cvRow => {
+
+            const cv =
+              cvRow.data || {};
+
+
+            const name =
+              escapeHTML(
+                cv.fullName ||
+                'CV'
+              );
+
+
+            const job =
+              escapeHTML(
+                cv.jobTitle ||
+                cv.targetJob ||
+                t('titlePlaceholder')
+              );
+
+
+            return `
+
+              <div
+                class="saved-cv-item"
+                data-saved-id="${escapeHTML(
+                  cvRow.id
+                )}"
+              >
+
+                <div class="saved-cv-info">
+
+                  <strong>
+                    ${name}
+                  </strong>
+
+                  <span>
+                    ${job}
+                  </span>
+
+                </div>
+
+
+                <div class="saved-cv-actions">
+
+                  <button
+                    type="button"
+                    class="btn btn--text js-load-cv"
+                    data-id="${escapeHTML(
+                      cvRow.id
+                    )}"
+                  >
+                    ${escapeHTML(
+                      t('load')
+                    )}
+                  </button>
+
+
+                  <button
+                    type="button"
+                    class="btn btn--text js-delete-cv"
+                    data-id="${escapeHTML(
+                      cvRow.id
+                    )}"
+                  >
+                    ${escapeHTML(
+                      t('delete')
+                    )}
+                  </button>
+
+                </div>
+
+              </div>
+
+            `;
+
+          }).join('');
+
+
+        savedCvsList
+          .querySelectorAll(
+            '.js-load-cv'
+          )
+          .forEach(button => {
+
+            button.addEventListener(
+              'click',
+              () => {
+
+                loadCV(
+                  button.dataset.id
+                );
+
+              }
+            );
+
+          });
+
+
+        savedCvsList
+          .querySelectorAll(
+            '.js-delete-cv'
+          )
+          .forEach(button => {
+
+            button.addEventListener(
+              'click',
+              () => {
+
+                deleteCV(
+                  button.dataset.id
+                );
+
+              }
+            );
+
+          });
+
+
+      } catch (error) {
+
+        console.error(
+          'Render saved CVs error:',
+          error
+        );
+
+
+        savedCvsList.innerHTML = `
+          <p class="saved-cv-empty">
+            حدث خطأ أثناء تحميل السير الذاتية.
+          </p>
+        `;
+
+      }
+
+    }
+
+
+    /* =========================================================
+       LOAD CV — SUPABASE ONLY
+    ========================================================= */
+
+    async function loadCV(id) {
+
+      const user =
+        await getCurrentUser();
+
+
+      if (!user) {
+
+        alert(
+          'يرجى تسجيل الدخول أولاً.'
+        );
+
+        return;
+      }
+
+
+      try {
+
+        const {
+          data: row,
+          error
+        } =
+          await supabaseClient
+            .from('resumes')
+            .select(
+              'id, data'
+            )
+            .eq(
+              'id',
+              id
+            )
+            .eq(
+              'user_id',
+              user.id
+            )
+            .single();
+
+
+        if (error) {
+          throw error;
+        }
+
+
+        const cv =
+          row?.data;
+
+
+        if (!cv) {
+          return;
+        }
+
+
+        const fields = [
+
+          'targetJob',
+
+          'fullName',
+
+          'jobTitle',
+
+          'email',
+
+          'phone',
+
+          'location',
+
+          'summary',
+
+          'skills',
+
+          'languages'
+
+        ];
+
+
+        fields.forEach(id => {
+
+          const element =
+            document.getElementById(
+              id
+            );
+
+
+          if (element) {
+
+            element.value =
+              cv[id] || '';
+
+          }
+
+        });
+
+
+        if (experienceList) {
+
+          experienceList.innerHTML =
+            '';
+
+        }
+
+
+        if (educationList) {
+
+          educationList.innerHTML =
+            '';
+
+        }
+
+
+        if (
+          Array.isArray(
+            cv.experience
+          ) &&
+          cv.experience.length
+        ) {
+
+          cv.experience.forEach(
+            addExperienceEntry
+          );
+
+        } else {
+
+          addExperienceEntry();
+
+        }
+
+
+        if (
+          Array.isArray(
+            cv.education
+          ) &&
+          cv.education.length
+        ) {
+
+          cv.education.forEach(
+            addEducationEntry
+          );
+
+        } else {
+
+          addEducationEntry();
+
+        }
+
+
+        if (templateSelect) {
+
+          templateSelect.value =
+            cv.template ||
+            'classic';
+
+        }
+
+
+        applyLanguage();
+
+        render();
+
+
+        if (savedCvsList) {
+
+          savedCvsList.style.display =
+            'none';
+
+        }
+
+
+        sheet.scrollIntoView({
+          behavior:
+            'smooth',
+
+          block:
+            'start'
+
+        });
+
+
+      } catch (error) {
+
+        console.error(
+          'Load CV error:',
+          error
+        );
+
+
+        alert(
+          'حدث خطأ أثناء تحميل السيرة الذاتية.'
+        );
+
+      }
+
+    }
+
+
+    /* =========================================================
+       DELETE CV — SUPABASE ONLY
+    ========================================================= */
+
+    async function deleteCV(id) {
+
+      const user =
+        await getCurrentUser();
+
+
+      if (!user) {
+
+        alert(
+          'يرجى تسجيل الدخول أولاً.'
+        );
+
+        return;
+      }
+
+
+      if (
+        !window.confirm(
+          t('deleteConfirm')
+        )
+      ) {
+
+        return;
+
+      }
+
+
+      try {
+
+        const {
+          error
+        } =
+          await supabaseClient
+            .from('resumes')
+            .delete()
+            .eq(
+              'id',
+              id
+            )
+            .eq(
+              'user_id',
+              user.id
+            );
+
+
+        if (error) {
+          throw error;
+        }
+
+
+        await renderSavedCVs();
+
+
+      } catch (error) {
+
+        console.error(
+          'Delete CV error:',
+          error
+        );
+
+
+        alert(
+          'حدث خطأ أثناء حذف السيرة الذاتية.'
+        );
+
+      }
+
+    }
+
+
+    /* =========================================================
+       MY CVS
+    ========================================================= */
+
+    if (myCvsBtn) {
+
+      myCvsBtn.addEventListener(
+        'click',
+        async () => {
+
+          if (!savedCvsList) {
+            return;
+          }
+
+
+          const visible =
+            savedCvsList.style.display ===
+            'block';
+
+
+          savedCvsList.style.display =
+            visible
+              ? 'none'
+              : 'block';
+
+
+          if (!visible) {
+
+            await renderSavedCVs();
+
+          }
+
+        }
+      );
+
     }
 
 
@@ -3039,24 +4213,31 @@ const options = {
 
 
       if (experienceList) {
+
         experienceList.innerHTML =
           '';
+
       }
 
 
       if (educationList) {
+
         educationList.innerHTML =
           '';
+
       }
 
 
       addExperienceEntry();
+
       addEducationEntry();
 
 
       if (templateSelect) {
+
         templateSelect.value =
           'classic';
+
       }
 
 
@@ -3070,17 +4251,22 @@ const options = {
           'ai-result'
         );
 
+
       if (aiOutput) {
+
         aiOutput.textContent =
           '';
 
         aiOutput.hidden =
           true;
+
       }
 
 
       applyLanguage();
+
       render();
+
     }
 
 
@@ -3099,845 +4285,19 @@ const options = {
               t('newConfirm')
             )
           ) {
+
             return;
+
           }
+
 
           clearForm();
+
         }
       );
-    }
-
-
-    /* =========================================================
-       RENDER SAVED CVS
-    ========================================================= */
-
-    function renderSavedCVs() {
-
-      if (!savedCvsList) {
-        return;
-      }
-
-
-      const cvs =
-        getSavedCVs();
-
-
-      if (!cvs.length) {
-
-        savedCvsList.innerHTML = `
-          <p class="saved-cv-empty">
-            ${escapeHTML(
-              t('noSavedCvs')
-            )}
-          </p>
-        `;
-
-        return;
-      }
-
-
-      savedCvsList.innerHTML =
-        cvs.map((cv, index) => {
-
-          const name =
-            escapeHTML(
-              cv.fullName ||
-              'CV'
-            );
-
-
-          const job =
-            escapeHTML(
-              cv.jobTitle ||
-              cv.targetJob ||
-              t('titlePlaceholder')
-            );
-
-
-          return `
-            <div
-              class="saved-cv-item"
-              data-saved-index="${index}"
-            >
-
-              <div class="saved-cv-info">
-
-                <strong>
-                  ${name}
-                </strong>
-
-                <span>
-                  ${job}
-                </span>
-
-              </div>
-
-
-              <div class="saved-cv-actions">
-
-                <button
-                  type="button"
-                  class="btn btn--text js-load-cv"
-                  data-index="${index}"
-                >
-                  ${escapeHTML(
-                    t('load')
-                  )}
-                </button>
-
-
-                <button
-                  type="button"
-                  class="btn btn--text js-delete-cv"
-                  data-index="${index}"
-                >
-                  ${escapeHTML(
-                    t('delete')
-                  )}
-                </button>
-
-              </div>
-
-            </div>
-          `;
-
-        }).join('');
-
-
-      savedCvsList
-        .querySelectorAll('.js-load-cv')
-        .forEach(button => {
-
-          button.addEventListener(
-            'click',
-            () => {
-
-              loadCV(
-                Number(
-                  button.dataset.index
-                )
-              );
-            }
-          );
-        });
-
-
-      savedCvsList
-        .querySelectorAll('.js-delete-cv')
-        .forEach(button => {
-
-          button.addEventListener(
-            'click',
-            () => {
-
-              deleteCV(
-                Number(
-                  button.dataset.index
-                )
-              );
-            }
-          );
-        });
-    }
-
-
-    /* =========================================================
-       LOAD CV
-    ========================================================= */
-
-    function loadCV(index) {
-
-      const cvs =
-        getSavedCVs();
-
-      const cv =
-        cvs[index];
-
-      if (!cv) {
-        return;
-      }
-
-
-      const fields = [
-        'targetJob',
-        'fullName',
-        'jobTitle',
-        'email',
-        'phone',
-        'location',
-        'summary',
-        'skills',
-        'languages'
-      ];
-
-
-      fields.forEach(id => {
-
-        const element =
-          document.getElementById(id);
-
-        if (element) {
-          element.value =
-            cv[id] || '';
-        }
-      });
-
-
-      if (experienceList) {
-        experienceList.innerHTML =
-          '';
-      }
-
-
-      if (educationList) {
-        educationList.innerHTML =
-          '';
-      }
-
-
-      if (
-        Array.isArray(cv.experience) &&
-        cv.experience.length
-      ) {
-
-        cv.experience.forEach(
-          addExperienceEntry
-        );
-
-      } else {
-
-        addExperienceEntry();
-      }
-
-
-      if (
-        Array.isArray(cv.education) &&
-        cv.education.length
-      ) {
-
-        cv.education.forEach(
-          addEducationEntry
-        );
-
-      } else {
-
-        addEducationEntry();
-      }
-
-
-      if (templateSelect) {
-
-        templateSelect.value =
-          cv.template ||
-          'classic';
-      }
-
-
-      applyLanguage();
-      render();
-
-
-      if (savedCvsList) {
-        savedCvsList.style.display =
-          'none';
-      }
-
-
-      sheet.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start'
-      });
-    }
-
-
-    /* =========================================================
-       DELETE CV
-    ========================================================= */
-
-    function deleteCV(index) {
-
-      const cvs =
-        getSavedCVs();
-
-
-      if (!cvs[index]) {
-        return;
-      }
-/* =========================================================
-   SAVED CVS — SUPABASE
-========================================================= */
-
-async function getCurrentUser() {
-
-  const {
-    data: {
-      user
-    },
-    error
-  } = await supabaseClient.auth.getUser();
-
-  if (error) {
-    console.error('Get user error:', error);
-    return null;
-  }
-
-  return user;
-}
-
-
-/* =========================================================
-   SAVE CV
-========================================================= */
-
-if (saveCvBtn) {
-
-  saveCvBtn.addEventListener(
-    'click',
-    async () => {
-
-      const user =
-        await getCurrentUser();
-
-      if (!user) {
-
-        alert(
-          'يرجى تسجيل الدخول أولاً.'
-        );
-
-        return;
-      }
-
-
-      const cv =
-        collectCVData();
-
-
-      if (!cv.fullName) {
-
-        alert(
-          t('enterName')
-        );
-
-        document
-          .getElementById('fullName')
-          ?.focus();
-
-        return;
-      }
-
-
-      try {
-
-        saveCvBtn.disabled = true;
-
-        saveCvBtn.textContent =
-          'جارٍ الحفظ...';
-
-
-        const {
-          error
-        } =
-          await supabaseClient
-            .from('resumes')
-            .insert({
-              user_id: user.id,
-              data: cv
-            });
-
-
-        if (error) {
-          throw error;
-        }
-
-
-        saveCvBtn.textContent =
-          t('saved');
-
-
-        await renderSavedCVs();
-
-
-        setTimeout(() => {
-
-          saveCvBtn.disabled = false;
-
-          saveCvBtn.textContent =
-            t('saveCv');
-
-        }, 1500);
-
-
-      } catch (error) {
-
-        console.error(
-          'Save CV error:',
-          error
-        );
-
-        saveCvBtn.disabled = false;
-
-        saveCvBtn.textContent =
-          t('saveCv');
-
-        alert(
-          'حدث خطأ أثناء حفظ السيرة الذاتية.'
-        );
-      }
-
-    }
-  );
-}
-
-
-/* =========================================================
-   RENDER SAVED CVS
-========================================================= */
-
-async function renderSavedCVs() {
-
-  if (!savedCvsList) {
-    return;
-  }
-
-
-  const user =
-    await getCurrentUser();
-
-
-  if (!user) {
-
-    savedCvsList.innerHTML = `
-      <p class="saved-cv-empty">
-        يرجى تسجيل الدخول لعرض سيرك الذاتية.
-      </p>
-    `;
-
-    return;
-  }
-
-
-  try {
-
-    const {
-      data: cvs,
-      error
-    } =
-      await supabaseClient
-        .from('resumes')
-        .select('id, data, created_at')
-        .eq('user_id', user.id)
-        .order(
-          'created_at',
-          {
-            ascending: false
-          }
-        );
-
-
-    if (error) {
-      throw error;
-    }
-
-
-    if (!cvs || !cvs.length) {
-
-      savedCvsList.innerHTML = `
-        <p class="saved-cv-empty">
-          ${escapeHTML(
-            t('noSavedCvs')
-          )}
-        </p>
-      `;
-
-      return;
-    }
-
-
-    savedCvsList.innerHTML =
-      cvs.map(cvRow => {
-
-        const cv =
-          cvRow.data || {};
-
-
-        const name =
-          escapeHTML(
-            cv.fullName ||
-            'CV'
-          );
-
-
-        const job =
-          escapeHTML(
-            cv.jobTitle ||
-            cv.targetJob ||
-            t('titlePlaceholder')
-          );
-
-
-        return `
-          <div
-            class="saved-cv-item"
-            data-saved-id="${escapeHTML(
-              cvRow.id
-            )}"
-          >
-
-            <div class="saved-cv-info">
-
-              <strong>
-                ${name}
-              </strong>
-
-              <span>
-                ${job}
-              </span>
-
-            </div>
-
-
-            <div class="saved-cv-actions">
-
-              <button
-                type="button"
-                class="btn btn--text js-load-cv"
-                data-id="${escapeHTML(
-                  cvRow.id
-                )}"
-              >
-                ${escapeHTML(
-                  t('load')
-                )}
-              </button>
-
-
-              <button
-                type="button"
-                class="btn btn--text js-delete-cv"
-                data-id="${escapeHTML(
-                  cvRow.id
-                )}"
-              >
-                ${escapeHTML(
-                  t('delete')
-                )}
-              </button>
-
-            </div>
-
-          </div>
-        `;
-
-      }).join('');
-
-
-    savedCvsList
-      .querySelectorAll('.js-load-cv')
-      .forEach(button => {
-
-        button.addEventListener(
-          'click',
-          () => {
-
-            loadCV(
-              button.dataset.id
-            );
-
-          }
-        );
-
-      });
-
-
-    savedCvsList
-      .querySelectorAll('.js-delete-cv')
-      .forEach(button => {
-
-        button.addEventListener(
-          'click',
-          () => {
-
-            deleteCV(
-              button.dataset.id
-            );
-
-          }
-        );
-
-      });
-
-
-  } catch (error) {
-
-    console.error(
-      'Render saved CVs error:',
-      error
-    );
-
-    savedCvsList.innerHTML = `
-      <p class="saved-cv-empty">
-        حدث خطأ أثناء تحميل السير الذاتية.
-      </p>
-    `;
-  }
-}
-
-
-/* =========================================================
-   LOAD CV
-========================================================= */
-
-async function loadCV(id) {
-
-  const user =
-    await getCurrentUser();
-
-
-  if (!user) {
-
-    alert(
-      'يرجى تسجيل الدخول أولاً.'
-    );
-
-    return;
-  }
-
-
-  try {
-
-    const {
-      data: row,
-      error
-    } =
-      await supabaseClient
-        .from('resumes')
-        .select('id, data')
-        .eq('id', id)
-        .eq('user_id', user.id)
-        .single();
-
-
-    if (error) {
-      throw error;
-    }
-
-
-    const cv =
-      row?.data;
-
-
-    if (!cv) {
-      return;
-    }
-
-
-    const fields = [
-      'targetJob',
-      'fullName',
-      'jobTitle',
-      'email',
-      'phone',
-      'location',
-      'summary',
-      'skills',
-      'languages'
-    ];
-
-
-    fields.forEach(id => {
-
-      const element =
-        document.getElementById(id);
-
-      if (element) {
-
-        element.value =
-          cv[id] || '';
-
-      }
-
-    });
-
-
-    if (experienceList) {
-      experienceList.innerHTML = '';
-    }
-
-
-    if (educationList) {
-      educationList.innerHTML = '';
-    }
-
-
-    if (
-      Array.isArray(cv.experience) &&
-      cv.experience.length
-    ) {
-
-      cv.experience.forEach(
-        addExperienceEntry
-      );
-
-    } else {
-
-      addExperienceEntry();
 
     }
 
-
-    if (
-      Array.isArray(cv.education) &&
-      cv.education.length
-    ) {
-
-      cv.education.forEach(
-        addEducationEntry
-      );
-
-    } else {
-
-      addEducationEntry();
-
-    }
-
-
-    if (templateSelect) {
-
-      templateSelect.value =
-        cv.template ||
-        'classic';
-
-    }
-
-
-    applyLanguage();
-
-    render();
-
-
-    savedCvsList.style.display =
-      'none';
-
-
-    sheet.scrollIntoView({
-      behavior: 'smooth',
-      block: 'start'
-    });
-
-
-  } catch (error) {
-
-    console.error(
-      'Load CV error:',
-      error
-    );
-
-    alert(
-      'حدث خطأ أثناء تحميل السيرة الذاتية.'
-    );
-  }
-}
-
-
-/* =========================================================
-   DELETE CV
-========================================================= */
-
-async function deleteCV(id) {
-
-  const user =
-    await getCurrentUser();
-
-
-  if (!user) {
-
-    alert(
-      'يرجى تسجيل الدخول أولاً.'
-    );
-
-    return;
-  }
-
-
-  if (
-    !window.confirm(
-      t('deleteConfirm')
-    )
-  ) {
-    return;
-  }
-
-
-  try {
-
-    const {
-      error
-    } =
-      await supabaseClient
-        .from('resumes')
-        .delete()
-        .eq('id', id)
-        .eq('user_id', user.id);
-
-
-    if (error) {
-      throw error;
-    }
-
-
-    await renderSavedCVs();
-
-
-  } catch (error) {
-
-    console.error(
-      'Delete CV error:',
-      error
-    );
-
-    alert(
-      'حدث خطأ أثناء حذف السيرة الذاتية.'
-    );
-  }
-}
-
-
-/* =========================================================
-   MY CVS
-========================================================= */
-
-if (myCvsBtn) {
-
-  myCvsBtn.addEventListener(
-    'click',
-    async () => {
-
-      if (!savedCvsList) {
-        return;
-      }
-
-
-      const visible =
-        savedCvsList.style.display ===
-        'block';
-
-
-      savedCvsList.style.display =
-        visible
-          ? 'none'
-          : 'block';
-
-
-      if (!visible) {
-
-        await renderSavedCVs();
-
-      }
-
-    }
-  );
-}
 
     /* =========================================================
        INITIALIZATION
@@ -3954,7 +4314,9 @@ if (myCvsBtn) {
       experienceList &&
       experienceList.children.length === 0
     ) {
+
       addExperienceEntry();
+
     }
 
 
@@ -3962,17 +4324,23 @@ if (myCvsBtn) {
       educationList &&
       educationList.children.length === 0
     ) {
+
       addEducationEntry();
+
     }
 
 
     if (savedCvsList) {
+
       savedCvsList.style.display =
         'none';
+
     }
 
 
     render();
+
+    updateAuthUI();
 
   });
 
