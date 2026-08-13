@@ -9,6 +9,256 @@ const supabaseClient = window.supabase.createClient(
   SUPABASE_URL,
   SUPABASE_PUBLISHABLE_KEY
 );
+/* =========================================================
+   AUTHENTICATION
+========================================================= */
+
+const authEmail =
+  document.getElementById('auth-email');
+
+const authPassword =
+  document.getElementById('auth-password');
+
+const signupBtn =
+  document.getElementById('signup-btn');
+
+const loginBtn =
+  document.getElementById('login-btn');
+
+const logoutBtn =
+  document.getElementById('logout-btn');
+
+const authStatus =
+  document.getElementById('auth-status');
+
+
+function showAuthStatus(message) {
+
+  if (authStatus) {
+    authStatus.textContent = message;
+  }
+
+}
+
+
+async function signUp() {
+
+  const email =
+    authEmail?.value.trim();
+
+  const password =
+    authPassword?.value || '';
+
+  if (!email || !password) {
+
+    showAuthStatus(
+      'أدخل البريد الإلكتروني وكلمة المرور.'
+    );
+
+    return;
+  }
+
+  try {
+
+    const { data, error } =
+      await supabaseClient.auth.signUp({
+        email,
+        password
+      });
+
+    if (error) {
+      throw error;
+    }
+
+    if (data.user) {
+
+      showAuthStatus(
+        'تم إنشاء الحساب بنجاح.'
+      );
+
+    }
+
+  } catch (error) {
+
+    console.error(
+      'Sign up error:',
+      error
+    );
+
+    showAuthStatus(
+      error.message ||
+      'حدث خطأ أثناء إنشاء الحساب.'
+    );
+
+  }
+
+}
+
+
+async function login() {
+
+  const email =
+    authEmail?.value.trim();
+
+  const password =
+    authPassword?.value || '';
+
+  if (!email || !password) {
+
+    showAuthStatus(
+      'أدخل البريد الإلكتروني وكلمة المرور.'
+    );
+
+    return;
+  }
+
+  try {
+
+    const { error } =
+      await supabaseClient.auth.signInWithPassword({
+        email,
+        password
+      });
+
+    if (error) {
+      throw error;
+    }
+
+    showAuthStatus(
+      'تم تسجيل الدخول بنجاح.'
+    );
+
+  } catch (error) {
+
+    console.error(
+      'Login error:',
+      error
+    );
+
+    showAuthStatus(
+      error.message ||
+      'حدث خطأ أثناء تسجيل الدخول.'
+    );
+
+  }
+
+}
+
+
+async function logout() {
+
+  try {
+
+    const { error } =
+      await supabaseClient.auth.signOut();
+
+    if (error) {
+      throw error;
+    }
+
+    showAuthStatus(
+      'تم تسجيل الخروج.'
+    );
+
+  } catch (error) {
+
+    console.error(
+      'Logout error:',
+      error
+    );
+
+    showAuthStatus(
+      error.message ||
+      'حدث خطأ أثناء تسجيل الخروج.'
+    );
+
+  }
+
+}
+
+
+async function updateAuthUI() {
+
+  const {
+    data: {
+      session
+    }
+  } = await supabaseClient.auth.getSession();
+
+
+  if (session) {
+
+    if (signupBtn)
+      signupBtn.hidden = true;
+
+    if (loginBtn)
+      loginBtn.hidden = true;
+
+    if (logoutBtn)
+      logoutBtn.hidden = false;
+
+    showAuthStatus(
+      `تم تسجيل الدخول: ${session.user.email}`
+    );
+
+  } else {
+
+    if (signupBtn)
+      signupBtn.hidden = false;
+
+    if (loginBtn)
+      loginBtn.hidden = false;
+
+    if (logoutBtn)
+      logoutBtn.hidden = true;
+
+    showAuthStatus(
+      'لم يتم تسجيل الدخول.'
+    );
+
+  }
+
+}
+
+
+if (signupBtn) {
+
+  signupBtn.addEventListener(
+    'click',
+    signUp
+  );
+
+}
+
+
+if (loginBtn) {
+
+  loginBtn.addEventListener(
+    'click',
+    login
+  );
+
+}
+
+
+if (logoutBtn) {
+
+  logoutBtn.addEventListener(
+    'click',
+    logout
+  );
+
+}
+
+
+supabaseClient.auth.onAuthStateChange(
+  () => {
+    updateAuthUI();
+  }
+);
+
+
+updateAuthUI();
 (() => {
   'use strict';
 
