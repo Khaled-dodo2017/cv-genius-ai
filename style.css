@@ -744,8 +744,27 @@ input:focus-visible, textarea:focus-visible, button:focus-visible{
   .sheet-entry__desc {
     overflow-wrap: anywhere;
     word-break: break-word;
+@media print {
+  .editor,
+  #auth-section,
+  .preview__mark {
+    display: none !important;
   }
-#auth-section {
-  display: none !important;
-}
+
+  .preview {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .preview__stage {
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .sheet {
+    margin: 0 !important;
+  }
 }
