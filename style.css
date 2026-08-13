@@ -745,5 +745,7 @@ input:focus-visible, textarea:focus-visible, button:focus-visible{
     overflow-wrap: anywhere;
     word-break: break-word;
   }
-
+#auth-section {
+  display: none !important;
+}
 }
