@@ -3155,7 +3155,22 @@ ${getValue('languages')}
             );
 
           }
+/* =====================================================
+   COUNT SUCCESSFUL AI USE
+===================================================== */
 
+let newUsageCount = null;
+
+
+if (usage.user) {
+
+  newUsageCount =
+    await incrementAIUsage(
+      usage.user,
+      usage.count
+    );
+
+}
 
           const aiResult =
             String(data.result).trim();
