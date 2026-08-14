@@ -377,7 +377,7 @@ async function saveUsage(
 
         device_hash:
           identities.deviceHash ||
-          null
+          null,
          action: "improve-cv"
       })
     }
