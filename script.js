@@ -2971,24 +2971,20 @@ const supabaseClient = window.supabase.createClient(
 
     function showAIUsageMessage(count) {
 
-      if (count === 1) {
+  if (count === 1) {
 
-        alert(
-          `تم استخدامك الأول للذكاء الاصطناعي.\n\nتبقى لك استعمال مجاني واحد.`
-        );
+    alert(
+      `تم استخدامك الأول للذكاء الاصطناعي.\n\nتبقى لك استعمال مجاني واحد.`
+    );
 
-        return;
+    return;
+  }
 
-      }
+  if (count === 2) {
+    showPaymentOptions();
+  }
 
-
-      if (count === 2) {
-
-        alert(
-          `تم استخدامك الثاني للذكاء الاصطناعي.\n\nانتهت الاستعمالات المجانية المتاحة لك.`
-        );
-
-      }
+}
 
     }
 
