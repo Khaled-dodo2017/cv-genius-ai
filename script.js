@@ -3006,17 +3006,44 @@ function showPaymentOptions() {
         generateBtn.textContent =
           t('improving');
 
+try {
 
-        try {
+  /* =====================================================
+     CHECK AI USAGE BEFORE SENDING REQUEST
+  ===================================================== */
 
-          const experience =
-            readExperience();
-
-          const education =
-            readEducation();
+  const usage =
+    await getAIUsage();
 
 
-          const cvText = `
+  /*
+    إذا كان المستخدم غير مسجل الدخول،
+    نسمح له بالاستعمال الحالي.
+    
+    إذا أردت لاحقًا جعل AI للحسابات فقط،
+    يمكننا تغيير هذا الشرط.
+  */
+
+  if (
+    usage.user &&
+    usage.count >= FREE_AI_USES
+  ) {
+
+    showPaymentOptions();
+
+    return;
+  }
+
+
+  const experience =
+    readExperience();
+
+  const education =
+    readEducation();
+
+
+  const cvText = `
+        
 ${currentLanguage === 'ar'
   ? 'الوظيفة المستهدفة'
   : currentLanguage === 'fr'
