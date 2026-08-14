@@ -1,845 +1,513 @@
 /* =========================================================
-   CV Genius AI — Professional CV Builder
-   Clean responsive design
-========================================================= */
+   Ledger — CV Builder
+   Palette: ink #14171F · paper #F7F5F0 · sheet #FFFFFF
+            emerald #2F5D50 (accent) · gold #B8863D (accent warm)
+            line #DCD6C8 · muted #6B6F76
+   Type: Fraunces (display) · Inter (body/UI) · IBM Plex Mono (labels)
+   ========================================================= */
 
 :root{
-  --ink:#14171F;
-  --paper:#EFEAE0;
-  --sheet:#FFFFFF;
-  --accent:#2F5D50;
-  --accent-2:#B8863D;
-  --line:#DCD6C8;
-  --muted:#696D74;
-  --danger:#A5432F;
+  --ink:      #14171F;
+  --paper:    #EFEAE0;
+  --sheet:    #FFFFFF;
+  --accent:   #2F5D50;
+  --accent-2: #B8863D;
+  --line:     #DCD6C8;
+  --muted:    #696D74;
+  --danger:   #A5432F;
 
-  --font-display:"Fraunces", Georgia, serif;
-  --font-body:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-  --font-mono:"IBM Plex Mono","Courier New",monospace;
+  --font-display: "Fraunces", Georgia, serif;
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", "Courier New", monospace;
 
-  --radius:4px;
-
-  --shadow-sheet:
-    0 1px 1px rgba(20,23,31,.04),
-    0 12px 32px -12px rgba(20,23,31,.28),
-    0 40px 60px -30px rgba(20,23,31,.22);
+  --radius: 3px;
+  --shadow-sheet: 0 1px 1px rgba(20,23,31,0.04), 0 12px 32px -12px rgba(20,23,31,0.28), 0 40px 60px -30px rgba(20,23,31,0.22);
 }
 
-*,
-*::before,
-*::after{
-  box-sizing:border-box;
+*, *::before, *::after{ box-sizing: border-box; }
+
+@media (prefers-reduced-motion: reduce){
+  *{
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
 }
 
-html{
-  color-scheme:light;
-  scroll-behavior:smooth;
-}
+html{ color-scheme: light; }
 
 body{
-  margin:0;
-  background:var(--paper);
+  margin: 0;
+  background: var(--paper);
   background-image:
-    radial-gradient(
-      rgba(20,23,31,.035) 1px,
-      transparent 1px
-    );
-  background-size:22px 22px;
-  color:var(--ink);
-  font-family:var(--font-body);
-  font-size:15px;
-  line-height:1.5;
-  -webkit-font-smoothing:antialiased;
-  overflow-x:hidden;
+    radial-gradient(rgba(20,23,31,0.035) 1px, transparent 1px);
+  background-size: 22px 22px;
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
 
-button,
-input,
-textarea,
-select{
-  font:inherit;
-}
-
-/* =========================================================
-   MAIN LAYOUT
-========================================================= */
+/* ---------- Layout shell ---------- */
 
 .app{
-  display:grid;
-  grid-template-columns:minmax(360px,480px) 1fr;
-  min-height:100vh;
+  display: grid;
+  grid-template-columns: minmax(360px, 480px) 1fr;
+  min-height: 100vh;
 }
 
 .editor{
-  background:var(--paper);
-  border-right:1px solid var(--line);
-  padding:40px 44px 80px;
+  background: var(--paper);
+  border-right: 1px solid var(--line);
+  padding: 40px 44px 80px;
 }
 
 .preview{
-  background:var(--paper);
-  padding:40px 48px;
-  display:flex;
-  align-items:flex-start;
-  justify-content:center;
+  background: var(--paper);
+  padding: 40px 48px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
 }
 
 .preview__stage{
-  position:sticky;
-  top:40px;
-  width:100%;
-  max-width:620px;
+  position: sticky;
+  top: 40px;
+  width: 100%;
+  max-width: 620px;
 }
 
 .preview__mark{
-  display:block;
-  margin-bottom:16px;
-  color:var(--muted);
-  font-family:var(--font-mono);
-  font-size:11px;
-  letter-spacing:.12em;
-  text-transform:uppercase;
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 16px;
 }
 
-/* =========================================================
-   EDITOR HEADER
-========================================================= */
+/* ---------- Masthead ---------- */
 
 .editor__masthead{
-  display:flex;
-  align-items:flex-start;
-  gap:16px;
-  margin-bottom:40px;
-  padding-bottom:28px;
-  border-bottom:1px solid var(--line);
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 40px;
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--line);
 }
 
 .editor__mark{
-  flex-shrink:0;
-  margin-top:6px;
-  padding:3px 8px;
-  border:1px solid var(--line);
-  border-radius:999px;
-  color:var(--accent-2);
-  font-family:var(--font-mono);
-  font-size:11px;
-  letter-spacing:.12em;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--accent-2);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 3px 8px;
+  margin-top: 6px;
+  flex-shrink: 0;
 }
 
 .editor__title{
-  margin:0 0 4px;
-  font-family:var(--font-display);
-  font-size:30px;
-  font-weight:600;
-  line-height:1.2;
-  letter-spacing:-.01em;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 30px;
+  margin: 0 0 4px;
+  letter-spacing: -0.01em;
 }
 
 .editor__subtitle{
-  max-width:34ch;
-  margin:0;
-  color:var(--muted);
-  font-size:13.5px;
-  line-height:1.6;
+  margin: 0;
+  color: var(--muted);
+  font-size: 13.5px;
+  max-width: 34ch;
 }
 
-/* =========================================================
-   LANGUAGE
-========================================================= */
-
-#language-selector{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  margin-bottom:24px;
-  flex-wrap:wrap;
-}
-
-#language-label{
-  color:var(--muted);
-  font-family:var(--font-mono);
-  font-size:11px;
-  letter-spacing:.08em;
-}
-
-#language-select,
-.language-select,
-select{
-  min-height:40px;
-  padding:8px 12px;
-  border:1px solid var(--line);
-  border-radius:var(--radius);
-  background:var(--sheet);
-  color:var(--ink);
-  cursor:pointer;
-}
-
-/* =========================================================
-   FORM
-========================================================= */
+/* ---------- Form structure ---------- */
 
 .field-group{
-  margin:0 0 28px;
-  padding:0 0 28px;
-  border:0;
-  border-bottom:1px dashed var(--line);
+  border: none;
+  padding: 0 0 28px;
+  margin: 0 0 28px;
+  border-bottom: 1px dashed var(--line);
 }
 
-.field-group:last-of-type{
-  border-bottom:0;
-}
+.field-group:last-of-type{ border-bottom: none; }
 
 .field-group legend{
-  width:100%;
-  padding:0 0 14px;
-  color:var(--accent);
-  font-family:var(--font-mono);
-  font-size:11px;
-  letter-spacing:.14em;
-  text-transform:uppercase;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--accent);
+  padding: 0 0 14px;
+  width: 100%;
 }
 
 .field{
-  display:block;
-  margin-bottom:14px;
+  display: block;
+  margin-bottom: 14px;
 }
 
 .field-row{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:12px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
 }
 
 .field__label{
-  display:block;
-  margin-bottom:6px;
-  color:var(--muted);
-  font-size:11.5px;
-  font-weight:500;
+  display: block;
+  font-size: 11.5px;
+  color: var(--muted);
+  margin-bottom: 6px;
+  font-weight: 500;
 }
 
 input[type="text"],
 input[type="email"],
 input[type="tel"],
-input[type="number"],
 textarea{
-  width:100%;
-  padding:10px 12px;
-  border:1px solid var(--line);
-  border-radius:var(--radius);
-  background:var(--sheet);
-  color:var(--ink);
-  font-family:var(--font-body);
-  font-size:14.5px;
-  transition:
-    border-color 120ms ease,
-    box-shadow 120ms ease;
-}
-
-textarea{
-  min-height:100px;
-  resize:vertical;
+  width: 100%;
+  font-family: var(--font-body);
+  font-size: 14.5px;
+  color: var(--ink);
+  background: var(--sheet);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  resize: vertical;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
 }
 
 input::placeholder,
 textarea::placeholder{
-  color:#A7A29A;
+  color: #A7A29A;
 }
 
-input:focus,
-textarea:focus,
-select:focus{
-  outline:none;
-  border-color:var(--accent);
-  box-shadow:0 0 0 3px rgba(47,93,80,.15);
+input:focus-visible,
+textarea:focus-visible,
+button:focus-visible{
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(47,93,80,0.18);
 }
 
-/* =========================================================
-   REPEATING ENTRIES
-========================================================= */
+/* ---------- Repeating entries ---------- */
 
 .entry-list{
-  display:flex;
-  flex-direction:column;
-  gap:16px;
-  margin-bottom:14px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 14px;
 }
 
 .entry{
-  position:relative;
-  padding:16px 16px 4px;
-  border:1px solid var(--line);
-  border-radius:var(--radius);
-  background:rgba(255,255,255,.5);
+  position: relative;
+  background: rgba(255,255,255,0.5);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 16px 16px 4px;
 }
 
 .entry__remove{
-  position:absolute;
-  top:8px;
-  right:8px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  width:26px;
-  height:26px;
-  padding:0;
-  border:1px solid var(--line);
-  border-radius:50%;
-  background:var(--sheet);
-  color:var(--muted);
-  font-size:15px;
-  line-height:1;
-  cursor:pointer;
-  transition:
-    color 120ms ease,
-    border-color 120ms ease,
-    background 120ms ease;
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--sheet);
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 120ms ease, border-color 120ms ease;
 }
 
 .entry__remove:hover{
-  border-color:var(--danger);
-  background:#fff8f6;
-  color:var(--danger);
+  color: var(--danger);
+  border-color: var(--danger);
 }
 
-/* =========================================================
-   BUTTONS
-========================================================= */
+/* ---------- Buttons ---------- */
 
 .btn{
-  border:1px solid transparent;
-  border-radius:var(--radius);
-  font-family:var(--font-body);
-  font-size:13.5px;
-  font-weight:600;
-  cursor:pointer;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 13.5px;
+  border-radius: var(--radius);
+  cursor: pointer;
   transition:
     transform 120ms ease,
     background 120ms ease,
     border-color 120ms ease,
     color 120ms ease;
-}
-
-.btn:disabled{
-  opacity:.65;
-  cursor:not-allowed;
+  border: 1px solid transparent;
 }
 
 .btn--ghost{
-  width:100%;
-  padding:10px;
-  border:1px dashed var(--line);
-  background:transparent;
-  color:var(--accent);
+  width: 100%;
+  background: transparent;
+  border: 1px dashed var(--line);
+  color: var(--accent);
+  padding: 10px;
 }
 
 .btn--ghost:hover{
-  border-color:var(--accent);
-  background:rgba(47,93,80,.06);
+  border-color: var(--accent);
+  background: rgba(47,93,80,0.06);
 }
 
 .editor__actions{
-  display:flex;
-  align-items:center;
-  gap:18px;
-  margin-top:8px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-top: 8px;
 }
 
 .btn--primary{
-  padding:13px 26px;
-  border-color:var(--ink);
-  background:var(--ink);
-  color:var(--paper);
-  letter-spacing:.01em;
+  background: var(--ink);
+  color: var(--paper);
+  padding: 13px 26px;
+  border: 1px solid var(--ink);
+  letter-spacing: 0.01em;
 }
 
 .btn--primary:hover{
-  border-color:var(--accent);
-  background:var(--accent);
-  transform:translateY(-1px);
+  background: var(--accent);
+  border-color: var(--accent);
+  transform: translateY(-1px);
 }
 
 .btn--primary:active{
-  transform:translateY(0);
+  transform: translateY(0);
 }
 
 .btn--text{
-  padding:6px 0;
-  border:0;
-  background:none;
-  color:var(--muted);
-  text-decoration:underline;
-  text-underline-offset:3px;
+  background: none;
+  border: none;
+  color: var(--muted);
+  padding: 6px 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .btn--text:hover{
-  color:var(--ink);
+  color: var(--ink);
 }
 
-/* =========================================================
-   CV SHEET
-========================================================= */
+/* ---------- The sheet (live preview) ---------- */
 
 .sheet{
-  width:100%;
-  background:var(--sheet);
-  border-radius:2px;
-  box-shadow:var(--shadow-sheet);
-  padding:48px 52px 52px;
-  overflow-wrap:anywhere;
-  word-break:normal;
-  transform:rotate(-.35deg);
-}
-
-.sheet,
-.sheet *{
-  max-width:100%;
+  background: var(--sheet);
+  box-shadow: var(--shadow-sheet);
+  border-radius: 2px;
+  padding: 48px 52px 52px;
+  transform: rotate(-0.35deg);
+  box-sizing: border-box;
 }
 
 .sheet__header{
-  margin-bottom:22px;
-  padding-bottom:18px;
-  border-bottom:2px solid var(--ink);
+  border-bottom: 2px solid var(--ink);
+  padding-bottom: 18px;
+  margin-bottom: 22px;
 }
 
 .sheet__name{
-  margin:0 0 4px;
-  font-family:var(--font-display);
-  font-size:34px;
-  font-weight:600;
-  line-height:1.2;
-  letter-spacing:-.01em;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 34px;
+  margin: 0 0 4px;
+  letter-spacing: -0.01em;
 }
 
 .sheet__title{
-  margin:0 0 10px;
-  color:var(--accent);
-  font-family:var(--font-mono);
-  font-size:13px;
-  letter-spacing:.06em;
-  text-transform:uppercase;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+  margin: 0 0 10px;
+  text-transform: uppercase;
 }
 
 .sheet__contact{
-  margin:0;
-  color:var(--muted);
-  font-size:12.5px;
-  line-height:1.7;
-  overflow-wrap:anywhere;
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--muted);
 }
 
 .sheet__summary{
-  max-width:60ch;
-  margin:0 0 34px;
-  color:#33363E;
-  font-family:var(--font-display);
-  font-size:17px;
-  font-style:italic;
-  line-height:1.7;
-  overflow-wrap:anywhere;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 17px;
+  line-height: 1.7;
+  color: #33363E;
+  margin: 0 0 34px;
+  max-width: 60ch;
 }
 
 .sheet__section{
-  margin-bottom:34px;
-  break-inside:auto;
-  page-break-inside:auto;
+  margin-bottom: 34px;
 }
 
 .sheet__heading{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  margin:0 0 16px;
-  color:var(--accent-2);
-  font-family:var(--font-mono);
-  font-size:12px;
-  letter-spacing:.16em;
-  text-transform:uppercase;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent-2);
+  margin: 0 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .sheet__heading::after{
-  content:"";
-  flex:1;
-  height:1px;
-  background:var(--line);
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line);
 }
 
 .sheet-entry{
-  margin-bottom:24px;
-  break-inside:avoid;
-  page-break-inside:avoid;
+  margin-bottom: 24px;
 }
 
 .sheet-entry:last-child{
-  margin-bottom:0;
+  margin-bottom: 0;
 }
 
 .sheet-entry__top{
-  display:flex;
-  align-items:baseline;
-  justify-content:space-between;
-  gap:12px;
-  min-width:0;
-  font-size:16px;
-  font-weight:600;
-}
-
-.sheet-entry__top > span:first-child{
-  min-width:0;
-  overflow-wrap:anywhere;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  font-weight: 600;
+  font-size: 16px;
 }
 
 .sheet-entry__dates{
-  flex-shrink:0;
-  color:var(--muted);
-  font-family:var(--font-mono);
-  font-size:11px;
-  white-space:nowrap;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
 }
 
 .sheet-entry__sub{
-  margin:2px 0 6px;
-  color:var(--accent);
-  font-size:13px;
-  overflow-wrap:anywhere;
+  font-size: 13px;
+  color: var(--accent);
+  margin: 2px 0 6px;
 }
 
 .sheet-entry__desc{
-  margin:0;
-  color:#40434B;
-  font-size:14.5px;
-  line-height:1.65;
-  overflow-wrap:anywhere;
+  font-size: 14.5px;
+  color: #40434B;
+  margin: 0;
+  line-height: 1.65;
 }
 
 .sheet__tags{
-  display:flex;
-  flex-wrap:wrap;
-  gap:8px;
-  margin:0;
-  padding:0;
-  list-style:none;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .sheet__tags li{
-  padding:6px 13px;
-  border:1px solid var(--line);
-  border-radius:999px;
-  color:var(--ink);
-  font-size:13px;
+  font-size: 13px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 6px 13px;
+  color: var(--ink);
 }
 
 .sheet__empty-hint{
-  color:#A7A29A;
-  font-size:12.5px;
-  font-style:italic;
+  font-size: 12.5px;
+  color: #A7A29A;
+  font-style: italic;
 }
 
-/* =========================================================
-   SAVED CVS
-========================================================= */
+/* ---------- Responsive ---------- */
 
-.saved-cv-item{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:16px;
-  margin-bottom:10px;
-  padding:14px;
-  border:1px solid var(--line);
-  border-radius:var(--radius);
-  background:var(--sheet);
-}
-
-.saved-cv-info{
-  min-width:0;
-  display:flex;
-  flex-direction:column;
-  gap:3px;
-}
-
-.saved-cv-info strong{
-  overflow-wrap:anywhere;
-}
-
-.saved-cv-info span{
-  color:var(--muted);
-  font-size:12px;
-  overflow-wrap:anywhere;
-}
-
-.saved-cv-actions{
-  display:flex;
-  align-items:center;
-  gap:14px;
-  flex-shrink:0;
-}
-
-.saved-cv-empty{
-  color:var(--muted);
-  font-size:13px;
-}
-
-/* =========================================================
-   CV TEMPLATES
-========================================================= */
-
-.sheet[data-template="modern"]{
-  border-left:6px solid var(--accent);
-}
-
-.sheet[data-template="modern"] .sheet__header{
-  border-bottom-color:var(--accent);
-}
-
-.sheet[data-template="minimal"]{
-  border:1px solid var(--line);
-  box-shadow:none;
-}
-
-.sheet[data-template="minimal"] .sheet__heading{
-  color:var(--ink);
-}
-
-/* =========================================================
-   FOCUS
-========================================================= */
-
-button:focus-visible,
-input:focus-visible,
-textarea:focus-visible,
-select:focus-visible{
-  outline:3px solid rgba(47,93,80,.18);
-  outline-offset:1px;
-}
-
-/* =========================================================
-   TABLET
-========================================================= */
-
-@media (max-width:980px){
-
+@media (max-width: 980px){
   .app{
-    grid-template-columns:1fr;
+    grid-template-columns: 1fr;
   }
 
   .editor{
-    border-right:0;
-    border-bottom:1px solid var(--line);
+    border-right: none;
+    border-bottom: 1px solid var(--line);
   }
 
   .preview__stage{
-    position:static;
-    max-width:720px;
+    position: static;
   }
 
   .sheet{
-    transform:none;
+    transform: none;
   }
 }
 
-/* =========================================================
-   MOBILE
-========================================================= */
-
-@media (max-width:560px){
-
-  body{
-    font-size:14px;
-  }
-
-  .app{
-    display:block;
-    width:100%;
-  }
-
+@media (max-width: 560px){
   .editor{
-    width:100%;
-    padding:22px 16px 40px;
+    padding: 28px 20px 56px;
   }
 
   .preview{
-    width:100%;
-    padding:24px 12px 40px;
-  }
-
-  .preview__stage{
-    width:100%;
-  }
-
-  .editor__masthead{
-    gap:10px;
-    margin-bottom:28px;
-    padding-bottom:20px;
-  }
-
-  .editor__title{
-    font-size:24px;
-    line-height:1.25;
-  }
-
-  .editor__subtitle{
-    font-size:13px;
-    line-height:1.6;
+    padding: 28px 16px 56px;
   }
 
   .field-row{
-    grid-template-columns:1fr;
-    gap:0;
-  }
-
-  input[type="text"],
-  input[type="email"],
-  input[type="tel"],
-  input[type="number"],
-  select,
-  textarea{
-    width:100%;
-    min-height:44px;
-    font-size:16px;
-  }
-
-  textarea{
-    min-height:100px;
-  }
-
-  .btn{
-    min-height:44px;
-  }
-
-  .editor__actions{
-    flex-direction:column;
-    align-items:stretch;
-    gap:10px;
-  }
-
-  .editor__actions .btn{
-    width:100%;
-    text-align:center;
-  }
-
-  .entry{
-    padding:18px 14px 6px;
-  }
-
-  .entry__remove{
-    top:8px;
-    right:8px;
-    width:30px;
-    height:30px;
+    grid-template-columns: 1fr;
   }
 
   .sheet{
-    width:100%;
-    min-height:auto;
-    padding:30px 20px 38px;
-    transform:none;
-    overflow-wrap:anywhere;
+    padding: 34px 24px 44px;
   }
 
   .sheet__name{
-    font-size:27px;
-    line-height:1.25;
+    font-size: 27px;
   }
 
-  .sheet__title{
-    font-size:12px;
-    line-height:1.5;
-    white-space:normal;
-  }
-
-  .sheet__contact{
-    font-size:12px;
-    line-height:1.7;
-  }
-
-  .sheet__summary{
-    margin-bottom:26px;
-    font-size:15px;
-    line-height:1.7;
-  }
-
-  .sheet__section{
-    margin-bottom:28px;
-  }
-
-  .sheet__heading{
-    font-size:11px;
-    margin-bottom:14px;
-  }
-
-  .sheet-entry{
-    margin-bottom:20px;
-  }
-
-  .sheet-entry__top{
-    flex-direction:column;
-    align-items:flex-start;
-    gap:4px;
-    font-size:15px;
-  }
-
-  .sheet-entry__dates{
-    white-space:normal;
-    font-size:10.5px;
-  }
-
-  .sheet-entry__sub{
-    font-size:12.5px;
-  }
-
-  .sheet-entry__desc{
-    font-size:13.5px;
-    line-height:1.65;
-  }
-
-  .sheet__tags{
-    gap:6px;
-  }
-
-  .sheet__tags li{
-    padding:5px 10px;
-    font-size:12px;
-  }
-
-  .saved-cv-item{
-    align-items:flex-start;
-    flex-direction:column;
-  }
-
-  .saved-cv-actions{
-    width:100%;
-    justify-content:flex-start;
+  .editor__title{
+    font-size: 25px;
   }
 }
 
-/* =========================================================
-   PRINT / A4
-========================================================= */
+/* ---------- Print ---------- */
 
-@page{
-  size:A4 portrait;
-  margin:0;
+@page {
+  size: A4 portrait;
+  margin: 0;
 }
 
-@media print{
+@media print {
 
   html,
-  body{
-    width:210mm !important;
-    min-width:210mm !important;
-    height:auto !important;
-    min-height:0 !important;
-    margin:0 !important;
-    padding:0 !important;
-    background:#fff !important;
-    background-image:none !important;
-    overflow:visible !important;
+  body {
+    width: 210mm !important;
+    min-width: 210mm !important;
+    height: auto !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+    background-image: none !important;
+    overflow: visible !important;
   }
 
-  body{
-    -webkit-print-color-adjust:exact !important;
-    print-color-adjust:exact !important;
+  body {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
   .editor,
@@ -849,96 +517,269 @@ select:focus-visible{
   .btn,
   #language-selector,
   #language-select,
-  .saved-cvs-list{
-    display:none !important;
+  .saved-cvs-list {
+    display: none !important;
   }
 
-  .app{
-    display:block !important;
-    width:210mm !important;
-    min-height:0 !important;
-    height:auto !important;
-    margin:0 !important;
-    padding:0 !important;
+  .app {
+    display: block !important;
+    width: 210mm !important;
+    min-height: 0 !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
-  .preview{
-    display:block !important;
-    width:210mm !important;
-    min-height:0 !important;
-    height:auto !important;
-    margin:0 !important;
-    padding:0 !important;
-    background:#fff !important;
-    overflow:visible !important;
+  .preview {
+    display: block !important;
+    width: 210mm !important;
+    min-height: 0 !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+    overflow: visible !important;
   }
 
-  .preview__stage{
-    position:static !important;
-    width:210mm !important;
-    max-width:none !important;
-    min-height:0 !important;
-    height:auto !important;
-    margin:0 !important;
-    padding:0 !important;
+  .preview__stage {
+    position: static !important;
+    width: 210mm !important;
+    max-width: none !important;
+    min-height: 0 !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
-  .sheet{
-    display:block !important;
-    width:210mm !important;
-    max-width:210mm !important;
-    min-height:0 !important;
-    height:auto !important;
-    margin:0 !important;
-    padding:15mm 16mm 15mm !important;
+  .sheet {
+    display: block !important;
+    width: 210mm !important;
+    max-width: 210mm !important;
+    min-height: 0 !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 15mm 16mm 15mm !important;
 
-    background:#fff !important;
-    border-radius:0 !important;
-    border:none !important;
-    box-shadow:none !important;
-    transform:none !important;
-    overflow:visible !important;
+    background: #fff !important;
+    border-radius: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    transform: none !important;
+    overflow: visible !important;
 
-    break-before:auto !important;
-    break-after:auto !important;
-    page-break-before:auto !important;
-    page-break-after:auto !important;
+    break-before: auto !important;
+    break-after: avoid !important;
+    page-break-before: auto !important;
+    page-break-after: avoid !important;
   }
 
   .sheet__header,
   .sheet__summary,
-  .sheet__section{
-    break-before:auto !important;
-    break-after:auto !important;
+  .sheet__section,
+  .sheet-entry {
+    break-before: auto !important;
+    break-after: auto !important;
   }
 
-  .sheet-entry{
-    break-inside:avoid !important;
-    page-break-inside:avoid !important;
+  .sheet-entry {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
   }
 
-  .sheet > *:last-child{
-    margin-bottom:0 !important;
+  .sheet > *:last-child {
+    margin-bottom: 0 !important;
   }
 
   .sheet,
-  .sheet *{
-    box-sizing:border-box !important;
+  .sheet * {
+    box-sizing: border-box;
   }
 }
 
+/* ---------- CV Templates ---------- */
+
+.sheet[data-template="modern"]{
+  border-left: 6px solid var(--accent);
+}
+
+.sheet[data-template="modern"] .sheet__header{
+  border-bottom: 2px solid var(--accent);
+}
+
+.sheet[data-template="minimal"]{
+  box-shadow: none;
+  border: 1px solid var(--line);
+}
+
+.sheet[data-template="minimal"] .sheet__heading{
+  color: var(--ink);
+}
+
 /* =========================================================
-   REDUCED MOTION
+   Mobile Experience
 ========================================================= */
 
-@media (prefers-reduced-motion:reduce){
+@media (max-width: 560px) {
 
-  *,
-  *::before,
-  *::after{
-    animation-duration:.001ms !important;
-    animation-iteration-count:1 !important;
-    transition-duration:.001ms !important;
-    scroll-behavior:auto !important;
+  body {
+    font-size: 14px;
+    overflow-x: hidden;
   }
+
+  .app {
+    width: 100%;
+    display: block;
+  }
+
+  .editor {
+    width: 100%;
+    padding: 22px 16px 40px;
+  }
+
+  .preview {
+    width: 100%;
+    padding: 24px 12px 40px;
+  }
+
+  .editor__masthead {
+    gap: 10px;
+    margin-bottom: 28px;
+    padding-bottom: 20px;
+  }
+
+  .editor__title {
+    font-size: 24px;
+    line-height: 1.25;
+  }
+
+  .editor__subtitle {
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .field-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="number"],
+  select,
+  textarea {
+    width: 100%;
+    min-height: 44px;
+    font-size: 16px;
+  }
+
+  textarea {
+    min-height: 100px;
+  }
+
+  .btn {
+    min-height: 44px;
+  }
+
+  .editor__actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .editor__actions .btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .entry {
+    padding: 18px 14px 6px;
+  }
+
+  .entry__remove {
+    width: 30px;
+    height: 30px;
+    top: 8px;
+    right: 8px;
+  }
+
+  .sheet {
+    width: 100%;
+    min-height: auto;
+    padding: 30px 20px 38px;
+    transform: none;
+    overflow-wrap: anywhere;
+  }
+
+  .sheet__name {
+    font-size: 27px;
+    line-height: 1.25;
+  }
+
+  .sheet__title {
+    font-size: 12px;
+    white-space: normal;
+  }
+
+  .sheet__contact {
+    font-size: 12px;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+  }
+
+  .sheet-entry__top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .sheet-entry__dates {
+    white-space: normal;
+  }
+
+  .sheet__tags {
+    gap: 6px;
+  }
+
+  .sheet__tags li {
+    font-size: 12px;
+    padding: 5px 10px;
+  }
+
+}
+
+/* =========================================================
+   FINAL CV SAFETY
+========================================================= */
+
+.sheet,
+.sheet * {
+  max-width: 100%;
+}
+
+.sheet {
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+.sheet-entry {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.sheet-entry__top {
+  min-width: 0;
+}
+
+.sheet-entry__top > span:first-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.sheet__contact {
+  overflow-wrap: anywhere;
+}
+
+.sheet__summary {
+  overflow-wrap: anywhere;
 }
