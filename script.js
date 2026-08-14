@@ -2854,7 +2854,130 @@ const supabaseClient = window.supabase.createClient(
       render
     );
 
+/* =========================================================
+   AI USAGE LIMIT
+========================================================= */
 
+const FREE_AI_USES = 2;
+
+async function getAIUsage() {
+
+  const user = await getCurrentUser();
+
+  if (!user) {
+    return {
+      user: null,
+      count: 0
+    };
+  }
+
+  const {
+    data,
+    error
+  } = await supabaseClient
+    .from('ai_usage')
+    .select('uses')
+    .eq('user_id', user.id)
+    .maybeSingle();
+
+  if (error) {
+
+    console.error(
+      'Get AI usage error:',
+      error
+    );
+
+    throw error;
+  }
+
+  return {
+    user,
+    count: Number(data?.uses || 0)
+  };
+
+}
+
+
+async function incrementAIUsage(user, currentCount) {
+
+  const nextCount =
+    currentCount + 1;
+
+
+  const {
+    error
+  } =
+    await supabaseClient
+      .from('ai_usage')
+      .upsert(
+        {
+          user_id:
+            user.id,
+
+          uses:
+            nextCount
+
+        },
+        {
+          onConflict:
+            'user_id'
+        }
+      );
+
+
+  if (error) {
+
+    console.error(
+      'Increment AI usage error:',
+      error
+    );
+
+    throw error;
+  }
+
+
+  return nextCount;
+
+}
+
+
+function showAIUsageMessage(count) {
+
+  if (count === 1) {
+
+    alert(
+      `تم استخدامك الأول للذكاء الاصطناعي.\n\nتبقى لك استعمال مجاني واحد.`
+    );
+
+    return;
+  }
+
+
+  if (count === 2) {
+
+    alert(
+      `تم استخدامك الثاني للذكاء الاصطناعي.\n\nانتهت الاستعمالات المجانية المتاحة لك.`
+    );
+
+  }
+
+}
+
+
+function showPaymentOptions() {
+
+  const message = [
+    'لقد انتهت استعمالاتك المجانية.',
+    '',
+    'للاستمرار في استخدام الذكاء الاصطناعي اختر إحدى الخطط المدفوعة.',
+    '',
+    '💳 قريبًا: الاشتراك والدفع'
+  ].join('\n');
+
+
+  alert(message);
+
+}
     /* =========================================================
        AI
     ========================================================= */
