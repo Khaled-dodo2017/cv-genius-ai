@@ -2995,25 +2995,198 @@ const supabaseClient = window.supabase.createClient(
 
     function showPaymentOptions() {
 
-      const message = [
+  // منع فتح النافذة أكثر من مرة
+  if (document.getElementById('aiPlansModal')) {
+    return;
+  }
 
-        'لقد انتهت استعمالاتك المجانية.',
+  const modal = document.createElement('div');
+  modal.id = 'aiPlansModal';
 
-        '',
+  modal.innerHTML = `
+    <div style="
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.65);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      z-index:99999;
+      padding:20px;
+      direction:rtl;
+    ">
 
-        'للاستمرار في استخدام الذكاء الاصطناعي اختر إحدى الخطط المدفوعة.',
+      <div style="
+        width:100%;
+        max-width:520px;
+        background:#fff;
+        border-radius:20px;
+        padding:24px;
+        box-sizing:border-box;
+        box-shadow:0 20px 60px rgba(0,0,0,.3);
+        color:#1f2937;
+      ">
 
-        '',
+        <h2 style="
+          margin:0 0 10px;
+          text-align:center;
+          font-size:24px;
+        ">
+          اختر خطة للمتابعة
+        </h2>
 
-        '💳 قريبًا: الاشتراك والدفع'
+        <p style="
+          text-align:center;
+          margin:0 0 22px;
+          color:#6b7280;
+          line-height:1.7;
+        ">
+          انتهت الاستعمالات المجانية للذكاء الاصطناعي.
+        </p>
 
-      ].join('\n');
+
+        <!-- الخطة الشهرية -->
+        <div style="
+          border:2px solid #0f766e;
+          border-radius:16px;
+          padding:18px;
+          margin-bottom:14px;
+        ">
+
+          <div style="
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            gap:10px;
+          ">
+
+            <div>
+              <strong style="font-size:19px;">
+                الخطة الشهرية
+              </strong>
+
+              <div style="
+                margin-top:6px;
+                color:#6b7280;
+              ">
+                30 استعمال للذكاء الاصطناعي
+              </div>
+            </div>
+
+            <strong style="
+              font-size:22px;
+              white-space:nowrap;
+            ">
+              $4.99
+            </strong>
+
+          </div>
+
+          <button
+            type="button"
+            onclick="alert('الدفع سيكون متاحًا قريبًا.')"
+            style="
+              width:100%;
+              margin-top:15px;
+              padding:13px;
+              border:0;
+              border-radius:10px;
+              background:#0f766e;
+              color:white;
+              font-size:16px;
+              font-weight:600;
+              cursor:pointer;
+            "
+          >
+            اختيار الخطة الشهرية
+          </button>
+
+        </div>
 
 
-      alert(message);
+        <!-- الخطة مرة واحدة -->
+        <div style="
+          border:1px solid #d1d5db;
+          border-radius:16px;
+          padding:18px;
+          margin-bottom:18px;
+        ">
 
-    }
+          <div style="
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            gap:10px;
+          ">
 
+            <div>
+              <strong style="font-size:19px;">
+                خطة الاستخدام الواحد
+              </strong>
+
+              <div style="
+                margin-top:6px;
+                color:#6b7280;
+              ">
+                60 استعمال للذكاء الاصطناعي
+              </div>
+            </div>
+
+            <strong style="
+              font-size:22px;
+              white-space:nowrap;
+            ">
+              $9.99
+            </strong>
+
+          </div>
+
+          <button
+            type="button"
+            onclick="alert('الدفع سيكون متاحًا قريبًا.')"
+            style="
+              width:100%;
+              margin-top:15px;
+              padding:13px;
+              border:0;
+              border-radius:10px;
+              background:#374151;
+              color:white;
+              font-size:16px;
+              font-weight:600;
+              cursor:pointer;
+            "
+          >
+            اختيار الخطة
+          </button>
+
+        </div>
+
+
+        <button
+          type="button"
+          onclick="document.getElementById('aiPlansModal').remove()"
+          style="
+            width:100%;
+            padding:11px;
+            border:1px solid #d1d5db;
+            border-radius:10px;
+            background:white;
+            color:#374151;
+            font-size:15px;
+            cursor:pointer;
+          "
+        >
+          إغلاق
+        </button>
+
+      </div>
+
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+}
 
     /* =========================================================
        AI
