@@ -378,6 +378,7 @@ async function saveUsage(
         device_hash:
           identities.deviceHash ||
           null
+         action: "improve-cv"
       })
     }
   );
