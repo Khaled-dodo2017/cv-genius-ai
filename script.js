@@ -3386,7 +3386,13 @@ if (usage.user) {
 
           }
 
+if (newUsageCount) {
 
+  showAIUsageMessage(
+    newUsageCount
+  );
+
+}
           generateBtn.textContent =
             t('generated');
 
