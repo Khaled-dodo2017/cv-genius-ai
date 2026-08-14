@@ -27,44 +27,95 @@ app.use(
 
       return callback(new Error("Origin not allowed"));
     },
+
     methods: ["GET", "POST", "OPTIONS"],
+
     allowedHeaders: ["Content-Type"],
+
     optionsSuccessStatus: 204
   })
 );
 
-app.use(express.json({ limit: "100kb" }));
+app.use(
+  express.json({
+    limit: "100kb"
+  })
+);
 
 /* =========================================================
-   UPSTASH REDIS
+   ENVIRONMENT VARIABLES
 ========================================================= */
 
-const UPSTASH_URL = process.env.UPSTASH_REDIS_REST_URL;
-const UPSTASH_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
+const SUPABASE_URL =
+  process.env.SUPABASE_URL;
 
-async function redis(command) {
-  if (!UPSTASH_URL || !UPSTASH_TOKEN) {
-    throw new Error("Upstash Redis environment variables are missing");
-  }
+const SUPABASE_SERVICE_ROLE_KEY =
+  process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-  const response = await fetch(UPSTASH_URL, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${UPSTASH_TOKEN}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(command)
-  });
+const GEMINI_API_KEY =
+  process.env.GEMINI_API_KEY;
 
-  if (!response.ok) {
-    const errorText = await response.text();
+const IDENTITY_HASH_SECRET =
+  process.env.IDENTITY_HASH_SECRET ||
+  "cv-genius-default-secret-change-this";
 
+/* =========================================================
+   SUPABASE
+========================================================= */
+
+async function supabaseRequest(
+  path,
+  options = {}
+) {
+  if (
+    !SUPABASE_URL ||
+    !SUPABASE_SERVICE_ROLE_KEY
+  ) {
     throw new Error(
-      `Redis error ${response.status}: ${errorText}`
+      "Supabase environment variables are missing"
     );
   }
 
-  return response.json();
+  const response = await fetch(
+    `${SUPABASE_URL}/rest/v1/${path}`,
+    {
+      ...options,
+
+      headers: {
+        apikey:
+          SUPABASE_SERVICE_ROLE_KEY,
+
+        Authorization:
+          `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+
+        "Content-Type":
+          "application/json",
+
+        ...(options.headers || {})
+      }
+    }
+  );
+
+  const text =
+    await response.text();
+
+  let data = null;
+
+  try {
+    data = text
+      ? JSON.parse(text)
+      : null;
+  } catch {
+    data = text;
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      `Supabase error ${response.status}: ${JSON.stringify(data)}`
+    );
+  }
+
+  return data;
 }
 
 /* =========================================================
@@ -73,65 +124,126 @@ async function redis(command) {
 
 function hash(value) {
   return crypto
-    .createHash("sha256")
+    .createHmac(
+      "sha256",
+      IDENTITY_HASH_SECRET
+    )
     .update(String(value))
     .digest("hex");
 }
 
 function getClientIp(req) {
-  return (
-    req.headers["x-forwarded-for"]
-      ?.toString()
+  const forwarded =
+    req.headers["x-forwarded-for"];
+
+  if (forwarded) {
+    return forwarded
+      .toString()
       .split(",")[0]
-      .trim() ||
+      .trim();
+  }
+
+  return (
     req.ip ||
+    req.socket?.remoteAddress ||
     "unknown"
   );
 }
 
 function normalizeEmail(email) {
-  if (!email || typeof email !== "string") {
+  if (
+    !email ||
+    typeof email !== "string"
+  ) {
     return "";
   }
 
-  return email.trim().toLowerCase();
+  return email
+    .trim()
+    .toLowerCase();
+}
+
+function normalizeDeviceId(deviceId) {
+  if (
+    !deviceId ||
+    typeof deviceId !== "string"
+  ) {
+    return "";
+  }
+
+  return deviceId.trim();
+}
+
+/* =========================================================
+   EXTRACT EMAIL FROM CV
+========================================================= */
+
+function extractEmail(text) {
+  const match =
+    text.match(
+      /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i
+    );
+
+  return match
+    ? normalizeEmail(match[0])
+    : "";
 }
 
 /* =========================================================
    RATE LIMIT
 ========================================================= */
 
-const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
+const RATE_LIMIT_WINDOW_MS =
+  15 * 60 * 1000;
+
 const RATE_LIMIT_MAX = 10;
 
-const rateLimitStore = new Map();
+const rateLimitStore =
+  new Map();
 
-function rateLimit(req, res, next) {
-  const now = Date.now();
-  const ip = getClientIp(req);
+function rateLimit(
+  req,
+  res,
+  next
+) {
+  const now =
+    Date.now();
 
-  const current = rateLimitStore.get(ip);
+  const ip =
+    getClientIp(req);
+
+  const current =
+    rateLimitStore.get(ip);
 
   if (
     !current ||
-    now - current.start >= RATE_LIMIT_WINDOW_MS
+    now - current.start >=
+      RATE_LIMIT_WINDOW_MS
   ) {
-    rateLimitStore.set(ip, {
-      start: now,
-      count: 1
-    });
+    rateLimitStore.set(
+      ip,
+      {
+        start: now,
+        count: 1
+      }
+    );
 
     return next();
   }
 
   current.count += 1;
 
-  if (current.count > RATE_LIMIT_MAX) {
-    const retryAfter = Math.ceil(
-      (RATE_LIMIT_WINDOW_MS -
-        (now - current.start)) /
-        1000
-    );
+  if (
+    current.count >
+    RATE_LIMIT_MAX
+  ) {
+    const retryAfter =
+      Math.ceil(
+        (
+          RATE_LIMIT_WINDOW_MS -
+          (now - current.start)
+        ) / 1000
+      );
 
     res.set(
       "Retry-After",
@@ -148,105 +260,126 @@ function rateLimit(req, res, next) {
 }
 
 /* =========================================================
-   EXTRACT EMAIL
+   BUILD IDENTITIES
 ========================================================= */
 
-function extractEmail(text) {
-  const match = text.match(
-    /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i
-  );
+function getIdentities(
+  req,
+  text
+) {
+  const email =
+    extractEmail(text);
 
-  return match ? normalizeEmail(match[0]) : "";
+  const ip =
+    getClientIp(req);
+
+  const deviceId =
+    normalizeDeviceId(
+      req.body?.deviceId
+    );
+
+  return {
+    emailHash: email
+      ? hash(`email:${email}`)
+      : "",
+
+    ipHash: ip
+      ? hash(`ip:${ip}`)
+      : "",
+
+    deviceHash: deviceId
+      ? hash(`device:${deviceId}`)
+      : ""
+  };
 }
 
 /* =========================================================
-   USER USAGE
+   FIND PREVIOUS USAGE
 ========================================================= */
 
 /*
-  كل مستخدم لديه:
+  نبحث عن أي استعمال سابق
+  مرتبط بأي إشارة من الإشارات:
 
-  freeUses
-  plan
-  paid
-  monthly
-  lifetime
+  email
+  IP
+  device
 
-  أول استعمال  -> مجاني
-  ثاني استعمال -> مجاني
-  بعد ذلك      -> الدفع
+  لذلك تغيير واحدة منها
+  لا يعيد العداد.
 */
 
-async function getUsage(userKey) {
-  const key = `cvgenius:user:${userKey}`;
+async function getPreviousUsage(
+  identities
+) {
+  const conditions = [];
 
-  const result = await redis([
-    "GET",
-    key
-  ]);
-
-  if (!result.result) {
-    return {
-      freeUses: 0,
-      plan: "free",
-      paid: false
-    };
+  if (identities.emailHash) {
+    conditions.push(
+      `email_hash.eq.${identities.emailHash}`
+    );
   }
 
-  try {
-    return JSON.parse(result.result);
-  } catch {
-    return {
-      freeUses: 0,
-      plan: "free",
-      paid: false
-    };
+  if (identities.ipHash) {
+    conditions.push(
+      `ip_hash.eq.${identities.ipHash}`
+    );
   }
-}
 
-async function saveUsage(userKey, usage) {
-  const key = `cvgenius:user:${userKey}`;
+  if (identities.deviceHash) {
+    conditions.push(
+      `device_hash.eq.${identities.deviceHash}`
+    );
+  }
 
-  await redis([
-    "SET",
-    key,
-    JSON.stringify(usage)
-  ]);
+  if (
+    conditions.length === 0
+  ) {
+    return [];
+  }
+
+  const query =
+    `ai_usage?select=id,created_at&or=(${conditions.join(",")})&order=created_at.asc`;
+
+  return await supabaseRequest(
+    query,
+    {
+      method: "GET"
+    }
+  );
 }
 
 /* =========================================================
-   USER ID
+   SAVE SUCCESSFUL USAGE
 ========================================================= */
 
-function getUserIdentity(req, text) {
-  /*
-    الأفضل لاحقًا أن يأتي userId من نظام الحسابات.
+async function saveUsage(
+  identities
+) {
+  await supabaseRequest(
+    "ai_usage",
+    {
+      method: "POST",
 
-    حاليًا نستخدم عدة إشارات:
-    - userId القادم من Frontend
-    - البريد الموجود في CV
-    - IP
+      headers: {
+        Prefer:
+          "return=minimal"
+      },
 
-    ويتم تخزين hash فقط.
-  */
+      body: JSON.stringify({
+        email_hash:
+          identities.emailHash ||
+          null,
 
-  const suppliedUserId =
-    typeof req.body?.userId === "string"
-      ? req.body.userId.trim()
-      : "";
+        ip_hash:
+          identities.ipHash ||
+          null,
 
-  const email = extractEmail(text);
-
-  const ip = getClientIp(req);
-
-  const identityParts = [
-    suppliedUserId,
-    email,
-    ip
-  ].filter(Boolean);
-
-  return hash(
-    identityParts.join("|")
+        device_hash:
+          identities.deviceHash ||
+          null
+      })
+    }
   );
 }
 
@@ -254,13 +387,20 @@ function getUserIdentity(req, text) {
    HEALTH CHECK
 ========================================================= */
 
-app.get("/", (req, res) => {
-  res.status(200).json({
-    ok: true,
-    service: "CV Genius AI Backend",
-    status: "running"
-  });
-});
+app.get(
+  "/",
+  (req, res) => {
+    res.status(200).json({
+      ok: true,
+
+      service:
+        "CV Genius AI Backend",
+
+      status:
+        "running"
+    });
+  }
+);
 
 /* =========================================================
    CV IMPROVEMENT
@@ -280,14 +420,17 @@ app.post(
          INPUT VALIDATION
       ----------------------------------------------------- */
 
-      if (typeof text !== "string") {
+      if (
+        typeof text !== "string"
+      ) {
         return res.status(400).json({
           error:
             "نص السيرة الذاتية غير صالح."
         });
       }
 
-      const cleanText = text.trim();
+      const cleanText =
+        text.trim();
 
       if (!cleanText) {
         return res.status(400).json({
@@ -296,7 +439,10 @@ app.post(
         });
       }
 
-      if (cleanText.length > 15000) {
+      if (
+        cleanText.length >
+        15000
+      ) {
         return res.status(413).json({
           error:
             "السيرة الذاتية طويلة جدًا. اختصر النص وحاول مرة أخرى."
@@ -304,16 +450,21 @@ app.post(
       }
 
       /* -----------------------------------------------------
-         LANGUAGE
+         LANGUAGE VALIDATION
       ----------------------------------------------------- */
 
-      const allowedLanguages = new Set([
-        "ar",
-        "fr",
-        "en"
-      ]);
+      const allowedLanguages =
+        new Set([
+          "ar",
+          "fr",
+          "en"
+        ]);
 
-      if (!allowedLanguages.has(language)) {
+      if (
+        !allowedLanguages.has(
+          language
+        )
+      ) {
         return res.status(400).json({
           error:
             "لغة غير مدعومة."
@@ -321,13 +472,12 @@ app.post(
       }
 
       /* -----------------------------------------------------
-         API KEY
+         API KEYS
       ----------------------------------------------------- */
 
-      const apiKey =
-        process.env.GEMINI_API_KEY;
-
-      if (!apiKey) {
+      if (
+        !GEMINI_API_KEY
+      ) {
         console.error(
           "GEMINI_API_KEY is missing"
         );
@@ -338,12 +488,26 @@ app.post(
         });
       }
 
+      if (
+        !SUPABASE_URL ||
+        !SUPABASE_SERVICE_ROLE_KEY
+      ) {
+        console.error(
+          "Supabase environment variables are missing"
+        );
+
+        return res.status(500).json({
+          error:
+            "خدمة قاعدة البيانات غير متاحة حاليًا."
+        });
+      }
+
       /* -----------------------------------------------------
-         IDENTITY
+         IDENTITIES
       ----------------------------------------------------- */
 
-      const userKey =
-        getUserIdentity(
+      const identities =
+        getIdentities(
           req,
           cleanText
         );
@@ -352,36 +516,45 @@ app.post(
          USAGE CHECK
       ----------------------------------------------------- */
 
-      const usage =
-        await getUsage(userKey);
+      const previousUsage =
+        await getPreviousUsage(
+          identities
+        );
+
+      const successfulUses =
+        previousUsage.length;
 
       /*
-        إذا كان المستخدم مدفوعًا:
-        يسمح له باستخدام AI.
+        الاستعمالان الأولان مجانيان.
+
+        الاستعمال الثالث:
+        نوقف Gemini ونطلب الدفع.
       */
 
-      if (!usage.paid) {
-        /*
-          بعد استعمالين مجانيين:
-          لا نرسل الطلب إلى Gemini.
-        */
+      if (
+        successfulUses >= 2
+      ) {
+        return res.status(402).json({
+          error:
+            "لقد أكملت الاستعمالين المجانيين. اختر خطة للمتابعة.",
 
-        if (usage.freeUses >= 2) {
-          return res.status(402).json({
-            error:
-              "لقد أكملت الاستعمالين المجانيين. اختر خطة للمتابعة.",
-            code:
-              "PAYMENT_REQUIRED",
-            freeUses:
-              usage.freeUses,
-            requiresPayment:
-              true,
-            plans: [
-              "monthly",
-              "lifetime"
-            ]
-          });
-        }
+          code:
+            "PAYMENT_REQUIRED",
+
+          freeUses:
+            successfulUses,
+
+          freeUsesRemaining:
+            0,
+
+          requiresPayment:
+            true,
+
+          plans: [
+            "monthly",
+            "lifetime"
+          ]
+        });
       }
 
       /* -----------------------------------------------------
@@ -391,8 +564,10 @@ app.post(
       const languageInstruction = {
         ar:
           "اكتب النتيجة باللغة العربية.",
+
         fr:
           "Écrivez le résultat en français.",
+
         en:
           "Write the result in English."
       }[language];
@@ -456,42 +631,52 @@ ${cleanText}
 
       for (
         let attempt = 1;
-        attempt <= maxAttempts;
+        attempt <=
+        maxAttempts;
         attempt++
       ) {
         try {
-          response = await fetch(
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent",
-            {
-              method: "POST",
+          response =
+            await fetch(
+              "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent",
+              {
+                method:
+                  "POST",
 
-              headers: {
-                "Content-Type":
-                  "application/json",
-                "x-goog-api-key":
-                  apiKey
-              },
+                headers: {
+                  "Content-Type":
+                    "application/json",
 
-              body: JSON.stringify({
-                contents: [
-                  {
-                    role: "user",
-                    parts: [
+                  "x-goog-api-key":
+                    GEMINI_API_KEY
+                },
+
+                body:
+                  JSON.stringify({
+                    contents: [
                       {
-                        text: prompt
-                      }
-                    ]
-                  }
-                ],
+                        role:
+                          "user",
 
-                generationConfig: {
-                  responseMimeType:
-                    "application/json"
-                }
-              })
-            }
-          );
-        } catch (networkError) {
+                        parts: [
+                          {
+                            text:
+                              prompt
+                          }
+                        ]
+                      }
+                    ],
+
+                    generationConfig: {
+                      responseMimeType:
+                        "application/json"
+                    }
+                  })
+              }
+            );
+        } catch (
+          networkError
+        ) {
           console.error(
             `Gemini network error - attempt ${attempt}:`,
             networkError
@@ -508,7 +693,8 @@ ${cleanText}
             resolve =>
               setTimeout(
                 resolve,
-                1000 * attempt
+                1000 *
+                  attempt
               )
           );
 
@@ -570,6 +756,7 @@ ${cleanText}
       ) {
         console.error(
           "Gemini API error:",
+
           JSON.stringify(
             data,
             null,
@@ -600,6 +787,7 @@ ${cleanText}
       if (!result) {
         console.error(
           "Gemini returned no result:",
+
           JSON.stringify(
             data,
             null,
@@ -614,25 +802,15 @@ ${cleanText}
       }
 
       /* =====================================================
-         COUNT SUCCESSFUL AI USE
+         SAVE SUCCESSFUL USE
       ===================================================== */
 
-      /*
-        مهم:
-        لا نحتسب المحاولة إذا فشل Gemini.
+      await saveUsage(
+        identities
+      );
 
-        نحتسب فقط بعد الحصول على
-        نتيجة ناجحة.
-      */
-
-      if (!usage.paid) {
-        usage.freeUses += 1;
-
-        await saveUsage(
-          userKey,
-          usage
-        );
-      }
+      const newUsageCount =
+        successfulUses + 1;
 
       /* =====================================================
          RESPONSE
@@ -643,23 +821,20 @@ ${cleanText}
           String(result).trim(),
 
         freeUses:
-          usage.freeUses,
+          newUsageCount,
 
         freeUsesRemaining:
-          usage.paid
-            ? null
-            : Math.max(
-                0,
-                2 -
-                  usage.freeUses
-              ),
+          Math.max(
+            0,
+            2 -
+              newUsageCount
+          ),
 
         paid:
-          usage.paid,
+          false,
 
         requiresPayment:
-          !usage.paid &&
-          usage.freeUses >= 2
+          newUsageCount >= 2
       });
 
     } catch (error) {
