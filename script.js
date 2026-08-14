@@ -1,6 +1,3 @@
-const SUPABASE_URL = 'https://nojgxttfaaayaosryruk.supabase.co';
-const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_BToWA0CkSgL0OjpTtsnevQ_K7bwrYay';
-
 const supabaseClient = window.supabase.createClient(
   SUPABASE_URL,
   SUPABASE_PUBLISHABLE_KEY
@@ -955,6 +952,7 @@ const supabaseClient = window.supabase.createClient(
           await supabaseClient.auth.getUser();
 
         if (error) {
+
           console.error(
             'Get user error:',
             error
@@ -2854,130 +2852,167 @@ const supabaseClient = window.supabase.createClient(
       render
     );
 
-/* =========================================================
-   AI USAGE LIMIT
-========================================================= */
 
-const FREE_AI_USES = 2;
+    /* =========================================================
+       AI USAGE LIMIT
+    ========================================================= */
 
-async function getAIUsage() {
+    /*
+      الحد المجاني لكل حساب.
+      لا يعتمد على اسم المستخدم أو محتوى السيرة الذاتية.
+    */
 
-  const user = await getCurrentUser();
-
-  if (!user) {
-    return {
-      user: null,
-      count: 0
-    };
-  }
-
-  const {
-    data,
-    error
-  } = await supabaseClient
-    .from('ai_usage')
-    .select('uses')
-    .eq('user_id', user.id)
-    .maybeSingle();
-
-  if (error) {
-
-    console.error(
-      'Get AI usage error:',
-      error
-    );
-
-    throw error;
-  }
-
-  return {
-    user,
-    count: Number(data?.uses || 0)
-  };
-
-}
+    const FREE_AI_USES = 2;
 
 
-async function incrementAIUsage(user, currentCount) {
+    /*
+      قراءة عدد استعمالات AI من جدول ai_usage
+      حسب user_id الخاص بحساب Supabase.
+    */
 
-  const nextCount =
-    currentCount + 1;
+    async function getAIUsage() {
+
+      const user =
+        await getCurrentUser();
 
 
-  const {
-    error
-  } =
-    await supabaseClient
-      .from('ai_usage')
-      .upsert(
-        {
-          user_id:
-            user.id,
+      if (!user) {
 
-          uses:
-            nextCount
+        return {
+          user: null,
+          count: 0
+        };
 
-        },
-        {
-          onConflict:
-            'user_id'
-        }
+      }
+
+
+      const {
+        data,
+        error
+      } =
+        await supabaseClient
+          .from('ai_usage')
+          .select('uses')
+          .eq(
+            'user_id',
+            user.id
+          )
+          .maybeSingle();
+
+
+      if (error) {
+
+        console.error(
+          'Get AI usage error:',
+          error
+        );
+
+        throw error;
+
+      }
+
+
+      return {
+
+        user,
+
+        count:
+          Number(
+            data?.uses || 0
+          )
+
+      };
+
+    }
+
+
+    /*
+      زيادة الاستخدام تتم عن طريق PostgreSQL RPC.
+
+      الدالة الموجودة في Supabase يجب أن تكون:
+      increment_ai_usage
+
+      وهي التي تستخدم auth.uid()
+      وبالتالي لا يمكن للمستخدم اختيار user_id آخر.
+    */
+
+    async function incrementAIUsage() {
+
+      const {
+        data,
+        error
+      } =
+        await supabaseClient
+          .rpc(
+            'increment_ai_usage'
+          );
+
+
+      if (error) {
+
+        console.error(
+          'Increment AI usage RPC error:',
+          error
+        );
+
+        throw error;
+
+      }
+
+
+      return Number(
+        data || 0
       );
 
-
-  if (error) {
-
-    console.error(
-      'Increment AI usage error:',
-      error
-    );
-
-    throw error;
-  }
+    }
 
 
-  return nextCount;
+    function showAIUsageMessage(count) {
 
-}
+      if (count === 1) {
 
+        alert(
+          `تم استخدامك الأول للذكاء الاصطناعي.\n\nتبقى لك استعمال مجاني واحد.`
+        );
 
-function showAIUsageMessage(count) {
+        return;
 
-  if (count === 1) {
-
-    alert(
-      `تم استخدامك الأول للذكاء الاصطناعي.\n\nتبقى لك استعمال مجاني واحد.`
-    );
-
-    return;
-  }
+      }
 
 
-  if (count === 2) {
+      if (count === 2) {
 
-    alert(
-      `تم استخدامك الثاني للذكاء الاصطناعي.\n\nانتهت الاستعمالات المجانية المتاحة لك.`
-    );
+        alert(
+          `تم استخدامك الثاني للذكاء الاصطناعي.\n\nانتهت الاستعمالات المجانية المتاحة لك.`
+        );
 
-  }
+      }
 
-}
-
-
-function showPaymentOptions() {
-
-  const message = [
-    'لقد انتهت استعمالاتك المجانية.',
-    '',
-    'للاستمرار في استخدام الذكاء الاصطناعي اختر إحدى الخطط المدفوعة.',
-    '',
-    '💳 قريبًا: الاشتراك والدفع'
-  ].join('\n');
+    }
 
 
-  alert(message);
+    function showPaymentOptions() {
 
-}
+      const message = [
+
+        'لقد انتهت استعمالاتك المجانية.',
+
+        '',
+
+        'للاستمرار في استخدام الذكاء الاصطناعي اختر إحدى الخطط المدفوعة.',
+
+        '',
+
+        '💳 قريبًا: الاشتراك والدفع'
+
+      ].join('\n');
+
+
+      alert(message);
+
+    }
+
+
     /* =========================================================
        AI
     ========================================================= */
@@ -3006,44 +3041,60 @@ function showPaymentOptions() {
         generateBtn.textContent =
           t('improving');
 
-try {
 
-  /* =====================================================
-     CHECK AI USAGE BEFORE SENDING REQUEST
-  ===================================================== */
+        try {
 
-  const usage =
-    await getAIUsage();
+          /* =====================================================
+             REQUIRE LOGIN FOR AI
+          ===================================================== */
 
-
-  /*
-    إذا كان المستخدم غير مسجل الدخول،
-    نسمح له بالاستعمال الحالي.
-    
-    إذا أردت لاحقًا جعل AI للحسابات فقط،
-    يمكننا تغيير هذا الشرط.
-  */
-
-  if (
-    usage.user &&
-    usage.count >= FREE_AI_USES
-  ) {
-
-    showPaymentOptions();
-
-    return;
-  }
+          const user =
+            await getCurrentUser();
 
 
-  const experience =
-    readExperience();
+          if (!user) {
 
-  const education =
-    readEducation();
+            alert(
+              'يجب تسجيل الدخول أولاً لاستخدام الذكاء الاصطناعي.'
+            );
+
+            return;
+
+          }
 
 
-  const cvText = `
-        
+          /* =====================================================
+             CHECK AI USAGE BEFORE SENDING REQUEST
+          ===================================================== */
+
+          const usage =
+            await getAIUsage();
+
+
+          if (
+            usage.count >= FREE_AI_USES
+          ) {
+
+            showPaymentOptions();
+
+            return;
+
+          }
+
+
+          const experience =
+            readExperience();
+
+          const education =
+            readEducation();
+
+
+          /* =====================================================
+             BUILD CV TEXT
+          ===================================================== */
+
+          const cvText = `
+
 ${currentLanguage === 'ar'
   ? 'الوظيفة المستهدفة'
   : currentLanguage === 'fr'
@@ -3101,6 +3152,10 @@ ${getValue('languages')}
 `.trim();
 
 
+          /* =====================================================
+             SEND REQUEST TO BACKEND
+          ===================================================== */
+
           const response =
             await fetch(
               'https://cv-genius-ai-backend.vercel.app/improve-cv',
@@ -3114,9 +3169,13 @@ ${getValue('languages')}
 
                 body:
                   JSON.stringify({
-                    text: cvText,
+
+                    text:
+                      cvText,
+
                     language:
                       currentLanguage
+
                   })
               }
             );
@@ -3155,25 +3214,20 @@ ${getValue('languages')}
             );
 
           }
-/* =====================================================
-   COUNT SUCCESSFUL AI USE
-===================================================== */
-
-let newUsageCount = null;
 
 
-if (usage.user) {
+          /* =====================================================
+             COUNT SUCCESSFUL AI USE
+          ===================================================== */
 
-  newUsageCount =
-    await incrementAIUsage(
-      usage.user,
-      usage.count
-    );
+          const newUsageCount =
+            await incrementAIUsage();
 
-}
 
           const aiResult =
-            String(data.result).trim();
+            String(
+              data.result
+            ).trim();
 
 
           sessionStorage.setItem(
@@ -3189,7 +3243,9 @@ if (usage.user) {
           try {
 
             improvedCV =
-              JSON.parse(aiResult);
+              JSON.parse(
+                aiResult
+              );
 
           } catch (jsonError) {
 
@@ -3200,6 +3256,10 @@ if (usage.user) {
 
           }
 
+
+          /* =====================================================
+             APPLY IMPROVED SUMMARY
+          ===================================================== */
 
           if (
             improvedCV &&
@@ -3227,6 +3287,10 @@ if (usage.user) {
 
             }
 
+
+            /* ===================================================
+               APPLY IMPROVED EXPERIENCE
+            =================================================== */
 
             if (
               Array.isArray(
@@ -3266,6 +3330,10 @@ if (usage.user) {
             }
 
 
+            /* ===================================================
+               APPLY IMPROVED EDUCATION
+            =================================================== */
+
             if (
               Array.isArray(
                 improvedCV.education
@@ -3301,6 +3369,10 @@ if (usage.user) {
             }
 
 
+            /* ===================================================
+               APPLY IMPROVED SKILLS
+            =================================================== */
+
             if (
               Array.isArray(
                 improvedCV.skills
@@ -3318,7 +3390,9 @@ if (usage.user) {
                 skillsInput.value =
                   improvedCV.skills
                     .map(skill =>
-                      String(skill).trim()
+                      String(
+                        skill
+                      ).trim()
                     )
                     .filter(Boolean)
                     .join(', ');
@@ -3327,6 +3401,10 @@ if (usage.user) {
 
             }
 
+
+            /* ===================================================
+               APPLY IMPROVED LANGUAGES
+            =================================================== */
 
             if (
               Array.isArray(
@@ -3345,7 +3423,9 @@ if (usage.user) {
                 languagesInput.value =
                   improvedCV.languages
                     .map(language =>
-                      String(language).trim()
+                      String(
+                        language
+                      ).trim()
                     )
                     .filter(Boolean)
                     .join(', ');
@@ -3368,6 +3448,10 @@ if (usage.user) {
           }
 
 
+          /* =====================================================
+             AI OUTPUT
+          ===================================================== */
+
           const aiOutput =
             document.getElementById(
               'ai-result'
@@ -3386,13 +3470,16 @@ if (usage.user) {
 
           }
 
-if (newUsageCount) {
 
-  showAIUsageMessage(
-    newUsageCount
-  );
+          /* =====================================================
+             SHOW USAGE MESSAGE
+          ===================================================== */
 
-}
+          showAIUsageMessage(
+            newUsageCount
+          );
+
+
           generateBtn.textContent =
             t('generated');
 
@@ -3400,8 +3487,13 @@ if (newUsageCount) {
           if (sheet) {
 
             sheet.scrollIntoView({
-              behavior: 'smooth',
-              block: 'start'
+
+              behavior:
+                'smooth',
+
+              block:
+                'start'
+
             });
 
           }
