@@ -398,4 +398,457 @@ app.get(
 ========================================================= */
 
 app.post(
-  "/improve-cv
+  "/improve-cv",
+  rateLimit,
+  async (req, res) => {
+    try {
+      const {
+        text,
+        language = "ar"
+      } = req.body || {};
+
+      /* -----------------------------------------------------
+         INPUT VALIDATION
+      ----------------------------------------------------- */
+
+      if (
+        typeof text !== "string"
+      ) {
+        return res.status(400).json({
+          error:
+            "نص السيرة الذاتية غير صالح."
+        });
+      }
+
+      const cleanText =
+        text.trim();
+
+      if (!cleanText) {
+        return res.status(400).json({
+          error:
+            "لم يتم إرسال نص السيرة الذاتية."
+        });
+      }
+
+      if (
+        cleanText.length >
+        15000
+      ) {
+        return res.status(413).json({
+          error:
+            "السيرة الذاتية طويلة جدًا. اختصر النص وحاول مرة أخرى."
+        });
+      }
+
+      /* -----------------------------------------------------
+         LANGUAGE VALIDATION
+      ----------------------------------------------------- */
+
+      const allowedLanguages =
+        new Set([
+          "ar",
+          "fr",
+          "en"
+        ]);
+
+      if (
+        !allowedLanguages.has(
+          language
+        )
+      ) {
+        return res.status(400).json({
+          error:
+            "لغة غير مدعومة."
+        });
+      }
+
+      /* -----------------------------------------------------
+         API KEYS
+      ----------------------------------------------------- */
+
+      if (
+        !GEMINI_API_KEY
+      ) {
+        console.error(
+          "GEMINI_API_KEY is missing"
+        );
+
+        return res.status(500).json({
+          error:
+            "خدمة الذكاء الاصطناعي غير متاحة حاليًا."
+        });
+      }
+
+      if (
+        !SUPABASE_URL ||
+        !SUPABASE_SERVICE_ROLE_KEY
+      ) {
+        console.error(
+          "Supabase environment variables are missing"
+        );
+
+        return res.status(500).json({
+          error:
+            "خدمة قاعدة البيانات غير متاحة حاليًا."
+        });
+      }
+
+      /* -----------------------------------------------------
+         IDENTITIES
+      ----------------------------------------------------- */
+
+      const identities =
+        getIdentities(
+          req,
+          cleanText
+        );
+
+      /* -----------------------------------------------------
+         USAGE CHECK
+      ----------------------------------------------------- */
+
+      const previousUsage =
+        await getPreviousUsage(
+          identities
+        );
+
+      const successfulUses =
+        previousUsage.length;
+
+      /*
+        الاستعمال الأول والثاني مجانيان.
+
+        الاستعمال الثالث:
+        نوقف Gemini ونطلب الدفع.
+      */
+
+      if (
+        successfulUses >= 2
+      ) {
+        return res.status(402).json({
+          error:
+            "لقد أكملت الاستعمالين المجانيين. اختر خطة للمتابعة.",
+
+          code:
+            "PAYMENT_REQUIRED",
+
+          freeUses:
+            successfulUses,
+
+          freeUsesRemaining:
+            0,
+
+          requiresPayment:
+            true,
+
+          plans: [
+            "monthly",
+            "lifetime"
+          ]
+        });
+      }
+
+      /* -----------------------------------------------------
+         LANGUAGE INSTRUCTION
+      ----------------------------------------------------- */
+
+      const languageInstruction = {
+        ar:
+          "اكتب النتيجة باللغة العربية.",
+
+        fr:
+          "Écrivez le résultat en français.",
+
+        en:
+          "Write the result in English."
+      }[language];
+
+      /* -----------------------------------------------------
+         PROMPT
+      ----------------------------------------------------- */
+
+      const prompt = `
+أنت مساعد متخصص في تحسين السير الذاتية.
+
+${languageInstruction}
+
+حسّن السيرة الذاتية التالية بشكل احترافي.
+
+مهم جدًا:
+- لا تخترع أي معلومات.
+- لا تحذف المعلومات الموجودة.
+- احتفظ بالاسم والوظيفة والبريد والهاتف والموقع كما هي.
+- حسّن صياغة الملخص والخبرة والتعليم والمهارات واللغات فقط.
+- أعد JSON فقط.
+- لا تستخدم Markdown.
+- لا تضف أي شرح خارج JSON.
+
+استخدم هذا الشكل:
+
+{
+  "summary": "ملخص مهني",
+  "experience": [
+    {
+      "role": "المسمى الوظيفي",
+      "company": "الشركة",
+      "dates": "الفترة",
+      "description": "الوصف والإنجازات"
+    }
+  ],
+  "education": [
+    {
+      "degree": "المؤهل",
+      "school": "المؤسسة التعليمية",
+      "year": "السنة"
+    }
+  ],
+  "skills": ["مهارة 1", "مهارة 2"],
+  "languages": ["لغة 1", "لغة 2"]
+}
+
+معلومات السيرة الذاتية:
+
+${cleanText}
+`;
+
+      /* =====================================================
+         GEMINI API WITH RETRY
+      ===================================================== */
+
+      const maxAttempts = 3;
+
+      let response = null;
+      let data = null;
+
+      for (
+        let attempt = 1;
+        attempt <=
+        maxAttempts;
+        attempt++
+      ) {
+        try {
+          response =
+            await fetch(
+              "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent",
+              {
+                method:
+                  "POST",
+
+                headers: {
+                  "Content-Type":
+                    "application/json",
+
+                  "x-goog-api-key":
+                    GEMINI_API_KEY
+                },
+
+                body:
+                  JSON.stringify({
+                    contents: [
+                      {
+                        role:
+                          "user",
+
+                        parts: [
+                          {
+                            text:
+                              prompt
+                          }
+                        ]
+                      }
+                    ],
+
+                    generationConfig: {
+                      responseMimeType:
+                        "application/json"
+                    }
+                  })
+              }
+            );
+        } catch (
+          networkError
+        ) {
+          console.error(
+            `Gemini network error - attempt ${attempt}:`,
+            networkError
+          );
+
+          if (
+            attempt ===
+            maxAttempts
+          ) {
+            throw networkError;
+          }
+
+          await new Promise(
+            resolve =>
+              setTimeout(
+                resolve,
+                1000 *
+                  attempt
+              )
+          );
+
+          continue;
+        }
+
+        data = null;
+
+        try {
+          data =
+            await response.json();
+        } catch {
+          data = null;
+        }
+
+        if (
+          response.status ===
+            503 ||
+          response.status ===
+            429
+        ) {
+          console.error(
+            `Gemini ${response.status} - attempt ${attempt}/${maxAttempts}`
+          );
+
+          if (
+            attempt <
+            maxAttempts
+          ) {
+            const delay =
+              1500 *
+              Math.pow(
+                2,
+                attempt - 1
+              );
+
+            await new Promise(
+              resolve =>
+                setTimeout(
+                  resolve,
+                  delay
+                )
+            );
+
+            continue;
+          }
+        }
+
+        break;
+      }
+
+      /* =====================================================
+         GEMINI ERROR
+      ===================================================== */
+
+      if (
+        !response ||
+        !response.ok
+      ) {
+        console.error(
+          "Gemini API error:",
+
+          JSON.stringify(
+            data,
+            null,
+            2
+          )
+        );
+
+        return res.status(
+          response?.status ===
+            429
+            ? 429
+            : 502
+        ).json({
+          error:
+            "تعذر معالجة السيرة الذاتية حاليًا. حاول مرة أخرى."
+        });
+      }
+
+      /* =====================================================
+         RESULT
+      ===================================================== */
+
+      const result =
+        data?.candidates?.[0]
+          ?.content?.parts?.[0]
+          ?.text;
+
+      if (!result) {
+        console.error(
+          "Gemini returned no result:",
+
+          JSON.stringify(
+            data,
+            null,
+            2
+          )
+        );
+
+        return res.status(502).json({
+          error:
+            "لم يتم الحصول على نتيجة من Gemini."
+        });
+      }
+
+      /* =====================================================
+         SAVE SUCCESSFUL USE
+      ===================================================== */
+
+      await saveUsage(
+        identities
+      );
+
+      const newUsageCount =
+        successfulUses + 1;
+
+      /* =====================================================
+         RESPONSE
+      ===================================================== */
+
+      return res.status(200).json({
+        result:
+          String(result).trim(),
+
+        freeUses:
+          newUsageCount,
+
+        freeUsesRemaining:
+          Math.max(
+            0,
+            2 -
+              newUsageCount
+          ),
+
+        paid:
+          false,
+
+        /*
+          الدفع مطلوب ابتداءً من الاستخدام الثالث.
+          لكن الاستخدام الثالث نفسه لا يصل إلى هنا،
+          لأنه تم إيقافه أعلاه عند successfulUses >= 2.
+        */
+        requiresPayment:
+          newUsageCount >= 3
+      });
+
+    } catch (error) {
+      console.error(
+        "Server error:",
+        error
+      );
+
+      return res.status(500).json({
+        error:
+          "حدث خطأ غير متوقع في الخادم."
+      });
+    }
+  }
+);
+
+/* =========================================================
+   VERCEL
+========================================================= */
+
+export default app;
