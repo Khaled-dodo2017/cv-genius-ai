@@ -2986,8 +2986,6 @@ const supabaseClient = window.supabase.createClient(
 
 }
 
-    }
-
 
     function showPaymentOptions() {
 
