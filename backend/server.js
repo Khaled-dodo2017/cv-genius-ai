@@ -9,7 +9,8 @@ const app = express();
 ========================================================= */
 
 const ALLOWED_ORIGINS = new Set([
-  "https://khaled-dodo2017.github.io"
+  "https://khaled-dodo2017.github.io",
+  "https://cv-genius-ai-eight.vercel.app"
 ]);
 
 app.set("trust proxy", 1);
@@ -17,6 +18,8 @@ app.set("trust proxy", 1);
 app.use(
   cors({
     origin: (origin, callback) => {
+      // يسمح بطلبات الخادم مثل Paddle Webhooks
+      // التي لا تحتوي على Origin
       if (!origin) {
         return callback(null, true);
       }
@@ -25,16 +28,463 @@ app.use(
         return callback(null, true);
       }
 
-      return callback(new Error("Origin not allowed"));
+      return callback(
+        new Error("Origin not allowed")
+      );
     },
 
-    methods: ["GET", "POST", "OPTIONS"],
+    methods: [
+      "GET",
+      "POST",
+      "OPTIONS"
+    ],
 
-    allowedHeaders: ["Content-Type"],
+    allowedHeaders: [
+      "Content-Type"
+    ],
 
     optionsSuccessStatus: 204
   })
 );
+
+/* =========================================================
+   PADDLE WEBHOOK
+   IMPORTANT:
+   This MUST come before express.json()
+========================================================= */
+
+app.post(
+  "/paddle-webhook",
+  express.raw({
+    type: "application/json"
+  }),
+  async (req, res) => {
+    try {
+      console.log(
+        "Paddle webhook request received"
+      );
+
+      /* -----------------------------------------------------
+         WEBHOOK SECRET
+      ----------------------------------------------------- */
+
+      const webhookSecret =
+        process.env.PADDLE_WEBHOOK_SECRET;
+
+      if (!webhookSecret) {
+        console.error(
+          "PADDLE_WEBHOOK_SECRET is missing"
+        );
+
+        return res.status(500).json({
+          error:
+            "Paddle webhook secret is missing"
+        });
+      }
+
+      /* -----------------------------------------------------
+         SIGNATURE HEADER
+      ----------------------------------------------------- */
+
+      const paddleSignature =
+        req.headers["paddle-signature"];
+
+      if (!paddleSignature) {
+        console.error(
+          "Paddle-Signature header is missing"
+        );
+
+        return res.status(400).json({
+          error:
+            "Missing Paddle-Signature"
+        });
+      }
+
+      /* -----------------------------------------------------
+         RAW BODY
+      ----------------------------------------------------- */
+
+      if (!Buffer.isBuffer(req.body)) {
+        console.error(
+          "Paddle webhook body is not raw"
+        );
+
+        return res.status(400).json({
+          error:
+            "Invalid webhook body"
+        });
+      }
+
+      const rawBody =
+        req.body.toString("utf8");
+
+      /* -----------------------------------------------------
+         PARSE PADDLE SIGNATURE
+         
+         Example:
+         ts=1750000000;h1=abcdef...
+      ----------------------------------------------------- */
+
+      const signatureParts =
+        String(paddleSignature)
+          .split(";");
+
+      let timestamp = "";
+      let receivedSignature = "";
+
+      for (
+        const part of signatureParts
+      ) {
+        const separatorIndex =
+          part.indexOf("=");
+
+        if (
+          separatorIndex === -1
+        ) {
+          continue;
+        }
+
+        const key =
+          part.slice(
+            0,
+            separatorIndex
+          );
+
+        const value =
+          part.slice(
+            separatorIndex + 1
+          );
+
+        if (key === "ts") {
+          timestamp = value;
+        }
+
+        if (key === "h1") {
+          receivedSignature = value;
+        }
+      }
+
+      if (
+        !timestamp ||
+        !receivedSignature
+      ) {
+        console.error(
+          "Invalid Paddle-Signature format"
+        );
+
+        return res.status(400).json({
+          error:
+            "Invalid Paddle-Signature"
+        });
+      }
+
+      /* -----------------------------------------------------
+         TIMESTAMP VALIDATION
+      ----------------------------------------------------- */
+
+      const timestampNumber =
+        Number(timestamp);
+
+      if (
+        !Number.isFinite(
+          timestampNumber
+        )
+      ) {
+        console.error(
+          "Invalid Paddle timestamp"
+        );
+
+        return res.status(400).json({
+          error:
+            "Invalid webhook timestamp"
+        });
+      }
+
+      const currentTimestamp =
+        Math.floor(
+          Date.now() / 1000
+        );
+
+      const timestampDifference =
+        Math.abs(
+          currentTimestamp -
+            timestampNumber
+        );
+
+      /*
+        Reject very old webhook requests.
+        This protects against replay attacks.
+      */
+
+      const WEBHOOK_TOLERANCE_SECONDS =
+        5 * 60;
+
+      if (
+        timestampDifference >
+        WEBHOOK_TOLERANCE_SECONDS
+      ) {
+        console.error(
+          "Paddle webhook timestamp expired"
+        );
+
+        return res.status(408).json({
+          error:
+            "Webhook timestamp expired"
+        });
+      }
+
+      /* -----------------------------------------------------
+         BUILD SIGNED PAYLOAD
+         
+         Paddle signs:
+         
+         timestamp + ":" + rawBody
+      ----------------------------------------------------- */
+
+      const signedPayload =
+        `${timestamp}:${rawBody}`;
+
+      /* -----------------------------------------------------
+         CREATE EXPECTED HMAC
+      ----------------------------------------------------- */
+
+      const expectedSignature =
+        crypto
+          .createHmac(
+            "sha256",
+            webhookSecret
+          )
+          .update(
+            signedPayload,
+            "utf8"
+          )
+          .digest("hex");
+
+      /* -----------------------------------------------------
+         SAFE SIGNATURE COMPARISON
+      ----------------------------------------------------- */
+
+      const expectedBuffer =
+        Buffer.from(
+          expectedSignature,
+          "utf8"
+        );
+
+      const receivedBuffer =
+        Buffer.from(
+          receivedSignature,
+          "utf8"
+        );
+
+      if (
+        expectedBuffer.length !==
+        receivedBuffer.length
+      ) {
+        console.error(
+          "Paddle signature length mismatch"
+        );
+
+        return res.status(401).json({
+          error:
+            "Invalid Paddle signature"
+        });
+      }
+
+      const signatureValid =
+        crypto.timingSafeEqual(
+          expectedBuffer,
+          receivedBuffer
+        );
+
+      if (!signatureValid) {
+        console.error(
+          "Invalid Paddle webhook signature"
+        );
+
+        return res.status(401).json({
+          error:
+            "Invalid Paddle signature"
+        });
+      }
+
+      /* -----------------------------------------------------
+         SIGNATURE VERIFIED
+      ----------------------------------------------------- */
+
+      console.log(
+        "Paddle webhook signature verified"
+      );
+
+      /* -----------------------------------------------------
+         PARSE EVENT
+      ----------------------------------------------------- */
+
+      let event;
+
+      try {
+        event =
+          JSON.parse(rawBody);
+      } catch (error) {
+        console.error(
+          "Invalid Paddle webhook JSON:",
+          error
+        );
+
+        return res.status(400).json({
+          error:
+            "Invalid webhook JSON"
+        });
+      }
+
+      /* -----------------------------------------------------
+         EVENT INFORMATION
+      ----------------------------------------------------- */
+
+      console.log(
+        "========================================"
+      );
+
+      console.log(
+        "PADDLE WEBHOOK VERIFIED"
+      );
+
+      console.log(
+        "Event ID:",
+        event?.event_id
+      );
+
+      console.log(
+        "Event Type:",
+        event?.event_type
+      );
+
+      console.log(
+        "Occurred At:",
+        event?.occurred_at
+      );
+
+      console.log(
+        "Transaction ID:",
+        event?.data?.id
+      );
+
+      console.log(
+        "Customer ID:",
+        event?.data?.customer_id
+      );
+
+      console.log(
+        "Subscription ID:",
+        event?.data?.subscription_id
+      );
+
+      console.log(
+        "========================================"
+      );
+
+      /* =====================================================
+         TRANSACTION COMPLETED
+      ===================================================== */
+
+      if (
+        event?.event_type ===
+        "transaction.completed"
+      ) {
+        console.log(
+          "PADDLE PAYMENT COMPLETED"
+        );
+
+        console.log(
+          "Transaction:",
+          event?.data?.id
+        );
+
+        /*
+          IMPORTANT:
+          We are NOT granting paid usage yet.
+
+          First we verify that the webhook works correctly.
+
+          After successful testing we will connect this event
+          to Supabase and grant:
+
+          $4.99  -> 30 uses
+          $9.99  -> 60 uses
+        */
+      }
+
+      /* =====================================================
+         SUBSCRIPTION EVENTS
+      ===================================================== */
+
+      if (
+        event?.event_type ===
+        "subscription.created"
+      ) {
+        console.log(
+          "PADDLE SUBSCRIPTION CREATED"
+        );
+
+        console.log(
+          "Subscription:",
+          event?.data?.id
+        );
+      }
+
+      if (
+        event?.event_type ===
+        "subscription.updated"
+      ) {
+        console.log(
+          "PADDLE SUBSCRIPTION UPDATED"
+        );
+
+        console.log(
+          "Subscription:",
+          event?.data?.id
+        );
+      }
+
+      if (
+        event?.event_type ===
+        "subscription.canceled"
+      ) {
+        console.log(
+          "PADDLE SUBSCRIPTION CANCELED"
+        );
+
+        console.log(
+          "Subscription:",
+          event?.data?.id
+        );
+      }
+
+      /* -----------------------------------------------------
+         SUCCESS RESPONSE
+      ----------------------------------------------------- */
+
+      return res.status(200).json({
+        success: true
+      });
+
+    } catch (error) {
+      console.error(
+        "Paddle webhook error:",
+        error
+      );
+
+      return res.status(500).json({
+        error:
+          "Paddle webhook processing failed"
+      });
+    }
+  }
+);
+
+/* =========================================================
+   JSON BODY
+   MUST COME AFTER PADDLE WEBHOOK
+========================================================= */
 
 app.use(
   express.json({
@@ -76,25 +526,26 @@ async function supabaseRequest(
     );
   }
 
-  const response = await fetch(
-    `${SUPABASE_URL}/rest/v1/${path}`,
-    {
-      ...options,
+  const response =
+    await fetch(
+      `${SUPABASE_URL}/rest/v1/${path}`,
+      {
+        ...options,
 
-      headers: {
-        apikey:
-          SUPABASE_SERVICE_ROLE_KEY,
+        headers: {
+          apikey:
+            SUPABASE_SERVICE_ROLE_KEY,
 
-        Authorization:
-          `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+          Authorization:
+            `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
 
-        "Content-Type":
-          "application/json",
+          "Content-Type":
+            "application/json",
 
-        ...(options.headers || {})
+          ...(options.headers || {})
+        }
       }
-    }
-  );
+    );
 
   const text =
     await response.text();
@@ -128,13 +579,17 @@ function hash(value) {
       "sha256",
       IDENTITY_HASH_SECRET
     )
-    .update(String(value))
+    .update(
+      String(value)
+    )
     .digest("hex");
 }
 
 function getClientIp(req) {
   const forwarded =
-    req.headers["x-forwarded-for"];
+    req.headers[
+      "x-forwarded-for"
+    ];
 
   if (forwarded) {
     return forwarded
@@ -163,7 +618,9 @@ function normalizeEmail(email) {
     .toLowerCase();
 }
 
-function normalizeDeviceId(deviceId) {
+function normalizeDeviceId(
+  deviceId
+) {
   if (
     !deviceId ||
     typeof deviceId !== "string"
@@ -241,7 +698,10 @@ function rateLimit(
       Math.ceil(
         (
           RATE_LIMIT_WINDOW_MS -
-          (now - current.start)
+          (
+            now -
+            current.start
+          )
         ) / 1000
       );
 
@@ -280,15 +740,21 @@ function getIdentities(
 
   return {
     emailHash: email
-      ? hash(`email:${email}`)
+      ? hash(
+          `email:${email}`
+        )
       : "",
 
     ipHash: ip
-      ? hash(`ip:${ip}`)
+      ? hash(
+          `ip:${ip}`
+        )
       : "",
 
     deviceHash: deviceId
-      ? hash(`device:${deviceId}`)
+      ? hash(
+          `device:${deviceId}`
+        )
       : ""
   };
 }
@@ -302,19 +768,25 @@ async function getPreviousUsage(
 ) {
   const conditions = [];
 
-  if (identities.emailHash) {
+  if (
+    identities.emailHash
+  ) {
     conditions.push(
       `email_hash.eq.${identities.emailHash}`
     );
   }
 
-  if (identities.ipHash) {
+  if (
+    identities.ipHash
+  ) {
     conditions.push(
       `ip_hash.eq.${identities.ipHash}`
     );
   }
 
-  if (identities.deviceHash) {
+  if (
+    identities.deviceHash
+  ) {
     conditions.push(
       `device_hash.eq.${identities.deviceHash}`
     );
@@ -354,22 +826,23 @@ async function saveUsage(
           "return=minimal"
       },
 
-      body: JSON.stringify({
-        email_hash:
-          identities.emailHash ||
-          null,
+      body:
+        JSON.stringify({
+          email_hash:
+            identities.emailHash ||
+            null,
 
-        ip_hash:
-          identities.ipHash ||
-          null,
+          ip_hash:
+            identities.ipHash ||
+            null,
 
-        device_hash:
-          identities.deviceHash ||
-          null,
+          device_hash:
+            identities.deviceHash ||
+            null,
 
-        action:
-          "improve-cv"
-      })
+          action:
+            "improve-cv"
+        })
     }
   );
 }
@@ -552,16 +1025,17 @@ app.post(
          LANGUAGE INSTRUCTION
       ----------------------------------------------------- */
 
-      const languageInstruction = {
-        ar:
-          "اكتب النتيجة باللغة العربية.",
+      const languageInstruction =
+        {
+          ar:
+            "اكتب النتيجة باللغة العربية.",
 
-        fr:
-          "Écrivez le résultat en français.",
+          fr:
+            "Écrivez le résultat en français.",
 
-        en:
-          "Write the result in English."
-      }[language];
+          en:
+            "Write the result in English."
+        }[language];
 
       /* -----------------------------------------------------
          PROMPT
@@ -824,11 +1298,6 @@ ${cleanText}
         paid:
           false,
 
-        /*
-          الدفع مطلوب ابتداءً من الاستخدام الثالث.
-          لكن الاستخدام الثالث نفسه لا يصل إلى هنا،
-          لأنه تم إيقافه أعلاه عند successfulUses >= 2.
-        */
         requiresPayment:
           newUsageCount >= 3
       });
