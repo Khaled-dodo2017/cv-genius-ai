@@ -772,7 +772,7 @@ async function savePaddleSubscription(
   */
 
   await supabaseRequest(
-    "paddle_subscriptions",
+  "paddle_subscriptions?on_conflict=subscription_id",
     {
       method: "POST",
 
