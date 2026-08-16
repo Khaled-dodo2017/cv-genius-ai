@@ -49,10 +49,6 @@ const PADDLE_WEBHOOK_SECRET =
 const IDENTITY_HASH_SECRET =
   process.env.IDENTITY_HASH_SECRET?.trim();
 
-/*
-  Production MUST NOT use a default identity secret.
-*/
-
 const IS_PRODUCTION =
   process.env.VERCEL_ENV === "production" ||
   process.env.NODE_ENV === "production";
@@ -64,10 +60,6 @@ const IS_PRODUCTION =
 app.set("trust proxy", 1);
 
 app.disable("x-powered-by");
-
-/*
-  Small security headers without requiring another package.
-*/
 
 app.use((req, res, next) => {
   res.setHeader(
@@ -101,17 +93,15 @@ app.use(
   cors({
     origin: (origin, callback) => {
       /*
-        Server-to-server requests such as Paddle webhooks
-        normally have no Origin header.
+        Paddle server-to-server webhooks normally
+        do not contain an Origin header.
       */
 
       if (!origin) {
         return callback(null, true);
       }
 
-      if (
-        ALLOWED_ORIGINS.has(origin)
-      ) {
+      if (ALLOWED_ORIGINS.has(origin)) {
         return callback(null, true);
       }
 
@@ -136,10 +126,10 @@ app.use(
 );
 
 /* =========================================================
-   IDENTITY SECRET VALIDATION
+   CONFIGURATION VALIDATION
 ========================================================= */
 
-function validateServerConfiguration() {
+function validateAiConfiguration() {
   const missing = [];
 
   if (!SUPABASE_URL) {
@@ -156,12 +146,6 @@ function validateServerConfiguration() {
     missing.push("GEMINI_API_KEY");
   }
 
-  if (!PADDLE_WEBHOOK_SECRET) {
-    missing.push(
-      "PADDLE_WEBHOOK_SECRET"
-    );
-  }
-
   if (!IDENTITY_HASH_SECRET) {
     missing.push(
       "IDENTITY_HASH_SECRET"
@@ -170,13 +154,42 @@ function validateServerConfiguration() {
 
   if (missing.length > 0) {
     console.error(
-      "Missing environment variables:",
+      "Missing AI environment variables:",
       missing
     );
 
-    if (IS_PRODUCTION) {
-      return false;
-    }
+    return false;
+  }
+
+  return true;
+}
+
+function validatePaddleConfiguration() {
+  const missing = [];
+
+  if (!SUPABASE_URL) {
+    missing.push("SUPABASE_URL");
+  }
+
+  if (!SUPABASE_SERVICE_ROLE_KEY) {
+    missing.push(
+      "SUPABASE_SERVICE_ROLE_KEY"
+    );
+  }
+
+  if (!PADDLE_WEBHOOK_SECRET) {
+    missing.push(
+      "PADDLE_WEBHOOK_SECRET"
+    );
+  }
+
+  if (missing.length > 0) {
+    console.error(
+      "Missing Paddle environment variables:",
+      missing
+    );
+
+    return false;
   }
 
   return true;
@@ -226,9 +239,7 @@ function parsePaddleSignature(
         separatorIndex + 1
       );
 
-    if (
-      key === "ts"
-    ) {
+    if (key === "ts") {
       timestamp = value;
     }
 
@@ -290,11 +301,6 @@ function verifyPaddleSignature(
     return false;
   }
 
-  /*
-    Paddle recommends a 5-second tolerance.
-    This protects against replay attacks.
-  */
-
   const now =
     Math.floor(
       Date.now() / 1000
@@ -303,7 +309,7 @@ function verifyPaddleSignature(
   const age =
     Math.abs(
       now -
-        timestampNumber
+      timestampNumber
     );
 
   if (
@@ -344,11 +350,6 @@ function verifyPaddleSignature(
       "utf8"
     );
 
-  /*
-    Paddle may provide multiple h1 values
-    during secret rotation.
-  */
-
   for (
     const receivedSignature
     of signatures
@@ -380,6 +381,192 @@ function verifyPaddleSignature(
 }
 
 /* =========================================================
+   SUPABASE
+========================================================= */
+
+async function supabaseRequest(
+  path,
+  options = {}
+) {
+  if (
+    !SUPABASE_URL ||
+    !SUPABASE_SERVICE_ROLE_KEY
+  ) {
+    throw new Error(
+      "Supabase environment variables are missing"
+    );
+  }
+
+  const response =
+    await fetch(
+      `${SUPABASE_URL}/rest/v1/${path}`,
+      {
+        ...options,
+
+        headers: {
+          apikey:
+            SUPABASE_SERVICE_ROLE_KEY,
+
+          Authorization:
+            `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+
+          "Content-Type":
+            "application/json",
+
+          ...(options.headers || {})
+        }
+      }
+    );
+
+  const text =
+    await response.text();
+
+  let data = null;
+
+  if (text) {
+    try {
+      data =
+        JSON.parse(text);
+    } catch {
+      data = text;
+    }
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      `Supabase error ${response.status}: ${JSON.stringify(data)}`
+    );
+  }
+
+  return data;
+}
+
+/* =========================================================
+   PADDLE EVENT STORAGE
+========================================================= */
+
+async function savePaddleEvent({
+  eventId,
+  eventType,
+  occurredAt,
+  data
+}) {
+  if (!eventId) {
+    return;
+  }
+
+  /*
+    event_id MUST be UNIQUE in paddle_events.
+
+    Duplicate Paddle deliveries are ignored by
+    resolution=ignore-duplicates.
+  */
+
+  await supabaseRequest(
+    "paddle_events",
+    {
+      method: "POST",
+
+      headers: {
+        Prefer:
+          "return=minimal,resolution=ignore-duplicates"
+      },
+
+      body: JSON.stringify({
+        event_id:
+          eventId,
+
+        event_type:
+          eventType,
+
+        occurred_at:
+          occurredAt,
+
+        payload:
+          data
+      })
+    }
+  );
+}
+
+/* =========================================================
+   PADDLE SUBSCRIPTION STORAGE
+========================================================= */
+
+async function savePaddleSubscription(
+  subscription
+) {
+  const subscriptionId =
+    subscription?.id;
+
+  if (
+    typeof subscriptionId !==
+      "string" ||
+    !subscriptionId.startsWith(
+      "sub_"
+    )
+  ) {
+    return;
+  }
+
+  const customerId =
+    subscription?.customer_id ||
+    null;
+
+  const status =
+    subscription?.status ||
+    null;
+
+  const priceId =
+    subscription
+      ?.items?.[0]
+      ?.price?.id ||
+    null;
+
+  /*
+    IMPORTANT:
+
+    paddle_subscriptions.subscription_id
+    is UNIQUE in the database.
+
+    This matches the indexes you showed
+    in Supabase.
+  */
+
+  await supabaseRequest(
+    "paddle_subscriptions?on_conflict=subscription_id",
+    {
+      method: "POST",
+
+      headers: {
+        Prefer:
+          "resolution=merge-duplicates,return=minimal"
+      },
+
+      body: JSON.stringify({
+        subscription_id:
+          subscriptionId,
+
+        customer_id:
+          customerId,
+
+        status:
+          status,
+
+        price_id:
+          priceId,
+
+        updated_at:
+          new Date().toISOString(),
+
+        raw_data:
+          subscription
+      })
+    }
+  );
+}
+
+/* =========================================================
    PADDLE WEBHOOK
 ========================================================= */
 
@@ -387,7 +574,8 @@ function verifyPaddleSignature(
   IMPORTANT:
 
   This route MUST remain before express.json()
-  so Paddle's exact raw body is preserved.
+  because Paddle signature verification requires
+  the exact raw request body.
 */
 
 app.post(
@@ -401,12 +589,8 @@ app.post(
   async (req, res) => {
     try {
       if (
-        !PADDLE_WEBHOOK_SECRET
+        !validatePaddleConfiguration()
       ) {
-        console.error(
-          "PADDLE_WEBHOOK_SECRET is missing"
-        );
-
         return res.status(503).json({
           error:
             "Webhook service is not configured."
@@ -460,7 +644,7 @@ app.post(
       }
 
       /*
-        Verify Paddle BEFORE parsing JSON.
+        VERIFY FIRST.
       */
 
       const valid =
@@ -528,18 +712,9 @@ app.post(
       );
 
       /*
-        -----------------------------------------------------
-        IMPORTANT PAYMENT LOGIC
-        -----------------------------------------------------
+        Store the event first.
 
-        We only acknowledge the webhook here.
-
-        Actual paid-access provisioning should be performed
-        using the Paddle customer/subscription IDs and stored
-        in Supabase.
-
-        Paddle guarantees at-least-once delivery, so duplicate
-        event IDs must be ignored.
+        paddle_events.event_id must be UNIQUE.
       */
 
       if (eventId) {
@@ -551,11 +726,6 @@ app.post(
             data
           });
         } catch (error) {
-          /*
-            If the event cannot be persisted, DO NOT claim
-            successful processing. Paddle can retry it.
-          */
-
           console.error(
             "Failed to persist Paddle event:",
             error
@@ -569,11 +739,7 @@ app.post(
       }
 
       /*
-        -----------------------------------------------------
-        SUBSCRIPTION STATE
-        -----------------------------------------------------
-
-        Store subscription information when available.
+        Subscription events contain data.id = sub_...
       */
 
       if (
@@ -591,10 +757,6 @@ app.post(
             "Failed to save Paddle subscription:",
             error
           );
-
-          /*
-            Return 500 so Paddle retries.
-          */
 
           return res.status(500).json({
             error:
@@ -633,181 +795,6 @@ app.use(
 );
 
 /* =========================================================
-   SUPABASE
-========================================================= */
-
-async function supabaseRequest(
-  path,
-  options = {}
-) {
-  if (
-    !SUPABASE_URL ||
-    !SUPABASE_SERVICE_ROLE_KEY
-  ) {
-    throw new Error(
-      "Supabase environment variables are missing"
-    );
-  }
-
-  const response =
-    await fetch(
-      `${SUPABASE_URL}/rest/v1/${path}`,
-      {
-        ...options,
-
-        headers: {
-          apikey:
-            SUPABASE_SERVICE_ROLE_KEY,
-
-          Authorization:
-            `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-
-          "Content-Type":
-            "application/json",
-
-          ...(options.headers || {})
-        }
-      }
-    );
-
-  const text =
-    await response.text();
-
-  let data = null;
-
-  if (text) {
-    try {
-      data =
-        JSON.parse(text);
-    } catch {
-      data = text;
-    }
-  }
-
-  if (!response.ok) {
-    throw new Error(
-      `Supabase error ${response.status}: ${JSON.stringify(data)}`
-    );
-  }
-
-  return data;
-}
-
-/* =========================================================
-   SUPABASE PADDLE EVENT STORAGE
-========================================================= */
-
-async function savePaddleEvent({
-  eventId,
-  eventType,
-  occurredAt,
-  data
-}) {
-  /*
-    Requires a UNIQUE constraint on event_id.
-
-    Duplicate Paddle deliveries are therefore harmless.
-  */
-
-  try {
-    await supabaseRequest(
-      "paddle_events",
-      {
-        method: "POST",
-
-        headers: {
-          Prefer:
-            "return=minimal,resolution=ignore-duplicates"
-        },
-
-        body: JSON.stringify({
-          event_id:
-            eventId,
-
-          event_type:
-            eventType,
-
-          occurred_at:
-            occurredAt,
-
-          payload:
-            data
-        })
-      }
-    );
-  } catch (error) {
-    throw error;
-  }
-}
-
-/* =========================================================
-   SUPABASE PADDLE SUBSCRIPTION STORAGE
-========================================================= */
-
-async function savePaddleSubscription(
-  subscription
-) {
-  const subscriptionId =
-    subscription?.id;
-
-  const customerId =
-    subscription?.customer_id ||
-    null;
-
-  const status =
-    subscription?.status ||
-    null;
-
-  if (
-    !subscriptionId
-  ) {
-    return;
-  }
-
-  /*
-    This table should have UNIQUE(subscription_id).
-
-    Paddle subscription events can arrive multiple times,
-    and can arrive out of order.
-  */
-
-  await supabaseRequest(
-  "paddle_subscriptions?on_conflict=subscription_id",
-    {
-      method: "POST",
-
-      headers: {
-        Prefer:
-          "resolution=merge-duplicates,return=minimal"
-      },
-
-      body: JSON.stringify({
-        subscription_id:
-          subscriptionId,
-
-        customer_id:
-          customerId,
-
-        status:
-          status,
-
-        price_id:
-          subscription
-            ?.items?.[0]
-            ?.price?.id ||
-          null,
-
-        updated_at:
-          new Date().toISOString(),
-
-        raw_data:
-          subscription
-      })
-    }
-  );
-}
-
-/* =========================================================
    HELPERS
 ========================================================= */
 
@@ -831,16 +818,6 @@ function hash(value) {
     )
     .digest("hex");
 }
-
-/*
-  IMPORTANT:
-
-  Do not manually trust a user-supplied
-  x-forwarded-for header.
-
-  Express + trust proxy handles the
-  proxy chain for the deployed server.
-*/
 
 function getClientIp(req) {
   return (
@@ -939,10 +916,6 @@ function rateLimit(
   const ip =
     getClientIp(req);
 
-  /*
-    Hash the IP before keeping it in memory.
-  */
-
   let key;
 
   try {
@@ -1003,6 +976,7 @@ function rateLimit(
     return res.status(429).json({
       error:
         "تم تجاوز عدد الطلبات المسموح بها مؤقتًا. حاول لاحقًا.",
+
       code:
         "RATE_LIMITED"
     });
@@ -1010,10 +984,6 @@ function rateLimit(
 
   return next();
 }
-
-/*
-  Prevent unlimited memory growth in a long-lived process.
-*/
 
 function cleanupRateLimitStore() {
   const now =
@@ -1254,10 +1224,10 @@ app.post(
       ----------------------------------------------------- */
 
       if (
-        !validateServerConfiguration()
+        !validateAiConfiguration()
       ) {
         console.error(
-          "Server configuration is incomplete"
+          "AI server configuration is incomplete"
         );
 
         return res.status(503).json({
@@ -1344,11 +1314,6 @@ app.post(
           cleanText
         );
 
-      /*
-        If we cannot establish at least one identity,
-        do not allow unlimited free usage.
-      */
-
       const hasIdentity =
         Boolean(
           identities.emailHash ||
@@ -1382,7 +1347,7 @@ app.post(
       /*
         First two successful AI uses are free.
 
-        The third use is blocked BEFORE Gemini is called.
+        Third use is blocked BEFORE Gemini.
       */
 
       if (
@@ -1711,7 +1676,7 @@ ${cleanText}
         }
 
         /*
-          Retry only temporary errors.
+          Retry temporary Gemini errors.
         */
 
         if (
@@ -1789,6 +1754,7 @@ ${cleanText}
           return res.status(429).json({
             error:
               "خدمة الذكاء الاصطناعي مشغولة حاليًا. حاول مرة أخرى بعد قليل.",
+
             code:
               "AI_RATE_LIMITED"
           });
@@ -1865,16 +1831,6 @@ ${cleanText}
           identities
         );
       } catch (usageError) {
-        /*
-          Gemini has already consumed the request.
-
-          We cannot safely tell the user that the AI failed,
-          because it actually succeeded.
-
-          We return a temporary server error so the frontend
-          doesn't treat this as a successful free use.
-        */
-
         console.error(
           "Failed to save AI usage:",
           usageError
