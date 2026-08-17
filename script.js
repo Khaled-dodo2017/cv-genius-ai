@@ -3325,29 +3325,50 @@ ${getValue('languages')}
              SEND REQUEST TO BACKEND
           ===================================================== */
 
-          const response =
-            await fetch(
-              'https://cv-genius-ai-backend.vercel.app/improve-cv',
-              {
-                method: 'POST',
+          const {
+  data: sessionData,
+  error: sessionError
+} = await supabaseClient.auth.getSession();
 
-                headers: {
-                  'Content-Type':
-                    'application/json'
-                },
+if (sessionError) {
+  throw sessionError;
+}
 
-                body:
-                  JSON.stringify({
+const accessToken =
+  sessionData?.session?.access_token;
 
-                    text:
-                      cvText,
+if (!accessToken) {
+  throw new Error(
+    'جلسة تسجيل الدخول غير متوفرة. يرجى تسجيل الدخول مرة أخرى.'
+  );
+}
 
-                    language:
-                      currentLanguage
+const response =
+  await fetch(
+    'https://cv-genius-ai-backend.vercel.app/improve-cv',
+    {
+      method: 'POST',
 
-                  })
-              }
-            );
+      headers: {
+        'Content-Type':
+          'application/json',
+
+        'Authorization':
+          `Bearer ${accessToken}`
+      },
+
+      body:
+        JSON.stringify({
+
+          text:
+            cvText,
+
+          language:
+            currentLanguage
+
+        })
+    }
+  );
 
 
           let data = null;
