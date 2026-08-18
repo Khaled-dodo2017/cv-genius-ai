@@ -3423,7 +3423,8 @@ const response =
 
           language:
             currentLanguage
-
+user_id:
+  sessionData?.session?.user?.id
         })
     }
   );
