@@ -3089,8 +3089,7 @@ const PADDLE_PRICE_ID_ONE_TIME =
             type="button"
             onclick="Paddle.Checkout.open({
   items: [{
-    priceId: 'pri_01m03eq09t74z1mjexndbh9d9v',
-    quantity: 1
+    priceId: PADDLE_PRICE_ID_MONTHLY,
   }]
 })"
             style="
@@ -3153,7 +3152,7 @@ const PADDLE_PRICE_ID_ONE_TIME =
             type="button"
             onclick="Paddle.Checkout.open({
   items: [{
-    priceId: 'pri_01m08mansb6g0ey1g064ep8g37',
+    priceId: PADDLE_PRICE_ID_ONE_TIME,
     quantity: 1
   }]
 })"
