@@ -1450,11 +1450,37 @@ if (
 
         Third use is blocked BEFORE Gemini.
       */
+let paidCredits = 0;
 
+try {
+  const creditRows =
+    await supabaseRequest(
+      `ai_credits?select=credits&user_id=eq.${encodeURIComponent(user_id)}&limit=1`,
+      {
+        method: "GET"
+      }
+    );
+
+  paidCredits =
+    Number(
+      creditRows?.[0]?.credits || 0
+    );
+
+} catch (creditError) {
+  console.error(
+    "Failed to read paid credits:",
+    creditError
+  );
+
+  return res.status(503).json({
+    error:
+      "تعذر قراءة رصيدك حاليًا. حاول مرة أخرى."
+  });
+}
       if (
-        successfulUses >=
-        FREE_AI_USES
-      ) {
+  successfulUses >= FREE_AI_USES &&
+  paidCredits <= 0
+) {
         return res.status(402).json({
           error:
             "لقد أكملت الاستعمالين المجانيين. اختر خطة للمتابعة.",
