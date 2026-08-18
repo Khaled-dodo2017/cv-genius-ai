@@ -1949,28 +1949,80 @@ ${cleanText}
         });
       }
 
-      /* =====================================================
-         SAVE SUCCESSFUL USE
-      ===================================================== */
+/* =====================================================
+   SAVE / CONSUME SUCCESSFUL USE
+===================================================== */
 
-      try {
-        await saveUsage(
-          identities
-        );
-      } catch (usageError) {
-        console.error(
-          "Failed to save AI usage:",
-          usageError
-        );
+const usingPaidCredit =
+  successfulUses >= FREE_AI_USES;
 
-        return res.status(503).json({
-          error:
-            "تعذر تسجيل العملية حاليًا. حاول مرة أخرى."
-        });
-      }
+if (usingPaidCredit) {
+  try {
+    const creditUsed =
+      await supabaseRequest(
+        "rpc/use_ai_credit",
+        {
+          method: "POST",
 
-      const newUsageCount =
-        successfulUses + 1;
+          headers: {
+            Prefer:
+              "return=representation"
+          },
+
+          body:
+            JSON.stringify({
+              p_user_id:
+                user_id
+            })
+        }
+      );
+
+    if (creditUsed !== true) {
+      console.error(
+        "Paid AI credit could not be consumed:",
+        creditUsed
+      );
+
+      return res.status(503).json({
+        error:
+          "تعذر خصم رصيد الذكاء الاصطناعي. حاول مرة أخرى."
+      });
+    }
+
+  } catch (creditError) {
+    console.error(
+      "Failed to consume paid AI credit:",
+      creditError
+    );
+
+    return res.status(503).json({
+      error:
+        "تعذر خصم رصيد الذكاء الاصطناعي. حاول مرة أخرى."
+    });
+  }
+
+} else {
+
+  try {
+    await saveUsage(
+      identities
+    );
+
+  } catch (usageError) {
+    console.error(
+      "Failed to save AI usage:",
+      usageError
+    );
+
+    return res.status(503).json({
+      error:
+        "تعذر تسجيل العملية حاليًا. حاول مرة أخرى."
+    });
+  }
+}
+
+const newUsageCount =
+  successfulUses + 1;
 
       /* =====================================================
          RESPONSE
