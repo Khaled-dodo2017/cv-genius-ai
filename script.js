@@ -3087,7 +3087,12 @@ const PADDLE_PRICE_ID_ONE_TIME =
 
           <button
             type="button"
-            onclick="alert('الدفع سيكون متاحًا قريبًا.')"
+            onclick="Paddle.Checkout.open({
+  items: [{
+    priceId: 'pri_01m03eq09t74z1mjexndbh9d9v',
+    quantity: 1
+  }]
+})"
             style="
               width:100%;
               margin-top:15px;
@@ -3146,7 +3151,12 @@ const PADDLE_PRICE_ID_ONE_TIME =
 
           <button
             type="button"
-            onclick="alert('الدفع سيكون متاحًا قريبًا.')"
+            onclick="Paddle.Checkout.open({
+  items: [{
+    priceId: 'pri_01m08mansb6g0ey1g064ep8g37',
+    quantity: 1
+  }]
+})"
             style="
               width:100%;
               margin-top:15px;
