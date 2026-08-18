@@ -16,7 +16,11 @@ const PADDLE_PRICE_ID_ONE_TIME =
 Paddle.Environment.set("sandbox");
 
 Paddle.Initialize({
-  token: PADDLE_CLIENT_TOKEN
+  token: PADDLE_CLIENT_TOKEN,
+
+  eventCallback: function (data) {
+    console.log("PADDLE EVENT:", data);
+  }
 });
 (() => {
   'use strict';
