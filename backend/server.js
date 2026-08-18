@@ -764,7 +764,97 @@ app.post(
           });
         }
       }
+/* =====================================================
+   GRANT PAID AI CREDITS
+===================================================== */
 
+if (
+  data &&
+  typeof data === "object" &&
+  eventId
+) {
+  const userId =
+    typeof data?.custom_data?.user_id === "string"
+      ? data.custom_data.user_id
+      : "";
+
+  const priceId =
+    data?.items?.[0]?.price?.id ||
+    "";
+
+  let credits = 0;
+
+  if (
+    priceId ===
+    PADDLE_PRICE_ID_MONTHLY
+  ) {
+    credits = 30;
+  }
+
+  if (
+    priceId ===
+    PADDLE_PRICE_ID_ONE_TIME
+  ) {
+    credits = 60;
+  }
+
+  if (
+    userId &&
+    credits > 0
+  ) {
+    try {
+      const granted =
+        await supabaseRequest(
+          "rpc/grant_paid_credits",
+          {
+            method: "POST",
+
+            headers: {
+              Prefer:
+                "return=representation"
+            },
+
+            body:
+              JSON.stringify({
+                p_event_id:
+                  eventId,
+
+                p_user_id:
+                  userId,
+
+                p_credits:
+                  credits,
+
+                p_price_id:
+                  priceId
+              })
+          }
+        );
+
+      console.log(
+        "Paid AI credits processed:",
+        {
+          eventId,
+          userId,
+          priceId,
+          credits,
+          granted
+        }
+      );
+
+    } catch (error) {
+      console.error(
+        "Failed to grant paid AI credits:",
+        error
+      );
+
+      return res.status(500).json({
+        error:
+          "Failed to grant paid credits."
+      });
+    }
+  }
+}
       return res.status(200).json({
         ok: true,
         received: true
