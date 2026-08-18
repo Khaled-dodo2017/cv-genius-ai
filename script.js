@@ -15,8 +15,6 @@ const PADDLE_PRICE_ID_ONE_TIME =
   ' pri_01m08mansb6g0ey1g064ep8g37     ';
 Paddle.Environment.set("sandbox");
 
-Paddle.Environment.set("sandbox");
-
 Paddle.Initialize({
   token: PADDLE_CLIENT_TOKEN,
 
