@@ -3102,12 +3102,24 @@ Paddle.Initialize({
 
           <button
             type="button"
-            onclick="Paddle.Checkout.open({
-  items: [{
-    priceId: PADDLE_PRICE_ID_MONTHLY,
-    quantity: 1
-  }]
-})"
+            onclick="(async () => {
+  const { data: { user } } = await supabaseClient.auth.getUser();
+
+  if (!user) {
+    alert('يرجى تسجيل الدخول أولًا.');
+    return;
+  }
+
+  Paddle.Checkout.open({
+    items: [{
+      priceId: PADDLE_PRICE_ID_MONTHLY,
+      quantity: 1
+    }],
+    customData: {
+      user_id: user.id
+    }
+  });
+})()"
             style="
               width:100%;
               margin-top:15px;
@@ -3166,12 +3178,24 @@ Paddle.Initialize({
 
           <button
             type="button"
-            onclick="Paddle.Checkout.open({
-  items: [{
-    priceId: PADDLE_PRICE_ID_ONE_TIME,
-    quantity: 1
-  }]
-})"
+            onclick="(async () => {
+  const { data: { user } } = await supabaseClient.auth.getUser();
+
+  if (!user) {
+    alert('يرجى تسجيل الدخول أولًا.');
+    return;
+  }
+
+  Paddle.Checkout.open({
+    items: [{
+      priceId: PADDLE_PRICE_ID_ONE_TIME,
+      quantity: 1
+    }],
+    customData: {
+      user_id: user.id
+    }
+  });
+})()"
             style="
               width:100%;
               margin-top:15px;
