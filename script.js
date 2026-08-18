@@ -6,13 +6,13 @@ const supabaseClient = window.supabase.createClient(
 );
 
 const PADDLE_CLIENT_TOKEN =
-  ' test_8685ddf75dfc7dacad6b890149a  ';
+  'test_8685ddf75dfc7dacad6b890149a';
 
 const PADDLE_PRICE_ID_MONTHLY =
-  ' pri_01m03eq09t74z1mjexndbh9d9v   ';
+  'pri_01m03eq09t74z1mjexndbh9d9v';
 
 const PADDLE_PRICE_ID_ONE_TIME =
-  ' pri_01m08mansb6g0ey1g064ep8g37     ';
+  'pri_01m08mansb6g0ey1g064ep8g37';
 Paddle.Environment.set("sandbox");
 
 Paddle.Initialize({
