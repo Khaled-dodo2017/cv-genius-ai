@@ -3090,6 +3090,7 @@ const PADDLE_PRICE_ID_ONE_TIME =
             onclick="Paddle.Checkout.open({
   items: [{
     priceId: PADDLE_PRICE_ID_MONTHLY,
+    quantity: 1
   }]
 })"
             style="
