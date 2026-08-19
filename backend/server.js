@@ -17,11 +17,10 @@ const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
 const RATE_LIMIT_MAX = 10;
 
 const FREE_AI_USES = 2;
-
 const MAX_CV_LENGTH = 15000;
 const MAX_DEVICE_ID_LENGTH = 200;
 
-const PADDLE_TIMESTAMP_TOLERANCE_SECONDS = 5;
+const PADDLE_TIMESTAMP_TOLERANCE_SECONDS = 300;
 
 const GEMINI_MODEL =
   process.env.GEMINI_MODEL ||
@@ -61,7 +60,6 @@ const IS_PRODUCTION =
 ========================================================= */
 
 app.set("trust proxy", 1);
-
 app.disable("x-powered-by");
 
 app.use((req, res, next) => {
@@ -227,7 +225,6 @@ function parsePaddleSignature(
       );
 
   let timestamp = "";
-
   const signatures = [];
 
   for (const part of parts) {
@@ -625,7 +622,7 @@ async function grantPaidCredits({
     );
 
   return {
-    granted: true,
+    granted: result === true,
     credits,
     result
   };
@@ -633,6 +630,9 @@ async function grantPaidCredits({
 
 /* =========================================================
    PADDLE WEBHOOK
+
+   IMPORTANT:
+   Must stay BEFORE express.json()
 ========================================================= */
 
 app.post(
@@ -678,10 +678,6 @@ app.post(
           req.body
         )
       ) {
-        console.error(
-          "Paddle webhook body is not raw"
-        );
-
         return res.status(400).json({
           error:
             "Invalid webhook body."
@@ -733,10 +729,6 @@ app.post(
             rawBody
           );
       } catch {
-        console.error(
-          "Paddle webhook JSON parsing failed"
-        );
-
         return res.status(400).json({
           error:
             "Invalid webhook JSON."
@@ -828,12 +820,11 @@ app.post(
          PAID CREDITS
 
          ONLY transaction.completed
-         is allowed to grant credits.
       ===================================================== */
 
       if (
         eventType ===
-        "transaction.completed" &&
+          "transaction.completed" &&
         data &&
         typeof data === "object"
       ) {
@@ -888,7 +879,9 @@ app.post(
               userId,
               priceId,
               credits:
-                creditResult.credits
+                creditResult.credits,
+              granted:
+                creditResult.granted
             }
           );
 
@@ -1015,7 +1008,7 @@ function normalizeDeviceId(
 }
 
 /* =========================================================
-   EXTRACT EMAIL FROM CV
+   EXTRACT EMAIL
 ========================================================= */
 
 function extractEmail(text) {
@@ -1194,7 +1187,7 @@ function getIdentities(
 }
 
 /* =========================================================
-   FIND PREVIOUS USAGE
+   FIND PREVIOUS FREE USAGE
 ========================================================= */
 
 async function getPreviousUsage(
@@ -1250,7 +1243,7 @@ async function getPreviousUsage(
 }
 
 /* =========================================================
-   SAVE SUCCESSFUL FREE USAGE
+   SAVE FREE USAGE
 ========================================================= */
 
 async function saveUsage(
@@ -1287,7 +1280,7 @@ async function saveUsage(
 }
 
 /* =========================================================
-   VALIDATE GEMINI RESULT
+   PARSE GEMINI RESULT
 ========================================================= */
 
 function parseGeminiResult(
@@ -1360,16 +1353,12 @@ app.post(
   async (req, res) => {
     try {
       /* -----------------------------------------------------
-         SERVER CONFIGURATION
+         CONFIGURATION
       ----------------------------------------------------- */
 
       if (
         !validateAiConfiguration()
       ) {
-        console.error(
-          "AI server configuration is incomplete"
-        );
-
         return res.status(503).json({
           error:
             "الخدمة غير متاحة حاليًا."
@@ -1388,7 +1377,8 @@ app.post(
         req.body || {};
 
       if (
-        typeof user_id !== "string" ||
+        typeof user_id !==
+          "string" ||
         !user_id.trim()
       ) {
         return res.status(401).json({
@@ -1435,7 +1425,7 @@ app.post(
       }
 
       /* -----------------------------------------------------
-         LANGUAGE VALIDATION
+         LANGUAGE
       ----------------------------------------------------- */
 
       const allowedLanguages =
@@ -1483,7 +1473,7 @@ app.post(
       }
 
       /* -----------------------------------------------------
-         FREE USAGE CHECK
+         FREE USAGE
       ----------------------------------------------------- */
 
       const previousUsage =
@@ -1500,9 +1490,10 @@ app.post(
 
       /* -----------------------------------------------------
          PAID CREDIT CHECK
-         
+
          IMPORTANT:
          The correct table is paid_credits.
+         NOT ai_credits.
       ----------------------------------------------------- */
 
       let paidCredits = 0;
@@ -1521,6 +1512,15 @@ app.post(
             creditRows?.[0]?.credits ||
             0
           );
+
+        if (
+          !Number.isFinite(
+            paidCredits
+          ) ||
+          paidCredits < 0
+        ) {
+          paidCredits = 0;
+        }
 
       } catch (creditError) {
         console.error(
@@ -1574,19 +1574,11 @@ app.post(
       ----------------------------------------------------- */
 
       if (!GEMINI_API_KEY) {
-        console.error(
-          "GEMINI_API_KEY is missing"
-        );
-
         return res.status(503).json({
           error:
             "خدمة الذكاء الاصطناعي غير متاحة حاليًا."
         });
       }
-
-      /* -----------------------------------------------------
-         LANGUAGE INSTRUCTION
-      ----------------------------------------------------- */
 
       const languageInstruction =
         {
@@ -1660,7 +1652,7 @@ ${cleanText}
 `;
 
       /* =====================================================
-         GEMINI API WITH RETRY
+         GEMINI API
       ===================================================== */
 
       const maxAttempts = 3;
@@ -1950,9 +1942,9 @@ ${cleanText}
 
         if (
           response?.status ===
-          401 ||
+            401 ||
           response?.status ===
-          403
+            403
         ) {
           return res.status(503).json({
             error:
@@ -1984,10 +1976,6 @@ ${cleanText}
           .trim();
 
       if (!rawResult) {
-        console.error(
-          "Gemini returned no text"
-        );
-
         return res.status(502).json({
           error:
             "لم يتم الحصول على نتيجة من Gemini."
@@ -2000,10 +1988,6 @@ ${cleanText}
         );
 
       if (!parsedResult) {
-        console.error(
-          "Gemini returned invalid JSON"
-        );
-
         return res.status(502).json({
           error:
             "تعذر قراءة نتيجة الذكاء الاصطناعي."
@@ -2011,7 +1995,7 @@ ${cleanText}
       }
 
       /* =====================================================
-         CONSUME USAGE AFTER SUCCESSFUL GEMINI RESULT
+         CONSUME CREDIT
       ===================================================== */
 
       const usingPaidCredit =
@@ -2039,11 +2023,6 @@ ${cleanText}
               }
             );
 
-          /*
-            The RPC must return true when
-            exactly one credit was consumed.
-          */
-
           if (
             creditUsed !== true
           ) {
@@ -2064,7 +2043,9 @@ ${cleanText}
             });
           }
 
-        } catch (creditError) {
+        } catch (
+          creditError
+        ) {
           console.error(
             "Failed to consume paid AI credit:",
             creditError
@@ -2077,16 +2058,18 @@ ${cleanText}
         }
 
       } else {
-        /*
-          First two successful uses are free.
-        */
+        /* ---------------------------------------------------
+           FIRST TWO SUCCESSFUL USES ARE FREE
+        --------------------------------------------------- */
 
         try {
           await saveUsage(
             identities
           );
 
-        } catch (usageError) {
+        } catch (
+          usageError
+        ) {
           console.error(
             "Failed to save AI usage:",
             usageError
@@ -2111,6 +2094,14 @@ ${cleanText}
           ? successfulUses
           : newUsageCount;
 
+      const remainingPaidCredits =
+        usingPaidCredit
+          ? Math.max(
+              0,
+              paidCredits - 1
+            )
+          : paidCredits;
+
       return res.status(200).json({
         result:
           JSON.stringify(
@@ -2131,16 +2122,11 @@ ${cleanText}
           usingPaidCredit,
 
         paidCreditsRemaining:
-          usingPaidCredit
-            ? Math.max(
-                0,
-                paidCredits - 1
-              )
-            : paidCredits,
+          remainingPaidCredits,
 
         requiresPayment:
           usingPaidCredit
-            ? paidCredits - 1 <= 0
+            ? remainingPaidCredits <= 0
             : newUsageCount >=
               FREE_AI_USES
       });
