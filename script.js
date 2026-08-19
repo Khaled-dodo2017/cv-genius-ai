@@ -3101,25 +3101,8 @@ Paddle.Initialize({
           </div>
 
           <button
-            type="button"
-            onclick="(async () => {
-  const { data: { user } } = await supabaseClient.auth.getUser();
-
-  if (!user) {
-    alert('يرجى تسجيل الدخول أولًا.');
-    return;
-  }
-
-  Paddle.Checkout.open({
-    items: [{
-      priceId: PADDLE_PRICE_ID_MONTHLY,
-      quantity: 1
-    }],
-    customData: {
-      user_id: user.id
-    }
-  });
-})()"
+  id="one-time-plan-btn"
+  type="button"
             style="
               width:100%;
               margin-top:15px;
@@ -3177,25 +3160,8 @@ Paddle.Initialize({
           </div>
 
           <button
-            type="button"
-            onclick="(async () => {
-  const { data: { user } } = await supabaseClient.auth.getUser();
-
-  if (!user) {
-    alert('يرجى تسجيل الدخول أولًا.');
-    return;
-  }
-
-  Paddle.Checkout.open({
-    items: [{
-      priceId: PADDLE_PRICE_ID_ONE_TIME,
-      quantity: 1
-    }],
-    customData: {
-      user_id: user.id
-    }
-  });
-})()"
+  id="one-time-plan-btn"
+  type="button"
             style="
               width:100%;
               margin-top:15px;
