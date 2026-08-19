@@ -51,10 +51,6 @@ const PADDLE_PRICE_ID_MONTHLY =
 const PADDLE_PRICE_ID_ONE_TIME =
   process.env.PADDLE_PRICE_ID_ONE_TIME?.trim();
 
-const IS_PRODUCTION =
-  process.env.VERCEL_ENV === "production" ||
-  process.env.NODE_ENV === "production";
-
 /* =========================================================
    BASIC SECURITY
 ========================================================= */
@@ -201,6 +197,106 @@ function validatePaddleConfiguration() {
   }
 
   return true;
+}
+
+/* =========================================================
+   SUPABASE
+========================================================= */
+
+async function supabaseRequest(
+  path,
+  options = {}
+) {
+  if (
+    !SUPABASE_URL ||
+    !SUPABASE_SERVICE_ROLE_KEY
+  ) {
+    throw new Error(
+      "Supabase environment variables are missing"
+    );
+  }
+
+  const response =
+    await fetch(
+      `${SUPABASE_URL}/rest/v1/${path}`,
+      {
+        ...options,
+
+        headers: {
+          apikey:
+            SUPABASE_SERVICE_ROLE_KEY,
+
+          Authorization:
+            `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+
+          "Content-Type":
+            "application/json",
+
+          ...(options.headers || {})
+        }
+      }
+    );
+
+  const text =
+    await response.text();
+
+  let data = null;
+
+  if (text) {
+    try {
+      data =
+        JSON.parse(text);
+    } catch {
+      data = text;
+    }
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      `Supabase error ${response.status}: ${JSON.stringify(data)}`
+    );
+  }
+
+  return data;
+}
+
+/* =========================================================
+   RPC RESULT HELPER
+========================================================= */
+
+function rpcReturnedTrue(result) {
+  if (result === true) {
+    return true;
+  }
+
+  if (
+    Array.isArray(result) &&
+    result.length > 0
+  ) {
+    if (result[0] === true) {
+      return true;
+    }
+
+    if (
+      result[0] &&
+      typeof result[0] === "object"
+    ) {
+      return Object.values(
+        result[0]
+      ).includes(true);
+    }
+  }
+
+  if (
+    result &&
+    typeof result === "object"
+  ) {
+    return Object.values(
+      result
+    ).includes(true);
+  }
+
+  return false;
 }
 
 /* =========================================================
@@ -382,67 +478,6 @@ function verifyPaddleSignature(
 }
 
 /* =========================================================
-   SUPABASE
-========================================================= */
-
-async function supabaseRequest(
-  path,
-  options = {}
-) {
-  if (
-    !SUPABASE_URL ||
-    !SUPABASE_SERVICE_ROLE_KEY
-  ) {
-    throw new Error(
-      "Supabase environment variables are missing"
-    );
-  }
-
-  const response =
-    await fetch(
-      `${SUPABASE_URL}/rest/v1/${path}`,
-      {
-        ...options,
-
-        headers: {
-          apikey:
-            SUPABASE_SERVICE_ROLE_KEY,
-
-          Authorization:
-            `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-
-          "Content-Type":
-            "application/json",
-
-          ...(options.headers || {})
-        }
-      }
-    );
-
-  const text =
-    await response.text();
-
-  let data = null;
-
-  if (text) {
-    try {
-      data =
-        JSON.parse(text);
-    } catch {
-      data = text;
-    }
-  }
-
-  if (!response.ok) {
-    throw new Error(
-      `Supabase error ${response.status}: ${JSON.stringify(data)}`
-    );
-  }
-
-  return data;
-}
-
-/* =========================================================
    PADDLE EVENT STORAGE
 ========================================================= */
 
@@ -463,7 +498,7 @@ async function savePaddleEvent({
 
       headers: {
         Prefer:
-          "return=representation,resolution=ignore-duplicates"
+          "return=minimal,resolution=ignore-duplicates"
       },
 
       body: JSON.stringify({
@@ -622,7 +657,9 @@ async function grantPaidCredits({
     );
 
   return {
-    granted: result === true,
+    granted:
+      rpcReturnedTrue(result),
+
     credits,
     result
   };
@@ -630,9 +667,7 @@ async function grantPaidCredits({
 
 /* =========================================================
    PADDLE WEBHOOK
-
-   IMPORTANT:
-   Must stay BEFORE express.json()
+   MUST STAY BEFORE express.json()
 ========================================================= */
 
 app.post(
@@ -663,10 +698,6 @@ app.post(
         typeof signature !==
         "string"
       ) {
-        console.error(
-          "Paddle-Signature header missing"
-        );
-
         return res.status(401).json({
           error:
             "Invalid Paddle signature."
@@ -696,17 +727,12 @@ app.post(
         });
       }
 
-      /* -----------------------------------------------------
-         VERIFY SIGNATURE
-      ----------------------------------------------------- */
-
-      const valid =
-        verifyPaddleSignature(
+      if (
+        !verifyPaddleSignature(
           rawBody,
           signature
-        );
-
-      if (!valid) {
+        )
+      ) {
         console.error(
           "Invalid Paddle webhook signature"
         );
@@ -717,17 +743,11 @@ app.post(
         });
       }
 
-      /* -----------------------------------------------------
-         PARSE EVENT
-      ----------------------------------------------------- */
-
       let event;
 
       try {
         event =
-          JSON.parse(
-            rawBody
-          );
+          JSON.parse(rawBody);
       } catch {
         return res.status(400).json({
           error:
@@ -769,24 +789,12 @@ app.post(
       ----------------------------------------------------- */
 
       if (eventId) {
-        try {
-          await savePaddleEvent({
-            eventId,
-            eventType,
-            occurredAt,
-            data
-          });
-        } catch (error) {
-          console.error(
-            "Failed to persist Paddle event:",
-            error
-          );
-
-          return res.status(500).json({
-            error:
-              "Webhook processing failed."
-          });
-        }
+        await savePaddleEvent({
+          eventId,
+          eventType,
+          occurredAt,
+          data
+        });
       }
 
       /* -----------------------------------------------------
@@ -799,28 +807,14 @@ app.post(
         typeof data.id === "string" &&
         data.id.startsWith("sub_")
       ) {
-        try {
-          await savePaddleSubscription(
-            data
-          );
-        } catch (error) {
-          console.error(
-            "Failed to save Paddle subscription:",
-            error
-          );
-
-          return res.status(500).json({
-            error:
-              "Subscription processing failed."
-          });
-        }
+        await savePaddleSubscription(
+          data
+        );
       }
 
-      /* =====================================================
-         PAID CREDITS
-
-         ONLY transaction.completed
-      ===================================================== */
+      /* -----------------------------------------------------
+         GRANT PAID CREDITS
+      ----------------------------------------------------- */
 
       if (
         eventType ===
@@ -840,31 +834,11 @@ app.post(
             ?.price?.id ||
           "";
 
-        if (!userId) {
-          console.error(
-            "transaction.completed has no custom_data.user_id"
-          );
-
-          return res.status(200).json({
-            ok: true,
-            received: true,
-            creditsGranted: false
-          });
-        }
-
-        if (!priceId) {
-          console.error(
-            "transaction.completed has no price ID"
-          );
-
-          return res.status(200).json({
-            ok: true,
-            received: true,
-            creditsGranted: false
-          });
-        }
-
-        try {
+        if (
+          userId &&
+          priceId &&
+          eventId
+        ) {
           const creditResult =
             await grantPaidCredits({
               eventId,
@@ -884,17 +858,10 @@ app.post(
                 creditResult.granted
             }
           );
-
-        } catch (error) {
+        } else {
           console.error(
-            "Failed to grant paid AI credits:",
-            error
+            "Missing user_id, price_id or event_id"
           );
-
-          return res.status(500).json({
-            error:
-              "Failed to grant paid credits."
-          });
         }
       }
 
@@ -1006,10 +973,6 @@ function normalizeDeviceId(
 
   return normalized;
 }
-
-/* =========================================================
-   EXTRACT EMAIL
-========================================================= */
 
 function extractEmail(text) {
   if (
@@ -1280,6 +1243,28 @@ async function saveUsage(
 }
 
 /* =========================================================
+   GET PAID CREDITS
+========================================================= */
+
+async function getPaidCredits(
+  userId
+) {
+  const rows =
+    await supabaseRequest(
+      `paid_credits?select=credits&user_id=eq.${encodeURIComponent(
+        userId
+      )}&limit=1`,
+      {
+        method: "GET"
+      }
+    );
+
+  return Number(
+    rows?.[0]?.credits || 0
+  );
+}
+
+/* =========================================================
    PARSE GEMINI RESULT
 ========================================================= */
 
@@ -1328,13 +1313,10 @@ app.get(
   (req, res) => {
     res.status(200).json({
       ok: true,
-
       service:
         "CV Genius AI Backend",
-
       status:
         "running",
-
       model:
         GEMINI_MODEL
     });
@@ -1352,10 +1334,6 @@ app.post(
 
   async (req, res) => {
     try {
-      /* -----------------------------------------------------
-         CONFIGURATION
-      ----------------------------------------------------- */
-
       if (
         !validateAiConfiguration()
       ) {
@@ -1364,10 +1342,6 @@ app.post(
             "الخدمة غير متاحة حاليًا."
         });
       }
-
-      /* -----------------------------------------------------
-         INPUT
-      ----------------------------------------------------- */
 
       const {
         text,
@@ -1389,10 +1363,6 @@ app.post(
 
       const cleanUserId =
         user_id.trim();
-
-      /* -----------------------------------------------------
-         TEXT VALIDATION
-      ----------------------------------------------------- */
 
       if (
         typeof text !==
@@ -1424,10 +1394,6 @@ app.post(
         });
       }
 
-      /* -----------------------------------------------------
-         LANGUAGE
-      ----------------------------------------------------- */
-
       const allowedLanguages =
         new Set([
           "ar",
@@ -1447,10 +1413,6 @@ app.post(
             "لغة غير مدعومة."
         });
       }
-
-      /* -----------------------------------------------------
-         IDENTITIES
-      ----------------------------------------------------- */
 
       const identities =
         getIdentities(
@@ -1488,45 +1450,39 @@ app.post(
           ? previousUsage.length
           : 0;
 
-/* -----------------------------------------------------
-   PAID CREDIT CHECK
------------------------------------------------------ */
+      /* -----------------------------------------------------
+         PAID CREDITS
+      ----------------------------------------------------- */
 
-let paidCredits = 0;
+      let paidCredits;
 
-try {
-  const creditRows =
-    await supabaseRequest(
-      `paid_credits?select=credits&user_id=eq.${encodeURIComponent(cleanUserId)}&limit=1`,
-      {
-        method: "GET"
+      try {
+        paidCredits =
+          await getPaidCredits(
+            cleanUserId
+          );
+      } catch (creditError) {
+        console.error(
+          "Failed to read paid credits:",
+          creditError
+        );
+
+        return res.status(503).json({
+          error:
+            "تعذر قراءة رصيدك حاليًا. حاول مرة أخرى."
+        });
       }
-    );
 
-  paidCredits =
-    Number(
-      creditRows?.[0]?.credits || 0
-    );
-
-} catch (creditError) {
-  console.error(
-    "Failed to read paid credits:",
-    creditError
-  );
-
-  return res.status(503).json({
-    error:
-      "تعذر قراءة رصيدك حاليًا. حاول مرة أخرى."
-  });
-}
+      const usingPaidCredit =
+        successfulUses >=
+        FREE_AI_USES;
 
       /* -----------------------------------------------------
          PAYMENT REQUIRED
       ----------------------------------------------------- */
 
       if (
-        successfulUses >=
-          FREE_AI_USES &&
+        usingPaidCredit &&
         paidCredits <= 0
       ) {
         return res.status(402).json({
@@ -1542,8 +1498,7 @@ try {
           freeUsesRemaining:
             0,
 
-          paidCredits:
-            paidCredits,
+          paidCredits,
 
           requiresPayment:
             true,
@@ -1556,15 +1511,8 @@ try {
       }
 
       /* -----------------------------------------------------
-         GEMINI
+         LANGUAGE
       ----------------------------------------------------- */
-
-      if (!GEMINI_API_KEY) {
-        return res.status(503).json({
-          error:
-            "خدمة الذكاء الاصطناعي غير متاحة حاليًا."
-        });
-      }
 
       const languageInstruction =
         {
@@ -1857,10 +1805,6 @@ ${cleanText}
           response.status ===
             504
         ) {
-          console.error(
-            `Gemini ${response.status} - attempt ${attempt}/${maxAttempts}`
-          );
-
           if (
             attempt <
             maxAttempts
@@ -1984,13 +1928,11 @@ ${cleanText}
          CONSUME CREDIT
       ===================================================== */
 
-      const usingPaidCredit =
-        successfulUses >=
-        FREE_AI_USES;
-
       if (usingPaidCredit) {
+        let creditUsed;
+
         try {
-          const creditUsed =
+          creditUsed =
             await supabaseRequest(
               "rpc/use_ai_credit",
               {
@@ -2008,27 +1950,6 @@ ${cleanText}
                   })
               }
             );
-
-          if (
-            creditUsed !== true
-          ) {
-            console.error(
-              "Paid AI credit could not be consumed:",
-              creditUsed
-            );
-
-            return res.status(402).json({
-              error:
-                "لا يوجد رصيد كافٍ للمتابعة. اختر خطة للمتابعة.",
-
-              code:
-                "PAYMENT_REQUIRED",
-
-              requiresPayment:
-                true
-            });
-          }
-
         } catch (
           creditError
         ) {
@@ -2043,6 +1964,23 @@ ${cleanText}
           });
         }
 
+        if (
+          !rpcReturnedTrue(
+            creditUsed
+          )
+        ) {
+          return res.status(402).json({
+            error:
+              "لا يوجد رصيد كافٍ للمتابعة. اختر خطة للمتابعة.",
+
+            code:
+              "PAYMENT_REQUIRED",
+
+            requiresPayment:
+              true
+          });
+        }
+
       } else {
         /* ---------------------------------------------------
            FIRST TWO SUCCESSFUL USES ARE FREE
@@ -2052,7 +1990,6 @@ ${cleanText}
           await saveUsage(
             identities
           );
-
         } catch (
           usageError
         ) {
