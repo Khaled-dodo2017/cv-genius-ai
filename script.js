@@ -3405,22 +3405,32 @@ if (oneTimePlanBtn) {
 
 
           /* =====================================================
-             CHECK AI USAGE BEFORE SENDING REQUEST
-          ===================================================== */
+   CHECK AI USAGE / PAID CREDITS BEFORE REQUEST
+===================================================== */
 
-          const usage =
-            await getAIUsage();
+const usage =
+  await getAIUsage();
 
 
-          if (
-            usage.count >= FREE_AI_USES
-          ) {
+if (
+  usage.count >= FREE_AI_USES
+) {
 
-            showPaymentOptions();
+  const paidCredits =
+    await getPaidCredits();
 
-            return;
 
-          }
+  if (
+    paidCredits <= 0
+  ) {
+
+    showPaymentOptions();
+
+    return;
+
+  }
+
+}
 
 
           const experience =
