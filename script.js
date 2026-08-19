@@ -3505,20 +3505,20 @@ const response =
       },
 
       body:
-        JSON.stringify({
+  JSON.stringify({
 
-          text:
-            cvText,
+    text:
+      cvText,
 
-          language:
-  currentLanguage,
+    language:
+      currentLanguage,
 
-user_id:
-  sessionData?.session?.user?.id
-        })
-    }
-  );
+    user_id:
+      sessionData?.session?.user?.id
 
+  })
+}
+);
 
           let data = null;
 
