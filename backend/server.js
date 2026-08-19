@@ -13,15 +13,12 @@ const ALLOWED_ORIGINS = new Set([
   "https://cv-genius-ai-eight.vercel.app"
 ]);
 
-const RATE_LIMIT_WINDOW_MS =
-  15 * 60 * 1000;
-
+const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
 const RATE_LIMIT_MAX = 10;
 
 const FREE_AI_USES = 2;
 
 const MAX_CV_LENGTH = 15000;
-
 const MAX_DEVICE_ID_LENGTH = 200;
 
 const PADDLE_TIMESTAMP_TOLERANCE_SECONDS = 5;
@@ -48,12 +45,6 @@ const PADDLE_WEBHOOK_SECRET =
 
 const IDENTITY_HASH_SECRET =
   process.env.IDENTITY_HASH_SECRET?.trim();
-
-/*
-  Paddle price IDs
-
-  ضع نفس Price IDs الموجودة في Paddle/Vercel.
-*/
 
 const PADDLE_PRICE_ID_MONTHLY =
   process.env.PADDLE_PRICE_ID_MONTHLY?.trim();
@@ -104,11 +95,6 @@ app.use((req, res, next) => {
 app.use(
   cors({
     origin: (origin, callback) => {
-      /*
-        Paddle webhooks normally do not contain
-        an Origin header.
-      */
-
       if (!origin) {
         return callback(null, true);
       }
@@ -473,13 +459,6 @@ async function savePaddleEvent({
     return;
   }
 
-  /*
-    event_id must be UNIQUE in paddle_events.
-
-    If Paddle sends the same event again,
-    Supabase ignores the duplicate.
-  */
-
   await supabaseRequest(
     "paddle_events",
     {
@@ -617,16 +596,6 @@ async function grantPaidCredits({
     };
   }
 
-  /*
-    IMPORTANT:
-
-    grant_paid_credits must use event_id
-    to make the operation idempotent.
-
-    Therefore the same Paddle event
-    cannot grant credits twice.
-  */
-
   const result =
     await supabaseRequest(
       "rpc/grant_paid_credits",
@@ -665,12 +634,6 @@ async function grantPaidCredits({
 /* =========================================================
    PADDLE WEBHOOK
 ========================================================= */
-
-/*
-  MUST remain before express.json()
-  because Paddle signature verification
-  requires the exact raw request body.
-*/
 
 app.post(
   "/paddle-webhook",
@@ -866,10 +829,6 @@ app.post(
 
          ONLY transaction.completed
          is allowed to grant credits.
-
-         This prevents subscription.created,
-         subscription.updated, etc. from
-         accidentally granting credits.
       ===================================================== */
 
       if (
@@ -890,18 +849,10 @@ app.post(
             ?.price?.id ||
           "";
 
-        if (
-          !userId
-        ) {
+        if (!userId) {
           console.error(
             "transaction.completed has no custom_data.user_id"
           );
-
-          /*
-            Do not grant credits without a
-            user_id because we must know exactly
-            which account receives the credits.
-          */
 
           return res.status(200).json({
             ok: true,
@@ -910,9 +861,7 @@ app.post(
           });
         }
 
-        if (
-          !priceId
-        ) {
+        if (!priceId) {
           console.error(
             "transaction.completed has no price ID"
           );
@@ -1438,13 +1387,6 @@ app.post(
       } =
         req.body || {};
 
-      /*
-        Paid credits belong to the logged-in
-        user account, not to the CV email.
-
-        Therefore the user_id is required.
-      */
-
       if (
         typeof user_id !== "string" ||
         !user_id.trim()
@@ -1558,6 +1500,9 @@ app.post(
 
       /* -----------------------------------------------------
          PAID CREDIT CHECK
+         
+         IMPORTANT:
+         The correct table is paid_credits.
       ----------------------------------------------------- */
 
       let paidCredits = 0;
@@ -1565,7 +1510,7 @@ app.post(
       try {
         const creditRows =
           await supabaseRequest(
-            `ai_credits?select=credits&user_id=eq.${encodeURIComponent(cleanUserId)}&limit=1`,
+            `paid_credits?select=credits&user_id=eq.${encodeURIComponent(cleanUserId)}&limit=1`,
             {
               method: "GET"
             }
@@ -1721,7 +1666,6 @@ ${cleanText}
       const maxAttempts = 3;
 
       let response = null;
-
       let data = null;
 
       for (
@@ -2098,9 +2042,6 @@ ${cleanText}
           /*
             The RPC must return true when
             exactly one credit was consumed.
-
-            If there is no credit, do not
-            count the AI result as successful.
           */
 
           if (
@@ -2164,12 +2105,6 @@ ${cleanText}
 
       const newUsageCount =
         successfulUses + 1;
-
-      /*
-        If this was a paid request,
-        keep the actual free-use count
-        unchanged.
-      */
 
       const returnedFreeUses =
         usingPaidCredit
