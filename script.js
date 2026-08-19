@@ -3239,7 +3239,121 @@ Paddle.Initialize({
 
   document.body.appendChild(modal);
 }
+/* =====================================================
+   PADDLE PLAN BUTTONS
+===================================================== */
 
+const monthlyPlanBtn =
+  document.getElementById(
+    'monthly-plan-btn'
+  );
+
+const oneTimePlanBtn =
+  document.getElementById(
+    'one-time-plan-btn'
+  );
+
+
+if (monthlyPlanBtn) {
+
+  monthlyPlanBtn.addEventListener(
+    'click',
+    async () => {
+
+      const {
+        data,
+        error
+      } =
+        await supabaseClient.auth.getUser();
+
+
+      if (
+        error ||
+        !data?.user
+      ) {
+
+        alert(
+          'يرجى تسجيل الدخول أولًا.'
+        );
+
+        return;
+      }
+
+
+      Paddle.Checkout.open({
+
+        items: [
+          {
+            priceId:
+              PADDLE_PRICE_ID_MONTHLY,
+
+            quantity:
+              1
+          }
+        ],
+
+        customData: {
+          user_id:
+            data.user.id
+        }
+
+      });
+
+    }
+  );
+
+}
+
+
+if (oneTimePlanBtn) {
+
+  oneTimePlanBtn.addEventListener(
+    'click',
+    async () => {
+
+      const {
+        data,
+        error
+      } =
+        await supabaseClient.auth.getUser();
+
+
+      if (
+        error ||
+        !data?.user
+      ) {
+
+        alert(
+          'يرجى تسجيل الدخول أولًا.'
+        );
+
+        return;
+      }
+
+
+      Paddle.Checkout.open({
+
+        items: [
+          {
+            priceId:
+              PADDLE_PRICE_ID_ONE_TIME,
+
+            quantity:
+              1
+          }
+        ],
+
+        customData: {
+          user_id:
+            data.user.id
+        }
+
+      });
+
+    }
+  );
+
+}
     /* =========================================================
        AI
     ========================================================= */
