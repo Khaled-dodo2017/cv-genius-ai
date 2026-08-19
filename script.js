@@ -3432,9 +3432,6 @@ if (
 }
 
 
-}
-
-
           const experience =
             readExperience();
 
