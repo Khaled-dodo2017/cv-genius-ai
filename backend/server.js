@@ -1488,51 +1488,37 @@ app.post(
           ? previousUsage.length
           : 0;
 
-      /* -----------------------------------------------------
-         PAID CREDIT CHECK
+/* -----------------------------------------------------
+   PAID CREDIT CHECK
+----------------------------------------------------- */
 
-         IMPORTANT:
-         The correct table is paid_credits.
-         NOT ai_credits.
-      ----------------------------------------------------- */
+let paidCredits = 0;
 
-      let paidCredits = 0;
-
-      try {
-        const creditRows =
-          await supabaseRequest(
-            `paid_credits?select=credits&user_id=eq.${encodeURIComponent(cleanUserId)}&limit=1`,
-            {
-              method: "GET"
-            }
-          );
-
-        paidCredits =
-          Number(
-            creditRows?.[0]?.credits ||
-            0
-          );
-
-        if (
-          !Number.isFinite(
-            paidCredits
-          ) ||
-          paidCredits < 0
-        ) {
-          paidCredits = 0;
-        }
-
-      } catch (creditError) {
-        console.error(
-          "Failed to read paid credits:",
-          creditError
-        );
-
-        return res.status(503).json({
-          error:
-            "تعذر قراءة رصيدك حاليًا. حاول مرة أخرى."
-        });
+try {
+  const creditRows =
+    await supabaseRequest(
+      `paid_credits?select=credits&user_id=eq.${encodeURIComponent(cleanUserId)}&limit=1`,
+      {
+        method: "GET"
       }
+    );
+
+  paidCredits =
+    Number(
+      creditRows?.[0]?.credits || 0
+    );
+
+} catch (creditError) {
+  console.error(
+    "Failed to read paid credits:",
+    creditError
+  );
+
+  return res.status(503).json({
+    error:
+      "تعذر قراءة رصيدك حاليًا. حاول مرة أخرى."
+  });
+}
 
       /* -----------------------------------------------------
          PAYMENT REQUIRED
