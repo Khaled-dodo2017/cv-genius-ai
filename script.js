@@ -2991,7 +2991,54 @@ Paddle.Initialize({
       );
 
     }
+/* =========================================================
+   PAID CREDITS
+========================================================= */
 
+async function getPaidCredits() {
+
+  const user =
+    await getCurrentUser();
+
+
+  if (!user) {
+
+    return 0;
+
+  }
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient
+      .from('paid_credits')
+      .select('credits')
+      .eq(
+        'user_id',
+        user.id
+      )
+      .maybeSingle();
+
+
+  if (error) {
+
+    console.error(
+      'Get paid credits error:',
+      error
+    );
+
+    throw error;
+
+  }
+
+
+  return Number(
+    data?.credits || 0
+  );
+
+}
 
     function showAIUsageMessage(count) {
 
