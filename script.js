@@ -3335,38 +3335,6 @@ if (oneTimePlanBtn) {
         error ||
         !data?.user
       ) {
-
-        alert(
-          'يرجى تسجيل الدخول أولًا.'
-        );
-
-        return;
-      }
-
-
-      Paddle.Checkout.open({
-
-        items: [
-          {
-            priceId:
-              PADDLE_PRICE_ID_ONE_TIME,
-
-            quantity:
-              1
-          }
-        ],
-
-        customData: {
-          user_id:
-            data.user.id
-        }
-
-      });
-
-    }
-  );
-
-}
     /* =========================================================
        AI
     ========================================================= */
