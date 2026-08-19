@@ -49,6 +49,18 @@ const PADDLE_WEBHOOK_SECRET =
 const IDENTITY_HASH_SECRET =
   process.env.IDENTITY_HASH_SECRET?.trim();
 
+/*
+  Paddle price IDs
+
+  ضع نفس Price IDs الموجودة في Paddle/Vercel.
+*/
+
+const PADDLE_PRICE_ID_MONTHLY =
+  process.env.PADDLE_PRICE_ID_MONTHLY?.trim();
+
+const PADDLE_PRICE_ID_ONE_TIME =
+  process.env.PADDLE_PRICE_ID_ONE_TIME?.trim();
+
 const IS_PRODUCTION =
   process.env.VERCEL_ENV === "production" ||
   process.env.NODE_ENV === "production";
@@ -93,8 +105,8 @@ app.use(
   cors({
     origin: (origin, callback) => {
       /*
-        Paddle server-to-server webhooks normally
-        do not contain an Origin header.
+        Paddle webhooks normally do not contain
+        an Origin header.
       */
 
       if (!origin) {
@@ -180,6 +192,18 @@ function validatePaddleConfiguration() {
   if (!PADDLE_WEBHOOK_SECRET) {
     missing.push(
       "PADDLE_WEBHOOK_SECRET"
+    );
+  }
+
+  if (!PADDLE_PRICE_ID_MONTHLY) {
+    missing.push(
+      "PADDLE_PRICE_ID_MONTHLY"
+    );
+  }
+
+  if (!PADDLE_PRICE_ID_ONE_TIME) {
+    missing.push(
+      "PADDLE_PRICE_ID_ONE_TIME"
     );
   }
 
@@ -323,12 +347,6 @@ function verifyPaddleSignature(
     return false;
   }
 
-  /*
-    Paddle signs:
-
-      timestamp + ":" + raw body
-  */
-
   const signedPayload =
     `${timestamp}:${rawBody}`;
 
@@ -456,10 +474,10 @@ async function savePaddleEvent({
   }
 
   /*
-    event_id MUST be UNIQUE in paddle_events.
+    event_id must be UNIQUE in paddle_events.
 
-    Duplicate Paddle deliveries are ignored by
-    resolution=ignore-duplicates.
+    If Paddle sends the same event again,
+    Supabase ignores the duplicate.
   */
 
   await supabaseRequest(
@@ -469,7 +487,7 @@ async function savePaddleEvent({
 
       headers: {
         Prefer:
-          "return=minimal,resolution=ignore-duplicates"
+          "return=representation,resolution=ignore-duplicates"
       },
 
       body: JSON.stringify({
@@ -523,16 +541,6 @@ async function savePaddleSubscription(
       ?.price?.id ||
     null;
 
-  /*
-    IMPORTANT:
-
-    paddle_subscriptions.subscription_id
-    is UNIQUE in the database.
-
-    This matches the indexes you showed
-    in Supabase.
-  */
-
   await supabaseRequest(
     "paddle_subscriptions?on_conflict=subscription_id",
     {
@@ -567,15 +575,101 @@ async function savePaddleSubscription(
 }
 
 /* =========================================================
+   GRANT PAID AI CREDITS
+========================================================= */
+
+async function grantPaidCredits({
+  eventId,
+  userId,
+  priceId
+}) {
+  if (
+    !eventId ||
+    !userId ||
+    !priceId
+  ) {
+    return {
+      granted: false,
+      credits: 0
+    };
+  }
+
+  let credits = 0;
+
+  if (
+    priceId ===
+    PADDLE_PRICE_ID_MONTHLY
+  ) {
+    credits = 30;
+  }
+
+  if (
+    priceId ===
+    PADDLE_PRICE_ID_ONE_TIME
+  ) {
+    credits = 60;
+  }
+
+  if (credits <= 0) {
+    return {
+      granted: false,
+      credits: 0
+    };
+  }
+
+  /*
+    IMPORTANT:
+
+    grant_paid_credits must use event_id
+    to make the operation idempotent.
+
+    Therefore the same Paddle event
+    cannot grant credits twice.
+  */
+
+  const result =
+    await supabaseRequest(
+      "rpc/grant_paid_credits",
+      {
+        method: "POST",
+
+        headers: {
+          Prefer:
+            "return=representation"
+        },
+
+        body:
+          JSON.stringify({
+            p_event_id:
+              eventId,
+
+            p_user_id:
+              userId,
+
+            p_credits:
+              credits,
+
+            p_price_id:
+              priceId
+          })
+      }
+    );
+
+  return {
+    granted: true,
+    credits,
+    result
+  };
+}
+
+/* =========================================================
    PADDLE WEBHOOK
 ========================================================= */
 
 /*
-  IMPORTANT:
-
-  This route MUST remain before express.json()
-  because Paddle signature verification requires
-  the exact raw request body.
+  MUST remain before express.json()
+  because Paddle signature verification
+  requires the exact raw request body.
 */
 
 app.post(
@@ -643,9 +737,9 @@ app.post(
         });
       }
 
-      /*
-        VERIFY FIRST.
-      */
+      /* -----------------------------------------------------
+         VERIFY SIGNATURE
+      ----------------------------------------------------- */
 
       const valid =
         verifyPaddleSignature(
@@ -663,6 +757,10 @@ app.post(
             "Invalid Paddle signature."
         });
       }
+
+      /* -----------------------------------------------------
+         PARSE EVENT
+      ----------------------------------------------------- */
 
       let event;
 
@@ -711,11 +809,9 @@ app.post(
         }
       );
 
-      /*
-        Store the event first.
-
-        paddle_events.event_id must be UNIQUE.
-      */
+      /* -----------------------------------------------------
+         SAVE EVENT
+      ----------------------------------------------------- */
 
       if (eventId) {
         try {
@@ -738,9 +834,9 @@ app.post(
         }
       }
 
-      /*
-        Subscription events contain data.id = sub_...
-      */
+      /* -----------------------------------------------------
+         SAVE SUBSCRIPTION
+      ----------------------------------------------------- */
 
       if (
         data &&
@@ -764,97 +860,102 @@ app.post(
           });
         }
       }
-/* =====================================================
-   GRANT PAID AI CREDITS
-===================================================== */
 
-if (
-  data &&
-  typeof data === "object" &&
-  eventId
-) {
-  const userId =
-    typeof data?.custom_data?.user_id === "string"
-      ? data.custom_data.user_id
-      : "";
+      /* =====================================================
+         PAID CREDITS
 
-  const priceId =
-    data?.items?.[0]?.price?.id ||
-    "";
+         ONLY transaction.completed
+         is allowed to grant credits.
 
-  let credits = 0;
+         This prevents subscription.created,
+         subscription.updated, etc. from
+         accidentally granting credits.
+      ===================================================== */
 
-  if (
-    priceId ===
-    PADDLE_PRICE_ID_MONTHLY
-  ) {
-    credits = 30;
-  }
+      if (
+        eventType ===
+        "transaction.completed" &&
+        data &&
+        typeof data === "object"
+      ) {
+        const userId =
+          typeof data?.custom_data?.user_id ===
+          "string"
+            ? data.custom_data.user_id.trim()
+            : "";
 
-  if (
-    priceId ===
-    PADDLE_PRICE_ID_ONE_TIME
-  ) {
-    credits = 60;
-  }
+        const priceId =
+          data
+            ?.items?.[0]
+            ?.price?.id ||
+          "";
 
-  if (
-    userId &&
-    credits > 0
-  ) {
-    try {
-      const granted =
-        await supabaseRequest(
-          "rpc/grant_paid_credits",
-          {
-            method: "POST",
+        if (
+          !userId
+        ) {
+          console.error(
+            "transaction.completed has no custom_data.user_id"
+          );
 
-            headers: {
-              Prefer:
-                "return=representation"
-            },
+          /*
+            Do not grant credits without a
+            user_id because we must know exactly
+            which account receives the credits.
+          */
 
-            body:
-              JSON.stringify({
-                p_event_id:
-                  eventId,
-
-                p_user_id:
-                  userId,
-
-                p_credits:
-                  credits,
-
-                p_price_id:
-                  priceId
-              })
-          }
-        );
-
-      console.log(
-        "Paid AI credits processed:",
-        {
-          eventId,
-          userId,
-          priceId,
-          credits,
-          granted
+          return res.status(200).json({
+            ok: true,
+            received: true,
+            creditsGranted: false
+          });
         }
-      );
 
-    } catch (error) {
-      console.error(
-        "Failed to grant paid AI credits:",
-        error
-      );
+        if (
+          !priceId
+        ) {
+          console.error(
+            "transaction.completed has no price ID"
+          );
 
-      return res.status(500).json({
-        error:
-          "Failed to grant paid credits."
-      });
-    }
-  }
-}
+          return res.status(200).json({
+            ok: true,
+            received: true,
+            creditsGranted: false
+          });
+        }
+
+        try {
+          const creditResult =
+            await grantPaidCredits({
+              eventId,
+              userId,
+              priceId
+            });
+
+          console.log(
+            "Paid AI credits processed:",
+            {
+              eventId,
+              userId,
+              priceId,
+              credits:
+                creditResult.credits
+            }
+          );
+
+        } catch (error) {
+          console.error(
+            "Failed to grant paid AI credits:",
+            error
+          );
+
+          return res.status(500).json({
+            error:
+              "Failed to grant paid credits."
+          });
+        }
+      }
+
       return res.status(200).json({
         ok: true,
         received: true
@@ -1200,7 +1301,7 @@ async function getPreviousUsage(
 }
 
 /* =========================================================
-   SAVE SUCCESSFUL USAGE
+   SAVE SUCCESSFUL FREE USAGE
 ========================================================= */
 
 async function saveUsage(
@@ -1327,26 +1428,36 @@ app.post(
       }
 
       /* -----------------------------------------------------
-   INPUT
------------------------------------------------------ */
+         INPUT
+      ----------------------------------------------------- */
 
-const {
-  text,
-  language = "ar",
-  user_id
-} =
-  req.body || {};
+      const {
+        text,
+        language = "ar",
+        user_id
+      } =
+        req.body || {};
 
-if (
-  typeof user_id !== "string" ||
-  !user_id
-) {
-  return res.status(401).json({
-    error:
-      "جلسة تسجيل الدخول غير صالحة."
-  });
-}
-      
+      /*
+        Paid credits belong to the logged-in
+        user account, not to the CV email.
+
+        Therefore the user_id is required.
+      */
+
+      if (
+        typeof user_id !== "string" ||
+        !user_id.trim()
+      ) {
+        return res.status(401).json({
+          error:
+            "جلسة تسجيل الدخول غير صالحة."
+        });
+      }
+
+      const cleanUserId =
+        user_id.trim();
+
       /* -----------------------------------------------------
          TEXT VALIDATION
       ----------------------------------------------------- */
@@ -1430,7 +1541,7 @@ if (
       }
 
       /* -----------------------------------------------------
-         USAGE CHECK
+         FREE USAGE CHECK
       ----------------------------------------------------- */
 
       const previousUsage =
@@ -1445,42 +1556,48 @@ if (
           ? previousUsage.length
           : 0;
 
-      /*
-        First two successful AI uses are free.
+      /* -----------------------------------------------------
+         PAID CREDIT CHECK
+      ----------------------------------------------------- */
 
-        Third use is blocked BEFORE Gemini.
-      */
-let paidCredits = 0;
+      let paidCredits = 0;
 
-try {
-  const creditRows =
-    await supabaseRequest(
-      `ai_credits?select=credits&user_id=eq.${encodeURIComponent(user_id)}&limit=1`,
-      {
-        method: "GET"
+      try {
+        const creditRows =
+          await supabaseRequest(
+            `ai_credits?select=credits&user_id=eq.${encodeURIComponent(cleanUserId)}&limit=1`,
+            {
+              method: "GET"
+            }
+          );
+
+        paidCredits =
+          Number(
+            creditRows?.[0]?.credits ||
+            0
+          );
+
+      } catch (creditError) {
+        console.error(
+          "Failed to read paid credits:",
+          creditError
+        );
+
+        return res.status(503).json({
+          error:
+            "تعذر قراءة رصيدك حاليًا. حاول مرة أخرى."
+        });
       }
-    );
 
-  paidCredits =
-    Number(
-      creditRows?.[0]?.credits || 0
-    );
+      /* -----------------------------------------------------
+         PAYMENT REQUIRED
+      ----------------------------------------------------- */
 
-} catch (creditError) {
-  console.error(
-    "Failed to read paid credits:",
-    creditError
-  );
-
-  return res.status(503).json({
-    error:
-      "تعذر قراءة رصيدك حاليًا. حاول مرة أخرى."
-  });
-}
       if (
-  successfulUses >= FREE_AI_USES &&
-  paidCredits <= 0
-) {
+        successfulUses >=
+          FREE_AI_USES &&
+        paidCredits <= 0
+      ) {
         return res.status(402).json({
           error:
             "لقد أكملت الاستعمالين المجانيين. اختر خطة للمتابعة.",
@@ -1494,12 +1611,15 @@ try {
           freeUsesRemaining:
             0,
 
+          paidCredits:
+            paidCredits,
+
           requiresPayment:
             true,
 
           plans: [
             "monthly",
-            "lifetime"
+            "one-time"
           ]
         });
       }
@@ -1762,6 +1882,7 @@ ${cleanText}
                   })
               }
             );
+
         } catch (
           networkError
         ) {
@@ -1801,10 +1922,6 @@ ${cleanText}
         } catch {
           data = null;
         }
-
-        /*
-          Retry temporary Gemini errors.
-        */
 
         if (
           response.status ===
@@ -1949,84 +2066,115 @@ ${cleanText}
         });
       }
 
-/* =====================================================
-   SAVE / CONSUME SUCCESSFUL USE
-===================================================== */
+      /* =====================================================
+         CONSUME USAGE AFTER SUCCESSFUL GEMINI RESULT
+      ===================================================== */
 
-const usingPaidCredit =
-  successfulUses >= FREE_AI_USES;
+      const usingPaidCredit =
+        successfulUses >=
+        FREE_AI_USES;
 
-if (usingPaidCredit) {
-  try {
-    const creditUsed =
-      await supabaseRequest(
-        "rpc/use_ai_credit",
-        {
-          method: "POST",
+      if (usingPaidCredit) {
+        try {
+          const creditUsed =
+            await supabaseRequest(
+              "rpc/use_ai_credit",
+              {
+                method: "POST",
 
-          headers: {
-            Prefer:
-              "return=representation"
-          },
+                headers: {
+                  Prefer:
+                    "return=representation"
+                },
 
-          body:
-            JSON.stringify({
-              p_user_id:
-                user_id
-            })
+                body:
+                  JSON.stringify({
+                    p_user_id:
+                      cleanUserId
+                  })
+              }
+            );
+
+          /*
+            The RPC must return true when
+            exactly one credit was consumed.
+
+            If there is no credit, do not
+            count the AI result as successful.
+          */
+
+          if (
+            creditUsed !== true
+          ) {
+            console.error(
+              "Paid AI credit could not be consumed:",
+              creditUsed
+            );
+
+            return res.status(402).json({
+              error:
+                "لا يوجد رصيد كافٍ للمتابعة. اختر خطة للمتابعة.",
+
+              code:
+                "PAYMENT_REQUIRED",
+
+              requiresPayment:
+                true
+            });
+          }
+
+        } catch (creditError) {
+          console.error(
+            "Failed to consume paid AI credit:",
+            creditError
+          );
+
+          return res.status(503).json({
+            error:
+              "تعذر خصم رصيد الذكاء الاصطناعي. حاول مرة أخرى."
+          });
         }
-      );
 
-    if (creditUsed !== true) {
-      console.error(
-        "Paid AI credit could not be consumed:",
-        creditUsed
-      );
+      } else {
+        /*
+          First two successful uses are free.
+        */
 
-      return res.status(503).json({
-        error:
-          "تعذر خصم رصيد الذكاء الاصطناعي. حاول مرة أخرى."
-      });
-    }
+        try {
+          await saveUsage(
+            identities
+          );
 
-  } catch (creditError) {
-    console.error(
-      "Failed to consume paid AI credit:",
-      creditError
-    );
+        } catch (usageError) {
+          console.error(
+            "Failed to save AI usage:",
+            usageError
+          );
 
-    return res.status(503).json({
-      error:
-        "تعذر خصم رصيد الذكاء الاصطناعي. حاول مرة أخرى."
-    });
-  }
-
-} else {
-
-  try {
-    await saveUsage(
-      identities
-    );
-
-  } catch (usageError) {
-    console.error(
-      "Failed to save AI usage:",
-      usageError
-    );
-
-    return res.status(503).json({
-      error:
-        "تعذر تسجيل العملية حاليًا. حاول مرة أخرى."
-    });
-  }
-}
-
-const newUsageCount =
-  successfulUses + 1;
+          return res.status(503).json({
+            error:
+              "تعذر تسجيل العملية حاليًا. حاول مرة أخرى."
+          });
+        }
+      }
 
       /* =====================================================
          RESPONSE
       ===================================================== */
+
+      const newUsageCount =
+        successfulUses + 1;
+
+      /*
+        If this was a paid request,
+        keep the actual free-use count
+        unchanged.
+      */
+
+      const returnedFreeUses =
+        usingPaidCredit
+          ? successfulUses
+          : newUsageCount;
 
       return res.status(200).json({
         result:
@@ -2035,21 +2183,31 @@ const newUsageCount =
           ),
 
         freeUses:
-          newUsageCount,
+          returnedFreeUses,
 
         freeUsesRemaining:
           Math.max(
             0,
             FREE_AI_USES -
-              newUsageCount
+              returnedFreeUses
           ),
 
         paid:
-          false,
+          usingPaidCredit,
+
+        paidCreditsRemaining:
+          usingPaidCredit
+            ? Math.max(
+                0,
+                paidCredits - 1
+              )
+            : paidCredits,
 
         requiresPayment:
-          newUsageCount >=
-          FREE_AI_USES
+          usingPaidCredit
+            ? paidCredits - 1 <= 0
+            : newUsageCount >=
+              FREE_AI_USES
       });
 
     } catch (error) {
