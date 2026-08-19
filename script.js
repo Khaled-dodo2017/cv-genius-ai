@@ -3101,23 +3101,23 @@ Paddle.Initialize({
           </div>
 
           <button
-  id="one-time-plan-btn"
+  id="monthly-plan-btn"
   type="button"
-            style="
-              width:100%;
-              margin-top:15px;
-              padding:13px;
-              border:0;
-              border-radius:10px;
-              background:#0f766e;
-              color:white;
-              font-size:16px;
-              font-weight:600;
-              cursor:pointer;
-            "
-          >
-            اختيار الخطة الشهرية
-          </button>
+  style="
+    width:100%;
+    margin-top:15px;
+    padding:13px;
+    border:0;
+    border-radius:10px;
+    background:#0f766e;
+    color:white;
+    font-size:16px;
+    font-weight:600;
+    cursor:pointer;
+  "
+>
+  اختيار الخطة الشهرية
+</button>
 
         </div>
 
