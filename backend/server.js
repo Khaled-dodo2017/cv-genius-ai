@@ -1322,7 +1322,90 @@ app.get(
     });
   }
 );
+/* =========================================================
+   PAID CREDITS ENDPOINT
+========================================================= */
 
+app.get(
+  "/paid-credits",
+  async (req, res) => {
+
+    try {
+
+      const authHeader =
+        req.headers.authorization || "";
+
+      if (
+        !authHeader.startsWith("Bearer ")
+      ) {
+        return res.status(401).json({
+          error: "Unauthorized"
+        });
+      }
+
+      const accessToken =
+        authHeader.slice(7).trim();
+
+      if (!accessToken) {
+        return res.status(401).json({
+          error: "Unauthorized"
+        });
+      }
+
+      const userResponse =
+        await fetch(
+          `${SUPABASE_URL}/auth/v1/user`,
+          {
+            method: "GET",
+            headers: {
+              apikey:
+                SUPABASE_SERVICE_ROLE_KEY,
+
+              Authorization:
+                `Bearer ${accessToken}`
+            }
+          }
+        );
+
+      if (!userResponse.ok) {
+        return res.status(401).json({
+          error: "Invalid authentication"
+        });
+      }
+
+      const user =
+        await userResponse.json();
+
+      if (!user?.id) {
+        return res.status(401).json({
+          error: "Invalid user"
+        });
+      }
+
+      const credits =
+        await getPaidCredits(
+          user.id
+        );
+
+      return res.status(200).json({
+        credits
+      });
+
+    } catch (error) {
+
+      console.error(
+        "GET /paid-credits error:",
+        error
+      );
+
+      return res.status(500).json({
+        error:
+          "Failed to get paid credits"
+      });
+
+    }
+  }
+);
 /* =========================================================
    CV IMPROVEMENT
 ========================================================= */
