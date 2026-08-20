@@ -3420,35 +3420,24 @@ oneTimePlanBtn.addEventListener(
    CHECK AI USAGE / PAID CREDITS BEFORE REQUEST
 ===================================================== */
 
-const usage =
-  await getAIUsage();
+const usage = await getAIUsage();
 
+if (usage.count >= FREE_AI_USES) {
 
-if (
-  usage.count >= FREE_AI_USES
-) {
+  const paidCredits = await getPaidCredits();
 
-  const paidCredits =
-    await getPaidCredits();
-
-
-  if (
-    paidCredits <= 0
-  ) {
-
+  if (paidCredits <= 0) {
     showPaymentOptions();
-
     return;
-
   }
 
+}
 
+const experience =
+  readExperience();
 
-          const experience =
-            readExperience();
-
-          const education =
-            readEducation();
+const education =
+  readEducation();
 
 
           /* =====================================================
