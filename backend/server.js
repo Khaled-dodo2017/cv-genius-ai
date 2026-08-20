@@ -110,6 +110,9 @@ app.use(
 
     allowedHeaders: [
       "Content-Type",
+      "Authorization",
+      "apikey",
+      "x-client-info",
       "Paddle-Signature"
     ],
 
