@@ -2994,7 +2994,69 @@ Paddle.Initialize({
 /* =========================================================
    PAID CREDITS
 ========================================================= */
+async function getPaidCredits() {
 
+  const {
+    data: sessionData,
+    error: sessionError
+  } =
+    await supabaseClient.auth.getSession();
+
+
+  if (sessionError) {
+    throw sessionError;
+  }
+
+
+  const accessToken =
+    sessionData?.session?.access_token;
+
+
+  if (!accessToken) {
+    return 0;
+  }
+
+
+  const response =
+    await fetch(
+      'https://cv-genius-ai-backend.vercel.app/paid-credits',
+      {
+        method: 'GET',
+
+        headers: {
+          'Authorization':
+            `Bearer ${accessToken}`
+        }
+      }
+    );
+
+
+  let data = null;
+
+
+  try {
+    data =
+      await response.json();
+  } catch {
+    data = null;
+  }
+
+
+  if (!response.ok) {
+
+    throw new Error(
+      data?.error ||
+      'Failed to get paid credits'
+    );
+
+  }
+
+
+  return Number(
+    data?.credits || 0
+  );
+
+}
 
 
     function showAIUsageMessage(count) {
