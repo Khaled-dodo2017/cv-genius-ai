@@ -3442,7 +3442,6 @@ if (
 
   }
 
-}
 
 
           const experience =
