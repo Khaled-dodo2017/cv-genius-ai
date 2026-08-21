@@ -1613,41 +1613,7 @@ const cleanUserId =
         });
       }
 
-      const identities =
-        getIdentities(
-          req,
-          cleanText
-        );
-
-      const hasIdentity =
-        Boolean(
-          identities.emailHash ||
-          identities.ipHash ||
-          identities.deviceHash
-        );
-
-      if (!hasIdentity) {
-        return res.status(400).json({
-          error:
-            "تعذر التحقق من هوية الجهاز."
-        });
-      }
-
-      /* -----------------------------------------------------
-         FREE USAGE
-      ----------------------------------------------------- */
-
-      const previousUsage =
-        await getPreviousUsage(
-          identities
-        );
-
-      const successfulUses =
-        Array.isArray(
-          previousUsage
-        )
-          ? previousUsage.length
-          : 0;
+      
 
       /* -----------------------------------------------------
          PAID CREDITS
