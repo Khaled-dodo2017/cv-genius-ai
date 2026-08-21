@@ -2153,20 +2153,20 @@ ${cleanText}
           });
         }
 
-      } else {
+            } else {
         /* ---------------------------------------------------
            FIRST TWO SUCCESSFUL USES ARE FREE
         --------------------------------------------------- */
 
         try {
-          await saveUsage(
-            identities
+          await incrementFreeAiUsage(
+            accessToken
           );
         } catch (
           usageError
         ) {
           console.error(
-            "Failed to save AI usage:",
+            "Failed to increment free AI usage:",
             usageError
           );
 
