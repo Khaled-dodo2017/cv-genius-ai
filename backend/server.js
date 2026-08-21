@@ -1054,46 +1054,65 @@ async function checkRateLimit(
 const rateLimitStore =
   new Map();
 
-function rateLimit(
+async function rateLimit(
   req,
   res,
   next
 ) {
-  const now =
-    Date.now();
-
-  const ip =
-    getClientIp(req);
-
-  let key;
-
   try {
-    key = hash(
-      `rate:${ip}`
-    );
-  } catch {
-    key = ip;
-  }
+    const ip =
+      getClientIp(req);
 
-  const current =
-    rateLimitStore.get(key);
+    let key;
 
-  if (
-    !current ||
-    now -
-      current.start >=
-      RATE_LIMIT_WINDOW_MS
-  ) {
-    rateLimitStore.set(
-      key,
-      {
-        start: now,
-        count: 1
-      }
-    );
+    try {
+      key =
+        hash(
+          `rate:${ip}`
+        );
+    } catch {
+      key = ip;
+    }
+
+    const result =
+      await checkRateLimit(
+        key
+      );
+
+    if (!result.allowed) {
+      res.set(
+        "Retry-After",
+        String(
+          Math.max(
+            1,
+            result.retryAfter
+          )
+        )
+      );
+
+      return res.status(429).json({
+        error:
+          "تم تجاوز عدد الطلبات المسموح بها مؤقتًا. حاول لاحقًا.",
+
+        code:
+          "RATE_LIMITED"
+      });
+    }
 
     return next();
+
+  } catch (error) {
+    console.error(
+      "Rate limit error:",
+      error
+    );
+
+    return res.status(503).json({
+      error:
+        "تعذر التحقق من حد الطلبات حاليًا. حاول مرة أخرى."
+    });
   }
+}
 
   current.count += 1;
 
