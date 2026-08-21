@@ -1114,45 +1114,6 @@ async function rateLimit(
   }
 }
 
-  current.count += 1;
-
-  if (
-    current.count >
-    RATE_LIMIT_MAX
-  ) {
-    const retryAfter =
-      Math.ceil(
-        (
-          RATE_LIMIT_WINDOW_MS -
-          (
-            now -
-            current.start
-          )
-        ) / 1000
-      );
-
-    res.set(
-      "Retry-After",
-      String(
-        Math.max(
-          1,
-          retryAfter
-        )
-      )
-    );
-
-    return res.status(429).json({
-      error:
-        "تم تجاوز عدد الطلبات المسموح بها مؤقتًا. حاول لاحقًا.",
-
-      code:
-        "RATE_LIMITED"
-    });
-  }
-
-  return next();
-}
-
 function cleanupRateLimitStore() {
   const now =
     Date.now();
