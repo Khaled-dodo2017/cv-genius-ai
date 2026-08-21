@@ -1429,25 +1429,72 @@ app.post(
       }
 
       const {
-        text,
-        language = "ar",
-        user_id
-      } =
-        req.body || {};
+  text,
+  language = "ar"
+} =
+  req.body || {};
 
-      if (
-        typeof user_id !==
-          "string" ||
-        !user_id.trim()
-      ) {
-        return res.status(401).json({
-          error:
-            "جلسة تسجيل الدخول غير صالحة."
-        });
+/* =====================================================
+   AUTHENTICATE USER
+===================================================== */
+
+const authHeader =
+  req.headers.authorization || "";
+
+if (
+  !authHeader.startsWith("Bearer ")
+) {
+  return res.status(401).json({
+    error:
+      "جلسة تسجيل الدخول غير صالحة."
+  });
+}
+
+const accessToken =
+  authHeader.slice(7).trim();
+
+if (!accessToken) {
+  return res.status(401).json({
+    error:
+      "جلسة تسجيل الدخول غير صالحة."
+  });
+}
+
+const userResponse =
+  await fetch(
+    `${SUPABASE_URL}/auth/v1/user`,
+    {
+      method: "GET",
+
+      headers: {
+        apikey:
+          SUPABASE_SERVICE_ROLE_KEY,
+
+        Authorization:
+          `Bearer ${accessToken}`
       }
+    }
+  );
 
-      const cleanUserId =
-        user_id.trim();
+if (!userResponse.ok) {
+  return res.status(401).json({
+    error:
+      "جلسة تسجيل الدخول غير صالحة."
+  });
+}
+
+const authenticatedUser =
+  await userResponse.json();
+
+if (!authenticatedUser?.id) {
+  return res.status(401).json({
+    error:
+      "جلسة تسجيل الدخول غير صالحة."
+  });
+}
+
+const cleanUserId =
+  authenticatedUser.id;
 
       if (
         typeof text !==
