@@ -1330,6 +1330,7 @@ app.get(
 
 app.get(
   "/paid-credits",
+   rateLimit,
   async (req, res) => {
 
     try {
