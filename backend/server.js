@@ -1051,9 +1051,6 @@ async function checkRateLimit(
    RATE LIMIT
 ========================================================= */
 
-const rateLimitStore =
-  new Map();
-
 async function rateLimit(
   req,
   res,
@@ -1113,34 +1110,6 @@ async function rateLimit(
     });
   }
 }
-
-function cleanupRateLimitStore() {
-  const now =
-    Date.now();
-
-  for (
-    const [
-      key,
-      value
-    ]
-    of rateLimitStore
-  ) {
-    if (
-      now -
-        value.start >=
-      RATE_LIMIT_WINDOW_MS
-    ) {
-      rateLimitStore.delete(
-        key
-      );
-    }
-  }
-}
-
-setInterval(
-  cleanupRateLimitStore,
-  RATE_LIMIT_WINDOW_MS
-).unref?.();
 
 /* =========================================================
    BUILD IDENTITIES
