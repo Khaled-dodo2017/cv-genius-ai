@@ -995,6 +995,57 @@ function extractEmail(text) {
       )
     : "";
 }
+async function checkRateLimit(
+  key
+) {
+  const result =
+    await supabaseRequest(
+      "rpc/check_rate_limit",
+      {
+        method: "POST",
+
+        headers: {
+          Prefer:
+            "return=representation"
+        },
+
+        body: JSON.stringify({
+          p_key: key,
+          p_window_seconds:
+            Math.floor(
+              RATE_LIMIT_WINDOW_MS / 1000
+            ),
+          p_max_requests:
+            RATE_LIMIT_MAX
+        })
+      }
+    );
+
+  const row =
+    Array.isArray(result)
+      ? result[0]
+      : result;
+
+  if (
+    !row ||
+    typeof row.allowed !==
+      "boolean"
+  ) {
+    throw new Error(
+      "Invalid rate limit response"
+    );
+  }
+
+  return {
+    allowed:
+      row.allowed,
+
+    retryAfter:
+      Number(
+        row.retry_after || 0
+      )
+  };
+}
 
 /* =========================================================
    RATE LIMIT
