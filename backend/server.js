@@ -1265,7 +1265,73 @@ async function getPaidCredits(
     rows?.[0]?.credits || 0
   );
 }
+async function getFreeAiUses(userId) {
+  const rows =
+    await supabaseRequest(
+      `ai_usage?select=uses&user_id=eq.${encodeURIComponent(
+        userId
+      )}&action=eq.ai_usage&limit=1`,
+      {
+        method: "GET"
+      }
+    );
 
+  return Number(
+    rows?.[0]?.uses || 0
+  );
+}
+async function incrementFreeAiUsage(
+  accessToken
+) {
+  if (!accessToken) {
+    throw new Error(
+      "Access token is missing"
+    );
+  }
+
+  const response =
+    await fetch(
+      `${SUPABASE_URL}/rest/v1/rpc/increment_ai_usage`,
+      {
+        method: "POST",
+
+        headers: {
+          apikey:
+            SUPABASE_SERVICE_ROLE_KEY,
+
+          Authorization:
+            `Bearer ${accessToken}`,
+
+          "Content-Type":
+            "application/json"
+        },
+
+        body: "{}"
+      }
+    );
+
+  const text =
+    await response.text();
+
+  let data = null;
+
+  if (text) {
+    try {
+      data =
+        JSON.parse(text);
+    } catch {
+      data = text;
+    }
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      `Failed to increment free AI usage: ${response.status} ${JSON.stringify(data)}`
+    );
+  }
+
+  return Number(data);
+}
 /* =========================================================
    PARSE GEMINI RESULT
 ========================================================= */
