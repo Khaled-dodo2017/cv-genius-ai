@@ -3558,19 +3558,16 @@ const response =
           `Bearer ${accessToken}`
       },
 
-      body:
+   body:
   JSON.stringify({
 
     text:
       cvText,
 
     language:
-      currentLanguage,
+      currentLanguage
 
-    user_id:
-      sessionData?.session?.user?.id
-
-  })
+  })   
 }
 );
 
