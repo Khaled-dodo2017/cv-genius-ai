@@ -44,12 +44,11 @@ const PADDLE_WEBHOOK_SECRET =
 
 const IDENTITY_HASH_SECRET =
   process.env.IDENTITY_HASH_SECRET?.trim();
-
 const PADDLE_PRICE_ID_MONTHLY =
-  process.env.PADDLE_PRICE_ID_MONTHLY?.trim();
+  process.env.PADDLE_MONTHLY_PRICE_ID?.trim();
 
 const PADDLE_PRICE_ID_ONE_TIME =
-  process.env.PADDLE_PRICE_ID_ONE_TIME?.trim();
+  process.env.PADDLE_ONE_TIME_PRICE_ID?.trim();
 
 /* =========================================================
    BASIC SECURITY
