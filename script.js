@@ -2895,61 +2895,80 @@ Paddle.Initialize({
       قراءة عدد استعمالات AI من جدول ai_usage
       حسب user_id الخاص بحساب Supabase.
     */
+async function getAIUsage() {
 
-    async function getAIUsage() {
+  const user =
+    await getCurrentUser();
 
-      const user =
-        await getCurrentUser();
+  console.log(
+    'CURRENT USER:',
+    user
+  );
 
+  if (!user) {
 
-      if (!user) {
+    console.log(
+      'NO USER'
+    );
 
-        return {
-          user: null,
-          count: 0
-        };
+    return {
+      user: null,
+      count: 0
+    };
 
-      }
+  }
 
+  const {
+    data,
+    error
+  } =
+    await supabaseClient
+      .from('ai_usage')
+      .select('uses')
+      .eq(
+        'user_id',
+        user.id
+      )
+      .maybeSingle();
 
-      const {
-        data,
-        error
-      } =
-        await supabaseClient
-          .from('ai_usage')
-          .select('uses')
-          .eq(
-            'user_id',
-            user.id
-          )
-          .maybeSingle();
+  console.log(
+    'AI USAGE DATA:',
+    data
+  );
 
+  console.log(
+    'AI USAGE ERROR:',
+    error
+  );
 
-      if (error) {
+  if (error) {
 
-        console.error(
-          'Get AI usage error:',
-          error
-        );
+    console.error(
+      'Get AI usage error:',
+      error
+    );
 
-        throw error;
+    throw error;
 
-      }
+  }
 
+  const count =
+    Number(
+      data?.uses || 0
+    );
 
-      return {
+  console.log(
+    'FINAL AI USAGE COUNT:',
+    count
+  );
 
-        user,
+  return {
+    user,
+    count
+  };
 
-        count:
-          Number(
-            data?.uses || 0
-          )
-
-      };
-
-    }
+}
+   
 
 
     /*
