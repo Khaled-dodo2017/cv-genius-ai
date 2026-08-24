@@ -2097,63 +2097,92 @@ ${cleanText}
       }
 
       /* =====================================================
-         CONSUME CREDIT
-      ===================================================== */
+   CONSUME CREDIT
+===================================================== */
 
-      if (usingPaidCredit) {
-        let creditUsed;
+if (usingPaidCredit) {
+  let creditUsed;
 
-        try {
-          creditUsed =
-            await supabaseRequest(
-              "rpc/use_ai_credit",
-              {
-                method: "POST",
+  console.log(
+    "PAID CREDIT DEBUG - BEFORE",
+    {
+      userId: cleanUserId,
+      paidCredits,
+      successfulUses,
+      usingPaidCredit
+    }
+  );
 
-                headers: {
-                  Prefer:
-                    "return=representation"
-                },
+  try {
+    creditUsed =
+      await supabaseRequest(
+        "rpc/use_ai_credit",
+        {
+          method: "POST",
 
-                body:
-                  JSON.stringify({
-                    p_user_id:
-                      cleanUserId
-                  })
-              }
-            );
-        } catch (
-          creditError
-        ) {
-          console.error(
-            "Failed to consume paid AI credit:",
-            creditError
-          );
+          headers: {
+            Prefer:
+              "return=representation"
+          },
 
-          return res.status(503).json({
-            error:
-              "تعذر خصم رصيد الذكاء الاصطناعي. حاول مرة أخرى."
-          });
+          body:
+            JSON.stringify({
+              p_user_id:
+                cleanUserId
+            })
         }
+      );
 
-        if (
-          !rpcReturnedTrue(
-            creditUsed
-          )
-        ) {
-          return res.status(402).json({
-            error:
-              "لا يوجد رصيد كافٍ للمتابعة. اختر خطة للمتابعة.",
+    console.log(
+      "PAID CREDIT DEBUG - RPC RESULT",
+      {
+        userId: cleanUserId,
+        creditUsed
+      }
+    );
 
-            code:
-              "PAYMENT_REQUIRED",
+  } catch (
+    creditError
+  ) {
+    console.error(
+      "Failed to consume paid AI credit:",
+      creditError
+    );
 
-            requiresPayment:
-              true
-          });
-        }
+    return res.status(503).json({
+      error:
+        "تعذر خصم رصيد الذكاء الاصطناعي. حاول مرة أخرى."
+    });
+  }
 
-            } else {
+  const creditWasUsed =
+    rpcReturnedTrue(
+      creditUsed
+    );
+
+  console.log(
+    "PAID CREDIT DEBUG - PARSED",
+    {
+      userId: cleanUserId,
+      creditWasUsed
+    }
+  );
+
+  if (!creditWasUsed) {
+    return res.status(402).json({
+      error:
+        "لا يوجد رصيد كافٍ للمتابعة. اختر خطة للمتابعة.",
+
+      code:
+        "PAYMENT_REQUIRED",
+
+      requiresPayment:
+        true
+    });
+  }
+
+} else {
+            
         /* ---------------------------------------------------
            FIRST TWO SUCCESSFUL USES ARE FREE
         --------------------------------------------------- */
