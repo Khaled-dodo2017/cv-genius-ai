@@ -3083,18 +3083,12 @@ async function getPaidCredits() {
   if (count === 1) {
 
     alert(
-      `تم استخدامك الأول للذكاء الاصطناعي.\n\nتبقى لك استعمال مجاني واحد.`
+      'تم استخدامك الأول للذكاء الاصطناعي.\n\nتبقى لك استعمال مجاني واحد.'
     );
 
-    return;
-  }
-
-  if (count === 2) {
-    showPaymentOptions();
   }
 
 }
-
 
     function showPaymentOptions() {
 
