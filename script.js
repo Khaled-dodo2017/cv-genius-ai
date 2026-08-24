@@ -3465,7 +3465,14 @@ console.log('FREE AI USES COUNT:', usage.count);
 console.log('FREE AI USES LIMIT:', FREE_AI_USES);
 console.log('USER:', (await getCurrentUser())?.email);
 console.log('====================================');
+          
+if (usage.count >= FREE_AI_USES) {
 
+  showPaymentOptions();
+
+  return;
+
+}
 const experience =
   readExperience();
 
