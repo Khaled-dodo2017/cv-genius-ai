@@ -3879,9 +3879,8 @@ const response =
           ===================================================== */
 
           showAIUsageMessage(
-            newUsageCount
-          );
-
+  usage.count + 1
+);
 
           generateBtn.textContent =
             t('generated');
