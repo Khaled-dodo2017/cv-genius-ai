@@ -966,40 +966,49 @@ Paddle.Initialize({
 
     }
 
+async function getCurrentUser() {
 
-    async function getCurrentUser() {
+  try {
 
-      try {
+    const {
+      data,
+      error
+    } = await supabaseClient.auth.getUser();
 
-        const {
-          data,
-          error
-        } =
-          await supabaseClient.auth.getUser();
+    if (error) {
 
-        if (error) {
-
-          console.error(
-            'Get user error:',
-            error
-          );
-
-          return null;
-        }
-
-        return data?.user || null;
-
-      } catch (error) {
-
-        console.error(
-          'Get user error:',
-          error
-        );
-
+      // المستخدم غير مسجل الدخول — حالة طبيعية
+      if (error.name === 'AuthSessionMissingError') {
         return null;
       }
 
+      console.error(
+        'Get user error:',
+        error
+      );
+
+      return null;
     }
+
+    return data?.user || null;
+
+  } catch (error) {
+
+    // عدم وجود جلسة ليس خطأ يستدعي إظهاره في Console
+    if (error?.name === 'AuthSessionMissingError') {
+      return null;
+    }
+
+    console.error(
+      'Get user error:',
+      error
+    );
+
+    return null;
+  }
+
+}
+   
 
 
     async function signUp() {
