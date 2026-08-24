@@ -3627,10 +3627,6 @@ const response =
              COUNT SUCCESSFUL AI USE
           ===================================================== */
 
-          const newUsageCount =
-            await incrementAIUsage();
-
-
           const aiResult =
             String(
               data.result
