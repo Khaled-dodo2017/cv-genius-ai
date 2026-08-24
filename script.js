@@ -3596,12 +3596,22 @@ const response =
 
           if (!response.ok) {
 
-            throw new Error(
-              data?.error ||
-              t('aiError')
-            );
+  if (
+    response.status === 402 ||
+    data?.code === 'PAYMENT_REQUIRED'
+  ) {
 
-          }
+    showPaymentOptions();
+    return;
+
+  }
+
+  throw new Error(
+    data?.error ||
+    t('aiError')
+  );
+
+}
 
 
           if (!data?.result) {
