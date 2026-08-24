@@ -3466,7 +3466,18 @@ console.log('FREE AI USES LIMIT:', FREE_AI_USES);
 console.log('USER:', (await getCurrentUser())?.email);
 console.log('====================================');
           
-if (usage.count >= FREE_AI_USES) {
+const paidCredits =
+  await getPaidCredits();
+
+console.log(
+  'PAID CREDITS:',
+  paidCredits
+);
+
+if (
+  usage.count >= FREE_AI_USES &&
+  paidCredits <= 0
+) {
 
   showPaymentOptions();
 
