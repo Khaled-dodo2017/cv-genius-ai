@@ -3044,17 +3044,17 @@ async function getPaidCredits() {
 
 
   const response =
-    await fetch(
-      'https://cv-genius-ai-backend.vercel.app/paid-credits',
-      {
-        method: 'GET',
+  await fetch(
+    'https://cv-genius-ai-backend.vercel.app/paid-credits',
+    {
+      method: 'GET',
 
-        headers: {
-          'Authorization':
-            `Bearer ${accessToken}`
-        }
+      headers: {
+        'Authorization':
+          `Bearer ${accessToken}`
       }
-    );
+    }
+  );
 
 
   let data = null;
