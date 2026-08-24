@@ -3036,7 +3036,15 @@ async function getPaidCredits() {
 
   const accessToken =
     sessionData?.session?.access_token;
+console.log(
+  "ACCESS TOKEN EXISTS:",
+  !!accessToken
+);
 
+console.log(
+  "SESSION EXISTS:",
+  !!sessionData?.session
+);
 
   if (!accessToken) {
     return 0;
