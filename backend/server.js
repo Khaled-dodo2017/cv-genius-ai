@@ -1396,7 +1396,6 @@ app.get(
 
 app.get(
   "/paid-credits",
-   rateLimit,
   async (req, res) => {
 
     try {
@@ -1481,8 +1480,6 @@ app.get(
 
 app.post(
   "/improve-cv",
-
-  rateLimit,
 
   async (req, res) => {
     try {
