@@ -1978,21 +1978,7 @@ ${cleanText}
             attempt <
             maxAttempts
           ) {
-            const delay =
-              1500 *
-              Math.pow(
-                2,
-                attempt - 1
-              );
-
-            await new Promise(
-              resolve =>
-                setTimeout(
-                  resolve,
-                  delay
-                )
-            );
-
+            
             continue;
           }
         }
