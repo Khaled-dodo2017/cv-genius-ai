@@ -783,3 +783,31 @@ button:focus-visible{
 .sheet__summary {
   overflow-wrap: anywhere;
 }
+
+/* =========================================================
+   FREE TRIAL NOTE
+========================================================= */
+
+.free-trial-note {
+  width: 100%;
+  margin: 14px 0 8px;
+  padding: 14px 16px;
+  border: 1px solid #a7c7a1;
+  border-radius: 14px;
+  background: #f7faf5;
+  text-align: center;
+  line-height: 1.8;
+  box-sizing: border-box;
+}
+
+.free-trial-note strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 16px;
+}
+
+.free-trial-note span {
+  display: block;
+  font-size: 14px;
+  color: #374151;
+}
