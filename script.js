@@ -3185,16 +3185,15 @@ console.log(
                 margin-top:6px;
                 color:#6b7280;
               ">
-                30 استعمال للذكاء الاصطناعي
-              </div>
+30 رصيدًا للذكاء الاصطناعي شهريًا              
             </div>
 
             <strong style="
               font-size:22px;
               white-space:nowrap;
             ">
-              $4.99
-            </strong>
+    $4.99 / شهر     
+    </strong>
 
           </div>
 
@@ -3244,8 +3243,7 @@ console.log(
                 margin-top:6px;
                 color:#6b7280;
               ">
-                60 استعمال للذكاء الاصطناعي
-              </div>
+60 رصيدًا للذكاء الاصطناعي             
             </div>
 
             <strong style="
