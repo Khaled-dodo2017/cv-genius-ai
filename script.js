@@ -621,6 +621,12 @@ Paddle.Initialize({
         aiError:
           'Une erreur est survenue lors de l’amélioration du CV par IA.',
 
+        freeTrialTitle:
+          '🎁 Commencez gratuitement !',
+
+        freeTrialText:
+          'Vous disposez de deux essais gratuits pour utiliser l’intelligence artificielle. Ensuite, vous pouvez choisir le forfait qui vous convient pour continuer.',
+
         aiEmpty:
           'Aucun résultat reçu de l’intelligence artificielle.'
       },
