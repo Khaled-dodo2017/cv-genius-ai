@@ -877,6 +877,12 @@ freeTrialText:
         aiError:
           'An error occurred while improving the resume with AI.',
 
+        freeTrialTitle:
+          '🎁 Start for free!',
+
+        freeTrialText:
+          'You have two free trials to use AI. After that, you can choose the plan that suits you to continue.',
+
         aiEmpty:
           'No result was received from the AI.'
       }
