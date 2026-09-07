@@ -1502,6 +1502,9 @@ async function getCurrentUser() {
         t('subtitle')
       );
 
+setText('.free-trial-note strong', t('freeTrialTitle'));
+
+setText('.free-trial-note span', t('freeTrialText'));
 
       const editor =
         document.querySelector('.editor');
