@@ -786,7 +786,63 @@ app.post(
         }
       );
 
-      /* -----------------------------------------------------
+      /*
+
+// ==================== CRYPTOMUS WEBHOOK ====================
+
+const CRYPTOMUS_PAYMENT_KEY = process.env.CRYPTOMUS_PAYMENT_KEY?.trim();
+
+app.post(
+  "/api/webhook-cryptomus",
+  express.raw({ type: "application/json" }),
+  async (req, res) => {
+    try {
+      if (!CRYPTOMUS_PAYMENT_KEY) {
+        console.error("CRYPTOMUS_PAYMENT_KEY is missing");
+        return res.status(500).send("Server configuration error");
+      }
+
+      const signature = req.headers["sign"];
+
+      if (!signature) {
+        console.error("Missing Cryptomus signature");
+        return res.status(400).send("Missing signature");
+      }
+
+      const body = req.body;
+
+      const expectedSignature = crypto
+        .createHash("md5")
+        .update(
+          Buffer.from(body).toString("base64") +
+            CRYPTOMUS_PAYMENT_KEY
+        )
+        .digest("hex");
+
+      if (signature !== expectedSignature) {
+        console.error("Invalid Cryptomus signature");
+        return res.status(401).send("Invalid signature");
+      }
+
+      const data = JSON.parse(body.toString("utf8"));
+
+      console.log("Cryptomus webhook received:", data);
+
+      // سنضيف هنا لاحقًا:
+      // - التحقق من الدفع
+      // - معرفة المستخدم
+      // - إضافة الرصيد/credits
+      // - منع تكرار معالجة نفس العملية
+
+      return res.status(200).json({
+        success: true,
+      });
+    } catch (error) {
+      console.error("Cryptomus webhook error:", error);
+      return res.status(500).send("Webhook error");
+    }
+  }
+); -----------------------------------------------------
          SAVE EVENT
       ----------------------------------------------------- */
 
