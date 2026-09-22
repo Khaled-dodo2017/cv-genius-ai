@@ -889,55 +889,528 @@ app.post(
 );
 
 /* =========================================================
-   CRYPTOMUS WEBHOOK
+   PLISIO CONFIGURATION
+========================================================= */
+
+const PLISIO_SECRET_KEY =
+  process.env.PLISIO_SECRET_KEY?.trim();
+
+const PLISIO_MONTHLY_AMOUNT =
+  process.env.PLISIO_MONTHLY_AMOUNT?.trim();
+
+const PLISIO_ONE_TIME_AMOUNT =
+  process.env.PLISIO_ONE_TIME_AMOUNT?.trim();
+
+const PLISIO_MONTHLY_CREDITS = 30;
+const PLISIO_ONE_TIME_CREDITS = 60;
+
+/* =========================================================
+   PLISIO CREATE INVOICE
+========================================================= */
+
+app.post(
+  "/api/create-plisio-invoice",
+  async (req, res) => {
+    try {
+      if (!PLISIO_SECRET_KEY) {
+        console.error(
+          "PLISIO_SECRET_KEY is missing"
+        );
+
+        return res.status(503).json({
+          error:
+            "Payment service is not configured."
+        });
+      }
+
+      const authHeader =
+        req.headers.authorization || "";
+
+      if (
+        !authHeader.startsWith("Bearer ")
+      ) {
+        return res.status(401).json({
+          error: "Unauthorized"
+        });
+      }
+
+      const accessToken =
+        authHeader.slice(7).trim();
+
+      if (!accessToken) {
+        return res.status(401).json({
+          error: "Unauthorized"
+        });
+      }
+
+      const userResponse =
+        await fetch(
+          `${SUPABASE_URL}/auth/v1/user`,
+          {
+            method: "GET",
+
+            headers: {
+              apikey:
+                SUPABASE_SERVICE_ROLE_KEY,
+
+              Authorization:
+                `Bearer ${accessToken}`
+            }
+          }
+        );
+
+      if (!userResponse.ok) {
+        return res.status(401).json({
+          error:
+            "Invalid authentication"
+        });
+      }
+
+      const user =
+        await userResponse.json();
+
+      if (!user?.id) {
+        return res.status(401).json({
+          error: "Invalid user"
+        });
+      }
+
+      const {
+        plan
+      } = req.body || {};
+
+      let sourceAmount;
+      let credits;
+
+      if (plan === "monthly") {
+        sourceAmount =
+          PLISIO_MONTHLY_AMOUNT;
+
+        credits =
+          PLISIO_MONTHLY_CREDITS;
+      } else if (
+        plan === "one-time"
+      ) {
+        sourceAmount =
+          PLISIO_ONE_TIME_AMOUNT;
+
+        credits =
+          PLISIO_ONE_TIME_CREDITS;
+      } else {
+        return res.status(400).json({
+          error:
+            "Invalid payment plan."
+        });
+      }
+
+      if (
+        !sourceAmount ||
+        !Number.isFinite(
+          Number(sourceAmount)
+        ) ||
+        Number(sourceAmount) <= 0
+      ) {
+        return res.status(503).json({
+          error:
+            "Payment amount is not configured."
+        });
+      }
+
+      const orderNumber =
+        `CVG-${user.id}-${Date.now()}`;
+
+      const callbackUrl =
+        "https://cv-genius-ai-eight.vercel.app/api/webhook-plisio?json=true";
+
+      const successUrl =
+        "https://cv-genius-ai-eight.vercel.app/success";
+
+      const failedUrl =
+        "https://cv-genius-ai-eight.vercel.app/failed";
+
+      const params =
+        new URLSearchParams({
+          source_currency: "USD",
+
+          source_amount:
+            String(sourceAmount),
+
+          currency:
+            "USDT_BSC",
+
+          allowed_psys_cids:
+            "USDT_BSC",
+
+          order_number:
+            orderNumber,
+
+          order_name:
+            plan === "monthly"
+              ? "CV Genius Monthly"
+              : "CV Genius One-Time",
+
+          description:
+            `CV Genius ${plan} - ${credits} AI credits`,
+
+          callback_url:
+            callbackUrl,
+
+          success_callback_url:
+            `${successUrl}?json=true`,
+
+          fail_callback_url:
+            `${failedUrl}?json=true`,
+
+          success_invoice_url:
+            successUrl,
+
+          fail_invoice_url:
+            failedUrl,
+
+          expire_min:
+            "30",
+
+          api_key:
+            PLISIO_SECRET_KEY
+        });
+
+      const response =
+        await fetch(
+          `https://api.plisio.net/api/v1/invoices/new?${params.toString()}`,
+          {
+            method: "GET"
+          }
+        );
+
+      const data =
+        await response.json();
+
+      if (
+        !response.ok ||
+        data?.status !== "success"
+      ) {
+        console.error(
+          "Plisio invoice creation failed:",
+          data
+        );
+
+        return res.status(502).json({
+          error:
+            "Failed to create payment invoice."
+        });
+      }
+
+      console.log(
+        "Plisio invoice created:",
+        {
+          userId: user.id,
+          plan,
+          credits,
+          orderNumber,
+          txnId:
+            data?.data?.txn_id
+        }
+      );
+
+      return res.status(200).json({
+        success: true,
+
+        invoiceUrl:
+          data?.data?.invoice_url,
+
+        transactionId:
+          data?.data?.txn_id,
+
+        orderNumber,
+
+        plan
+      });
+
+    } catch (error) {
+      console.error(
+        "Create Plisio invoice error:",
+        error
+      );
+
+      return res.status(500).json({
+        error:
+          "Failed to create payment invoice."
+      });
+    }
+  }
+);
+
+/* =========================================================
+   PLISIO WEBHOOK
    MUST STAY BEFORE express.json()
 ========================================================= */
 
-const CRYPTOMUS_PAYMENT_KEY =
-  process.env.CRYPTOMUS_PAYMENT_KEY?.trim();
+function verifyPlisioCallback(
+  data
+) {
+  if (
+    !data ||
+    typeof data !== "object" ||
+    !data.verify_hash ||
+    !PLISIO_SECRET_KEY
+  ) {
+    return false;
+  }
+
+  const receivedHash =
+    String(data.verify_hash);
+
+  const ordered = {
+    ...data
+  };
+
+  delete ordered.verify_hash;
+
+  const orderedKeys =
+    Object.keys(ordered).sort();
+
+  const sortedData = {};
+
+  for (const key of orderedKeys) {
+    sortedData[key] =
+      ordered[key];
+  }
+
+  const stringData =
+    JSON.stringify(sortedData);
+
+  const expectedHash =
+    crypto
+      .createHmac(
+        "sha1",
+        PLISIO_SECRET_KEY
+      )
+      .update(
+        stringData,
+        "utf8"
+      )
+      .digest("hex");
+
+  const expectedBuffer =
+    Buffer.from(
+      expectedHash,
+      "utf8"
+    );
+
+  const receivedBuffer =
+    Buffer.from(
+      receivedHash,
+      "utf8"
+    );
+
+  if (
+    expectedBuffer.length !==
+    receivedBuffer.length
+  ) {
+    return false;
+  }
+
+  return crypto.timingSafeEqual(
+    expectedBuffer,
+    receivedBuffer
+  );
+}
 
 app.post(
-  "/api/webhook-cryptomus",
-  express.raw({ type: "application/json" }),
+  "/api/webhook-plisio",
+
+  express.json({
+    limit: "100kb"
+  }),
+
   async (req, res) => {
     try {
-      if (!CRYPTOMUS_PAYMENT_KEY) {
-        console.error("CRYPTOMUS_PAYMENT_KEY is missing");
-        return res.status(500).send("Server configuration error");
-      }
+      const data =
+        req.body;
 
-      const signature = req.headers["sign"];
-
-      if (!signature) {
-        console.error("Missing Cryptomus signature");
-        return res.status(400).send("Missing signature");
-      }
-
-      const body = req.body;
-
-      const expectedSignature = crypto
-        .createHash("md5")
-        .update(
-          Buffer.from(body).toString("base64") +
-            CRYPTOMUS_PAYMENT_KEY
+      if (
+        !verifyPlisioCallback(
+          data
         )
-        .digest("hex");
+      ) {
+        console.error(
+          "Invalid Plisio callback signature"
+        );
 
-      if (signature !== expectedSignature) {
-        console.error("Invalid Cryptomus signature");
-        return res.status(401).send("Invalid signature");
+        return res.status(401).json({
+          error:
+            "Invalid Plisio signature."
+        });
       }
 
-      const data = JSON.parse(body.toString("utf8"));
+      console.log(
+        "Verified Plisio callback:",
+        {
+          txnId:
+            data?.txn_id,
 
-      console.log("Cryptomus webhook received:", data);
+          orderNumber:
+            data?.order_number,
+
+          status:
+            data?.status,
+
+          amount:
+            data?.amount,
+
+          currency:
+            data?.currency
+        }
+      );
+
+      if (
+        data?.status !==
+        "completed"
+      ) {
+        return res.status(200).json({
+          ok: true,
+          received: true,
+          status:
+            data?.status || null
+        });
+      }
+
+      const orderNumber =
+        typeof data?.order_number ===
+        "string"
+          ? data.order_number
+          : "";
+
+      const match =
+        orderNumber.match(
+          /^CVG-([0-9a-fA-F-]{36})-(\d+)$/
+        );
+
+      if (!match) {
+        console.error(
+          "Invalid Plisio order number:",
+          orderNumber
+        );
+
+        return res.status(400).json({
+          error:
+            "Invalid order number."
+        });
+      }
+
+      const userId =
+        match[1];
+
+      const transactionId =
+        typeof data?.txn_id ===
+        "string"
+          ? data.txn_id
+          : "";
+
+      if (!transactionId) {
+        return res.status(400).json({
+          error:
+            "Missing transaction ID."
+        });
+      }
+
+      const description =
+        String(
+          data?.order_name || ""
+        ).toLowerCase();
+
+      let credits = 0;
+      let plan = "";
+
+      if (
+        description.includes(
+          "monthly"
+        )
+      ) {
+        credits =
+          PLISIO_MONTHLY_CREDITS;
+
+        plan =
+          "monthly";
+      } else if (
+        description.includes(
+          "one-time"
+        )
+      ) {
+        credits =
+          PLISIO_ONE_TIME_CREDITS;
+
+        plan =
+          "one-time";
+      }
+
+      if (credits <= 0) {
+        console.error(
+          "Unable to determine Plisio plan:",
+          data
+        );
+
+        return res.status(400).json({
+          error:
+            "Unable to determine payment plan."
+        });
+      }
+
+      const creditResult =
+        await supabaseRequest(
+          "rpc/grant_paid_credits",
+          {
+            method: "POST",
+
+            headers: {
+              Prefer:
+                "return=representation"
+            },
+
+            body:
+              JSON.stringify({
+                p_event_id:
+                  `plisio:${transactionId}`,
+
+                p_user_id:
+                  userId,
+
+                p_credits:
+                  credits,
+
+                p_price_id:
+                  `plisio_${plan}`
+              })
+          }
+        );
+
+      console.log(
+        "Plisio paid credits processed:",
+        {
+          transactionId,
+          userId,
+          plan,
+          credits,
+          result:
+            creditResult
+        }
+      );
 
       return res.status(200).json({
-        success: true
+        ok: true,
+        received: true
       });
+
     } catch (error) {
-      console.error("Cryptomus webhook error:", error);
-      return res.status(500).send("Webhook error");
+      console.error(
+        "Plisio webhook error:",
+        error
+      );
+
+      return res.status(500).json({
+        error:
+          "Webhook processing failed."
+      });
     }
   }
 );
