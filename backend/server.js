@@ -13,14 +13,16 @@ const ALLOWED_ORIGINS = new Set([
   "https://cv-genius-ai-eight.vercel.app"
 ]);
 
-const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
+const RATE_LIMIT_WINDOW_MS =
+  15 * 60 * 1000;
+
 const RATE_LIMIT_MAX = 10;
 
 const FREE_AI_USES = 2;
-const MAX_CV_LENGTH = 15000;
-const MAX_DEVICE_ID_LENGTH = 200;
 
-const PADDLE_TIMESTAMP_TOLERANCE_SECONDS = 300;
+const MAX_CV_LENGTH = 15000;
+
+const MAX_DEVICE_ID_LENGTH = 200;
 
 const GEMINI_MODEL =
   process.env.GEMINI_MODEL ||
@@ -39,22 +41,32 @@ const SUPABASE_SERVICE_ROLE_KEY =
 const GEMINI_API_KEY =
   process.env.GEMINI_API_KEY?.trim();
 
-const PADDLE_WEBHOOK_SECRET =
-  process.env.PADDLE_WEBHOOK_SECRET?.trim();
-
 const IDENTITY_HASH_SECRET =
   process.env.IDENTITY_HASH_SECRET?.trim();
-const PADDLE_PRICE_ID_MONTHLY =
-  process.env.PADDLE_MONTHLY_PRICE_ID?.trim();
 
-const PADDLE_PRICE_ID_ONE_TIME =
-  process.env.PADDLE_ONE_TIME_PRICE_ID?.trim();
+/* =========================================================
+   PLISIO
+========================================================= */
+
+const PLISIO_SECRET_KEY =
+  process.env.PLISIO_SECRET_KEY?.trim();
+
+const PLISIO_MONTHLY_AMOUNT =
+  process.env.PLISIO_MONTHLY_AMOUNT?.trim();
+
+const PLISIO_ONE_TIME_AMOUNT =
+  process.env.PLISIO_ONE_TIME_AMOUNT?.trim();
+
+const PLISIO_MONTHLY_CREDITS = 30;
+
+const PLISIO_ONE_TIME_CREDITS = 60;
 
 /* =========================================================
    BASIC SECURITY
 ========================================================= */
 
 app.set("trust proxy", 1);
+
 app.disable("x-powered-by");
 
 app.use((req, res, next) => {
@@ -111,8 +123,7 @@ app.use(
       "Content-Type",
       "Authorization",
       "apikey",
-      "x-client-info",
-      "Paddle-Signature"
+      "x-client-info"
     ],
 
     optionsSuccessStatus: 204
@@ -120,7 +131,7 @@ app.use(
 );
 
 /* =========================================================
-   CONFIGURATION VALIDATION
+   AI CONFIGURATION VALIDATION
 ========================================================= */
 
 function validateAiConfiguration() {
@@ -149,49 +160,6 @@ function validateAiConfiguration() {
   if (missing.length > 0) {
     console.error(
       "Missing AI environment variables:",
-      missing
-    );
-
-    return false;
-  }
-
-  return true;
-}
-
-function validatePaddleConfiguration() {
-  const missing = [];
-
-  if (!SUPABASE_URL) {
-    missing.push("SUPABASE_URL");
-  }
-
-  if (!SUPABASE_SERVICE_ROLE_KEY) {
-    missing.push(
-      "SUPABASE_SERVICE_ROLE_KEY"
-    );
-  }
-
-  if (!PADDLE_WEBHOOK_SECRET) {
-    missing.push(
-      "PADDLE_WEBHOOK_SECRET"
-    );
-  }
-
-  if (!PADDLE_PRICE_ID_MONTHLY) {
-    missing.push(
-      "PADDLE_PRICE_ID_MONTHLY"
-    );
-  }
-
-  if (!PADDLE_PRICE_ID_ONE_TIME) {
-    missing.push(
-      "PADDLE_PRICE_ID_ONE_TIME"
-    );
-  }
-
-  if (missing.length > 0) {
-    console.error(
-      "Missing Paddle environment variables:",
       missing
     );
 
@@ -302,609 +270,6 @@ function rpcReturnedTrue(result) {
 }
 
 /* =========================================================
-   PADDLE WEBHOOK SIGNATURE
-========================================================= */
-
-function parsePaddleSignature(
-  signatureHeader
-) {
-  if (
-    typeof signatureHeader !==
-    "string"
-  ) {
-    return null;
-  }
-
-  const parts =
-    signatureHeader
-      .split(";")
-      .map(part =>
-        part.trim()
-      );
-
-  let timestamp = "";
-  const signatures = [];
-
-  for (const part of parts) {
-    const separatorIndex =
-      part.indexOf("=");
-
-    if (separatorIndex === -1) {
-      continue;
-    }
-
-    const key =
-      part.slice(
-        0,
-        separatorIndex
-      );
-
-    const value =
-      part.slice(
-        separatorIndex + 1
-      );
-
-    if (key === "ts") {
-      timestamp = value;
-    }
-
-    if (
-      key === "h1" &&
-      value
-    ) {
-      signatures.push(value);
-    }
-  }
-
-  if (
-    !timestamp ||
-    signatures.length === 0
-  ) {
-    return null;
-  }
-
-  return {
-    timestamp,
-    signatures
-  };
-}
-
-function verifyPaddleSignature(
-  rawBody,
-  signatureHeader
-) {
-  if (
-    !PADDLE_WEBHOOK_SECRET ||
-    !rawBody ||
-    !signatureHeader
-  ) {
-    return false;
-  }
-
-  const parsed =
-    parsePaddleSignature(
-      signatureHeader
-    );
-
-  if (!parsed) {
-    return false;
-  }
-
-  const {
-    timestamp,
-    signatures
-  } = parsed;
-
-  const timestampNumber =
-    Number(timestamp);
-
-  if (
-    !Number.isInteger(
-      timestampNumber
-    )
-  ) {
-    return false;
-  }
-
-  const now =
-    Math.floor(
-      Date.now() / 1000
-    );
-
-  const age =
-    Math.abs(
-      now -
-      timestampNumber
-    );
-
-  if (
-    age >
-    PADDLE_TIMESTAMP_TOLERANCE_SECONDS
-  ) {
-    console.error(
-      "Paddle webhook timestamp outside tolerance"
-    );
-
-    return false;
-  }
-
-  const signedPayload =
-    `${timestamp}:${rawBody}`;
-
-  const expectedSignature =
-    crypto
-      .createHmac(
-        "sha256",
-        PADDLE_WEBHOOK_SECRET
-      )
-      .update(
-        signedPayload,
-        "utf8"
-      )
-      .digest("hex");
-
-  const expectedBuffer =
-    Buffer.from(
-      expectedSignature,
-      "utf8"
-    );
-
-  for (
-    const receivedSignature
-    of signatures
-  ) {
-    const receivedBuffer =
-      Buffer.from(
-        receivedSignature,
-        "utf8"
-      );
-
-    if (
-      expectedBuffer.length !==
-      receivedBuffer.length
-    ) {
-      continue;
-    }
-
-    if (
-      crypto.timingSafeEqual(
-        expectedBuffer,
-        receivedBuffer
-      )
-    ) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
-/* =========================================================
-   PADDLE EVENT STORAGE
-========================================================= */
-
-async function savePaddleEvent({
-  eventId,
-  eventType,
-  occurredAt,
-  data
-}) {
-  if (!eventId) {
-    return;
-  }
-
-  await supabaseRequest(
-    "paddle_events",
-    {
-      method: "POST",
-
-      headers: {
-        Prefer:
-          "return=minimal,resolution=ignore-duplicates"
-      },
-
-      body: JSON.stringify({
-        event_id:
-          eventId,
-
-        event_type:
-          eventType,
-
-        occurred_at:
-          occurredAt,
-
-        payload:
-          data
-      })
-    }
-  );
-}
-
-/* =========================================================
-   PADDLE SUBSCRIPTION STORAGE
-========================================================= */
-
-async function savePaddleSubscription(
-  subscription
-) {
-  const subscriptionId =
-    subscription?.id;
-
-  if (
-    typeof subscriptionId !==
-      "string" ||
-    !subscriptionId.startsWith(
-      "sub_"
-    )
-  ) {
-    return;
-  }
-
-  const customerId =
-    subscription?.customer_id ||
-    null;
-
-  const status =
-    subscription?.status ||
-    null;
-
-  const priceId =
-    subscription
-      ?.items?.[0]
-      ?.price?.id ||
-    null;
-
-  await supabaseRequest(
-    "paddle_subscriptions?on_conflict=subscription_id",
-    {
-      method: "POST",
-
-      headers: {
-        Prefer:
-          "resolution=merge-duplicates,return=minimal"
-      },
-
-      body: JSON.stringify({
-        subscription_id:
-          subscriptionId,
-
-        customer_id:
-          customerId,
-
-        status:
-          status,
-
-        price_id:
-          priceId,
-
-        updated_at:
-          new Date().toISOString(),
-
-        raw_data:
-          subscription
-      })
-    }
-  );
-}
-
-/* =========================================================
-   GRANT PAID AI CREDITS
-========================================================= */
-
-async function grantPaidCredits({
-  eventId,
-  userId,
-  priceId
-}) {
-  if (
-    !eventId ||
-    !userId ||
-    !priceId
-  ) {
-    return {
-      granted: false,
-      credits: 0
-    };
-  }
-
-  let credits = 0;
-
-  if (
-    priceId ===
-    PADDLE_PRICE_ID_MONTHLY
-  ) {
-    credits = 30;
-  }
-
-  if (
-    priceId ===
-    PADDLE_PRICE_ID_ONE_TIME
-  ) {
-    credits = 60;
-  }
-
-  if (credits <= 0) {
-    return {
-      granted: false,
-      credits: 0
-    };
-  }
-
-  const result =
-    await supabaseRequest(
-      "rpc/grant_paid_credits",
-      {
-        method: "POST",
-
-        headers: {
-          Prefer:
-            "return=representation"
-        },
-
-        body:
-          JSON.stringify({
-            p_event_id:
-              eventId,
-
-            p_user_id:
-              userId,
-
-            p_credits:
-              credits,
-
-            p_price_id:
-              priceId
-          })
-      }
-    );
-
-  return {
-    granted:
-      rpcReturnedTrue(result),
-
-    credits,
-    result
-  };
-}
-
-/* =========================================================
-   PADDLE WEBHOOK
-   MUST STAY BEFORE express.json()
-========================================================= */
-
-app.post(
-  "/paddle-webhook",
-
-  express.raw({
-    type: "application/json",
-    limit: "1mb"
-  }),
-
-  async (req, res) => {
-    try {
-      if (
-        !validatePaddleConfiguration()
-      ) {
-        return res.status(503).json({
-          error:
-            "Webhook service is not configured."
-        });
-      }
-
-      const signature =
-        req.headers[
-          "paddle-signature"
-        ];
-
-      if (
-        typeof signature !==
-        "string"
-      ) {
-        return res.status(401).json({
-          error:
-            "Invalid Paddle signature."
-        });
-      }
-
-      if (
-        !Buffer.isBuffer(
-          req.body
-        )
-      ) {
-        return res.status(400).json({
-          error:
-            "Invalid webhook body."
-        });
-      }
-
-      const rawBody =
-        req.body.toString(
-          "utf8"
-        );
-
-      if (!rawBody) {
-        return res.status(400).json({
-          error:
-            "Empty webhook body."
-        });
-      }
-
-      if (
-        !verifyPaddleSignature(
-          rawBody,
-          signature
-        )
-      ) {
-        console.error(
-          "Invalid Paddle webhook signature"
-        );
-
-        return res.status(401).json({
-          error:
-            "Invalid Paddle signature."
-        });
-      }
-
-      let event;
-
-      try {
-        event =
-          JSON.parse(rawBody);
-      } catch {
-        return res.status(400).json({
-          error:
-            "Invalid webhook JSON."
-        });
-      }
-
-      const eventType =
-        typeof event?.event_type ===
-        "string"
-          ? event.event_type
-          : "unknown";
-
-      const eventId =
-        typeof event?.event_id ===
-        "string"
-          ? event.event_id
-          : "";
-
-      const occurredAt =
-        event?.occurred_at ||
-        null;
-
-      const data =
-        event?.data ||
-        null;
-
-      console.log(
-        "Paddle webhook verified:",
-        {
-          eventType,
-          eventId,
-          occurredAt
-        }
-      );
-
-      /*
-
- -----------------------------------------------------
-         SAVE EVENT
-      ----------------------------------------------------- */
-
-      if (eventId) {
-        await savePaddleEvent({
-          eventId,
-          eventType,
-          occurredAt,
-          data
-        });
-      }
-
-      /* -----------------------------------------------------
-         SAVE SUBSCRIPTION
-      ----------------------------------------------------- */
-
-      if (
-        data &&
-        typeof data === "object" &&
-        typeof data.id === "string" &&
-        data.id.startsWith("sub_")
-      ) {
-        await savePaddleSubscription(
-          data
-        );
-      }
-
-      /* -----------------------------------------------------
-         GRANT PAID CREDITS
-      ----------------------------------------------------- */
-
-      if (
-        eventType ===
-          "transaction.completed" &&
-        data &&
-        typeof data === "object"
-      ) {
-        const userId =
-          typeof data?.custom_data?.user_id ===
-          "string"
-            ? data.custom_data.user_id.trim()
-            : "";
-
-        const priceId =
-          data
-            ?.items?.[0]
-            ?.price?.id ||
-          "";
-
-        if (
-          userId &&
-          priceId &&
-          eventId
-        ) {
-          const creditResult =
-            await grantPaidCredits({
-              eventId,
-              userId,
-              priceId
-            });
-
-          console.log(
-            "Paid AI credits processed:",
-            {
-              eventId,
-              userId,
-              priceId,
-              credits:
-                creditResult.credits,
-              granted:
-                creditResult.granted
-            }
-          );
-        } else {
-          console.error(
-            "Missing user_id, price_id or event_id"
-          );
-        }
-      }
-
-      return res.status(200).json({
-        ok: true,
-        received: true
-      });
-
-    } catch (error) {
-      console.error(
-        "Paddle webhook error:",
-        error
-      );
-
-      return res.status(500).json({
-        error:
-          "Webhook processing failed."
-      });
-    }
-  }
-);
-
-/* =========================================================
-   PLISIO CONFIGURATION
-========================================================= */
-
-const PLISIO_SECRET_KEY =
-  process.env.PLISIO_SECRET_KEY?.trim();
-
-const PLISIO_MONTHLY_AMOUNT =
-  process.env.PLISIO_MONTHLY_AMOUNT?.trim();
-
-const PLISIO_ONE_TIME_AMOUNT =
-  process.env.PLISIO_ONE_TIME_AMOUNT?.trim();
-
-const PLISIO_MONTHLY_CREDITS = 30;
-const PLISIO_ONE_TIME_CREDITS = 60;
-
-/* =========================================================
    PLISIO CREATE INVOICE
 ========================================================= */
 
@@ -927,19 +292,25 @@ app.post(
         req.headers.authorization || "";
 
       if (
-        !authHeader.startsWith("Bearer ")
+        !authHeader.startsWith(
+          "Bearer "
+        )
       ) {
         return res.status(401).json({
-          error: "Unauthorized"
+          error:
+            "Unauthorized"
         });
       }
 
       const accessToken =
-        authHeader.slice(7).trim();
+        authHeader
+          .slice(7)
+          .trim();
 
       if (!accessToken) {
         return res.status(401).json({
-          error: "Unauthorized"
+          error:
+            "Unauthorized"
         });
       }
 
@@ -971,7 +342,8 @@ app.post(
 
       if (!user?.id) {
         return res.status(401).json({
-          error: "Invalid user"
+          error:
+            "Invalid user"
         });
       }
 
@@ -980,23 +352,35 @@ app.post(
       } = req.body || {};
 
       let sourceAmount;
+
       let credits;
 
-      if (plan === "monthly") {
+      if (
+        plan ===
+        "monthly"
+      ) {
         sourceAmount =
           PLISIO_MONTHLY_AMOUNT;
 
         credits =
           PLISIO_MONTHLY_CREDITS;
+
       } else if (
-        plan === "one-time"
+        plan ===
+        "one-time"
       ) {
         sourceAmount =
           PLISIO_ONE_TIME_AMOUNT;
 
         credits =
           PLISIO_ONE_TIME_CREDITS;
+
       } else {
+        console.error(
+          "Invalid payment plan received:",
+          plan
+        );
+
         return res.status(400).json({
           error:
             "Invalid payment plan."
@@ -1030,10 +414,13 @@ app.post(
 
       const params =
         new URLSearchParams({
-          source_currency: "USD",
+          source_currency:
+            "USD",
 
           source_amount:
-            String(sourceAmount),
+            String(
+              sourceAmount
+            ),
 
           currency:
             "USDT_BSC",
@@ -1045,7 +432,8 @@ app.post(
             orderNumber,
 
           order_name:
-            plan === "monthly"
+            plan ===
+            "monthly"
               ? "CV Genius Monthly"
               : "CV Genius One-Time",
 
@@ -1087,7 +475,8 @@ app.post(
 
       if (
         !response.ok ||
-        data?.status !== "success"
+        data?.status !==
+          "success"
       ) {
         console.error(
           "Plisio invoice creation failed:",
@@ -1100,23 +489,43 @@ app.post(
         });
       }
 
+      const invoiceUrl =
+        data?.data?.invoice_url;
+
+      if (!invoiceUrl) {
+        console.error(
+          "Plisio returned no invoice URL:",
+          data
+        );
+
+        return res.status(502).json({
+          error:
+            "Payment invoice URL was not returned."
+        });
+      }
+
       console.log(
         "Plisio invoice created:",
         {
-          userId: user.id,
+          userId:
+            user.id,
+
           plan,
+
           credits,
+
           orderNumber,
+
           txnId:
             data?.data?.txn_id
         }
       );
 
       return res.status(200).json({
-        success: true,
+        success:
+          true,
 
-        invoiceUrl:
-          data?.data?.invoice_url,
+        invoiceUrl,
 
         transactionId:
           data?.data?.txn_id,
@@ -1141,8 +550,7 @@ app.post(
 );
 
 /* =========================================================
-   PLISIO WEBHOOK
-   MUST STAY BEFORE express.json()
+   PLISIO CALLBACK SIGNATURE
 ========================================================= */
 
 function verifyPlisioCallback(
@@ -1150,7 +558,8 @@ function verifyPlisioCallback(
 ) {
   if (
     !data ||
-    typeof data !== "object" ||
+    typeof data !==
+      "object" ||
     !data.verify_hash ||
     !PLISIO_SECRET_KEY
   ) {
@@ -1158,7 +567,9 @@ function verifyPlisioCallback(
   }
 
   const receivedHash =
-    String(data.verify_hash);
+    String(
+      data.verify_hash
+    );
 
   const ordered = {
     ...data
@@ -1166,18 +577,10 @@ function verifyPlisioCallback(
 
   delete ordered.verify_hash;
 
-  const orderedKeys =
-    Object.keys(ordered).sort();
-
-  const sortedData = {};
-
-  for (const key of orderedKeys) {
-    sortedData[key] =
-      ordered[key];
-  }
-
   const stringData =
-    JSON.stringify(sortedData);
+    JSON.stringify(
+      ordered
+    );
 
   const expectedHash =
     crypto
@@ -1216,14 +619,22 @@ function verifyPlisioCallback(
   );
 }
 
+/* =========================================================
+   PLISIO WEBHOOK
+========================================================= */
+
 app.post(
   "/api/webhook-plisio",
 
   express.json({
-    limit: "100kb"
+    limit:
+      "100kb"
   }),
 
-  async (req, res) => {
+  async (
+    req,
+    res
+  ) => {
     try {
       const data =
         req.body;
@@ -1268,10 +679,15 @@ app.post(
         "completed"
       ) {
         return res.status(200).json({
-          ok: true,
-          received: true,
+          ok:
+            true,
+
+          received:
+            true,
+
           status:
-            data?.status || null
+            data?.status ||
+            null
         });
       }
 
@@ -1316,10 +732,12 @@ app.post(
 
       const description =
         String(
-          data?.order_name || ""
+          data?.order_name ||
+          ""
         ).toLowerCase();
 
       let credits = 0;
+
       let plan = "";
 
       if (
@@ -1332,6 +750,7 @@ app.post(
 
         plan =
           "monthly";
+
       } else if (
         description.includes(
           "one-time"
@@ -1360,7 +779,8 @@ app.post(
         await supabaseRequest(
           "rpc/grant_paid_credits",
           {
-            method: "POST",
+            method:
+              "POST",
 
             headers: {
               Prefer:
@@ -1388,17 +808,24 @@ app.post(
         "Plisio paid credits processed:",
         {
           transactionId,
+
           userId,
+
           plan,
+
           credits,
+
           result:
             creditResult
         }
       );
 
       return res.status(200).json({
-        ok: true,
-        received: true
+        ok:
+          true,
+
+        received:
+          true
       });
 
     } catch (error) {
@@ -1421,7 +848,8 @@ app.post(
 
 app.use(
   express.json({
-    limit: "100kb"
+    limit:
+      "100kb"
   })
 );
 
@@ -1458,7 +886,9 @@ function getClientIp(req) {
   );
 }
 
-function normalizeEmail(email) {
+function normalizeEmail(
+  email
+) {
   if (
     typeof email !==
     "string"
@@ -1472,8 +902,10 @@ function normalizeEmail(email) {
       .toLowerCase();
 
   if (
-    normalized.length === 0 ||
-    normalized.length > 254
+    normalized.length ===
+      0 ||
+    normalized.length >
+      254
   ) {
     return "";
   }
@@ -1495,7 +927,8 @@ function normalizeDeviceId(
     deviceId.trim();
 
   if (
-    normalized.length === 0 ||
+    normalized.length ===
+      0 ||
     normalized.length >
       MAX_DEVICE_ID_LENGTH
   ) {
@@ -1505,7 +938,9 @@ function normalizeDeviceId(
   return normalized;
 }
 
-function extractEmail(text) {
+function extractEmail(
+  text
+) {
   if (
     typeof text !==
     "string"
@@ -1524,6 +959,11 @@ function extractEmail(text) {
       )
     : "";
 }
+
+/* =========================================================
+   RATE LIMIT
+========================================================= */
+
 async function checkRateLimit(
   key
 ) {
@@ -1531,22 +971,28 @@ async function checkRateLimit(
     await supabaseRequest(
       "rpc/check_rate_limit",
       {
-        method: "POST",
+        method:
+          "POST",
 
         headers: {
           Prefer:
             "return=representation"
         },
 
-        body: JSON.stringify({
-          p_key: key,
-          p_window_seconds:
-            Math.floor(
-              RATE_LIMIT_WINDOW_MS / 1000
-            ),
-          p_max_requests:
-            RATE_LIMIT_MAX
-        })
+        body:
+          JSON.stringify({
+            p_key:
+              key,
+
+            p_window_seconds:
+              Math.floor(
+                RATE_LIMIT_WINDOW_MS /
+                  1000
+              ),
+
+            p_max_requests:
+              RATE_LIMIT_MAX
+          })
       }
     );
 
@@ -1571,14 +1017,11 @@ async function checkRateLimit(
 
     retryAfter:
       Number(
-        row.retry_after || 0
+        row.retry_after ||
+          0
       )
   };
 }
-
-/* =========================================================
-   RATE LIMIT
-========================================================= */
 
 async function rateLimit(
   req,
@@ -1597,7 +1040,8 @@ async function rateLimit(
           `rate:${ip}`
         );
     } catch {
-      key = ip;
+      key =
+        ip;
     }
 
     const result =
@@ -1605,7 +1049,9 @@ async function rateLimit(
         key
       );
 
-    if (!result.allowed) {
+    if (
+      !result.allowed
+    ) {
       res.set(
         "Retry-After",
         String(
@@ -1641,140 +1087,7 @@ async function rateLimit(
 }
 
 /* =========================================================
-   BUILD IDENTITIES
-========================================================= */
-
-function getIdentities(
-  req,
-  text
-) {
-  const email =
-    extractEmail(text);
-
-  const ip =
-    getClientIp(req);
-
-  const deviceId =
-    normalizeDeviceId(
-      req.body?.deviceId
-    );
-
-  return {
-    emailHash: email
-      ? hash(
-          `email:${email}`
-        )
-      : "",
-
-    ipHash: ip
-      ? hash(
-          `ip:${ip}`
-        )
-      : "",
-
-    deviceHash: deviceId
-      ? hash(
-          `device:${deviceId}`
-        )
-      : ""
-  };
-}
-
-/* =========================================================
-   FIND PREVIOUS FREE USAGE
-========================================================= */
-
-async function getPreviousUsage(
-  identities
-) {
-  const conditions = [];
-
-  if (
-    identities.emailHash
-  ) {
-    conditions.push(
-      `email_hash.eq.${encodeURIComponent(
-        identities.emailHash
-      )}`
-    );
-  }
-
-  if (
-    identities.ipHash
-  ) {
-    conditions.push(
-      `ip_hash.eq.${encodeURIComponent(
-        identities.ipHash
-      )}`
-    );
-  }
-
-  if (
-    identities.deviceHash
-  ) {
-    conditions.push(
-      `device_hash.eq.${encodeURIComponent(
-        identities.deviceHash
-      )}`
-    );
-  }
-
-  if (
-    conditions.length === 0
-  ) {
-    return [];
-  }
-
-  const query =
-    `ai_usage?select=id,created_at&or=(${conditions.join(",")})&order=created_at.asc`;
-
-  return await supabaseRequest(
-    query,
-    {
-      method: "GET"
-    }
-  );
-}
-
-/* =========================================================
-   SAVE FREE USAGE
-========================================================= */
-
-async function saveUsage(
-  identities
-) {
-  await supabaseRequest(
-    "ai_usage",
-    {
-      method: "POST",
-
-      headers: {
-        Prefer:
-          "return=minimal"
-      },
-
-      body: JSON.stringify({
-        email_hash:
-          identities.emailHash ||
-          null,
-
-        ip_hash:
-          identities.ipHash ||
-          null,
-
-        device_hash:
-          identities.deviceHash ||
-          null,
-
-        action:
-          "improve-cv"
-      })
-    }
-  );
-}
-
-/* =========================================================
-   GET PAID CREDITS
+   PAID CREDITS
 ========================================================= */
 
 async function getPaidCredits(
@@ -1786,29 +1099,41 @@ async function getPaidCredits(
         userId
       )}&limit=1`,
       {
-        method: "GET"
+        method:
+          "GET"
       }
     );
 
   return Number(
-    rows?.[0]?.credits || 0
+    rows?.[0]?.credits ||
+      0
   );
 }
-async function getFreeAiUses(userId) {
+
+/* =========================================================
+   FREE AI USES
+========================================================= */
+
+async function getFreeAiUses(
+  userId
+) {
   const rows =
     await supabaseRequest(
       `ai_usage?select=uses&user_id=eq.${encodeURIComponent(
         userId
-      )}&action=eq.ai_usage&limit=1`,
+      )}&action=eq.improve-cv&limit=1`,
       {
-        method: "GET"
+        method:
+          "GET"
       }
     );
 
   return Number(
-    rows?.[0]?.uses || 0
+    rows?.[0]?.uses ||
+      0
   );
 }
+
 async function incrementFreeAiUsage(
   accessToken
 ) {
@@ -1822,7 +1147,8 @@ async function incrementFreeAiUsage(
     await fetch(
       `${SUPABASE_URL}/rest/v1/rpc/increment_ai_usage`,
       {
-        method: "POST",
+        method:
+          "POST",
 
         headers: {
           apikey:
@@ -1835,7 +1161,8 @@ async function incrementFreeAiUsage(
             "application/json"
         },
 
-        body: "{}"
+        body:
+          "{}"
       }
     );
 
@@ -1849,7 +1176,8 @@ async function incrementFreeAiUsage(
       data =
         JSON.parse(text);
     } catch {
-      data = text;
+      data =
+        text;
     }
   }
 
@@ -1861,6 +1189,7 @@ async function incrementFreeAiUsage(
 
   return Number(data);
 }
+
 /* =========================================================
    PARSE GEMINI RESULT
 ========================================================= */
@@ -1884,7 +1213,9 @@ function parseGeminiResult(
 
   try {
     const parsed =
-      JSON.parse(clean);
+      JSON.parse(
+        clean
+      );
 
     if (
       !parsed ||
@@ -1896,6 +1227,7 @@ function parseGeminiResult(
     }
 
     return parsed;
+
   } catch {
     return null;
   }
@@ -1907,45 +1239,61 @@ function parseGeminiResult(
 
 app.get(
   "/",
-  (req, res) => {
+  (
+    req,
+    res
+  ) => {
     res.status(200).json({
-      ok: true,
+      ok:
+        true,
+
       service:
         "CV Genius AI Backend",
+
       status:
         "running",
+
       model:
         GEMINI_MODEL
     });
   }
 );
+
 /* =========================================================
    PAID CREDITS ENDPOINT
 ========================================================= */
 
 app.get(
   "/paid-credits",
-  async (req, res) => {
-
+  async (
+    req,
+    res
+  ) => {
     try {
-
       const authHeader =
-        req.headers.authorization || "";
+        req.headers.authorization ||
+        "";
 
       if (
-        !authHeader.startsWith("Bearer ")
+        !authHeader.startsWith(
+          "Bearer "
+        )
       ) {
         return res.status(401).json({
-          error: "Unauthorized"
+          error:
+            "Unauthorized"
         });
       }
 
       const accessToken =
-        authHeader.slice(7).trim();
+        authHeader
+          .slice(7)
+          .trim();
 
       if (!accessToken) {
         return res.status(401).json({
-          error: "Unauthorized"
+          error:
+            "Unauthorized"
         });
       }
 
@@ -1953,7 +1301,9 @@ app.get(
         await fetch(
           `${SUPABASE_URL}/auth/v1/user`,
           {
-            method: "GET",
+            method:
+              "GET",
+
             headers: {
               apikey:
                 SUPABASE_SERVICE_ROLE_KEY,
@@ -1964,9 +1314,12 @@ app.get(
           }
         );
 
-      if (!userResponse.ok) {
+      if (
+        !userResponse.ok
+      ) {
         return res.status(401).json({
-          error: "Invalid authentication"
+          error:
+            "Invalid authentication"
         });
       }
 
@@ -1975,7 +1328,8 @@ app.get(
 
       if (!user?.id) {
         return res.status(401).json({
-          error: "Invalid user"
+          error:
+            "Invalid user"
         });
       }
 
@@ -1989,7 +1343,6 @@ app.get(
       });
 
     } catch (error) {
-
       console.error(
         "GET /paid-credits error:",
         error
@@ -1999,10 +1352,10 @@ app.get(
         error:
           "Failed to get paid credits"
       });
-
     }
   }
 );
+
 /* =========================================================
    CV IMPROVEMENT
 ========================================================= */
@@ -2010,7 +1363,10 @@ app.get(
 app.post(
   "/improve-cv",
 
-  async (req, res) => {
+  async (
+    req,
+    res
+  ) => {
     try {
       if (
         !validateAiConfiguration()
@@ -2022,72 +1378,86 @@ app.post(
       }
 
       const {
-  text,
-  language = "ar"
-} =
-  req.body || {};
+        text,
+        language = "ar"
+      } =
+        req.body || {};
 
-/* =====================================================
-   AUTHENTICATE USER
-===================================================== */
+      /* =====================================================
+         AUTHENTICATE USER
+      ===================================================== */
 
-const authHeader =
-  req.headers.authorization || "";
+      const authHeader =
+        req.headers.authorization ||
+        "";
 
-if (
-  !authHeader.startsWith("Bearer ")
-) {
-  return res.status(401).json({
-    error:
-      "جلسة تسجيل الدخول غير صالحة."
-  });
-}
-
-const accessToken =
-  authHeader.slice(7).trim();
-
-if (!accessToken) {
-  return res.status(401).json({
-    error:
-      "جلسة تسجيل الدخول غير صالحة."
-  });
-}
-
-const userResponse =
-  await fetch(
-    `${SUPABASE_URL}/auth/v1/user`,
-    {
-      method: "GET",
-
-      headers: {
-        apikey:
-          SUPABASE_SERVICE_ROLE_KEY,
-
-        Authorization:
-          `Bearer ${accessToken}`
+      if (
+        !authHeader.startsWith(
+          "Bearer "
+        )
+      ) {
+        return res.status(401).json({
+          error:
+            "جلسة تسجيل الدخول غير صالحة."
+        });
       }
-    }
-  );
 
-if (!userResponse.ok) {
-  return res.status(401).json({
-    error:
-      "جلسة تسجيل الدخول غير صالحة."
-  });
-}
+      const accessToken =
+        authHeader
+          .slice(7)
+          .trim();
 
-const authenticatedUser =
-  await userResponse.json();
+      if (!accessToken) {
+        return res.status(401).json({
+          error:
+            "جلسة تسجيل الدخول غير صالحة."
+        });
+      }
 
-if (!authenticatedUser?.id) {
-  return res.status(401).json({
-    error:
-      "جلسة تسجيل الدخول غير صالحة."
-  });
-}
+      const userResponse =
+        await fetch(
+          `${SUPABASE_URL}/auth/v1/user`,
+          {
+            method:
+              "GET",
 
-const cleanUserId =
-  authenticatedUser.id;
+            headers: {
+              apikey:
+                SUPABASE_SERVICE_ROLE_KEY,
+
+              Authorization:
+                `Bearer ${accessToken}`
+            }
+          }
+        );
+
+      if (
+        !userResponse.ok
+      ) {
+        return res.status(401).json({
+          error:
+            "جلسة تسجيل الدخول غير صالحة."
+        });
+      }
+
+      const authenticatedUser =
+        await userResponse.json();
+
+      if (
+        !authenticatedUser?.id
+      ) {
+        return res.status(401).json({
+          error:
+            "جلسة تسجيل الدخول غير صالحة."
+        });
+      }
+
+      const cleanUserId =
+        authenticatedUser.id;
+
+      /* =====================================================
+         VALIDATE INPUT
+      ===================================================== */
 
       if (
         typeof text !==
@@ -2139,18 +1509,18 @@ const cleanUserId =
         });
       }
 
-            /* -----------------------------------------------------
+      /* =====================================================
          FREE USAGE
-      ----------------------------------------------------- */
+      ===================================================== */
 
       const successfulUses =
         await getFreeAiUses(
           cleanUserId
         );
 
-      /* -----------------------------------------------------
+      /* =====================================================
          PAID CREDITS
-      ----------------------------------------------------- */
+      ===================================================== */
 
       let paidCredits;
 
@@ -2159,7 +1529,10 @@ const cleanUserId =
           await getPaidCredits(
             cleanUserId
           );
-      } catch (creditError) {
+
+      } catch (
+        creditError
+      ) {
         console.error(
           "Failed to read paid credits:",
           creditError
@@ -2175,9 +1548,9 @@ const cleanUserId =
         successfulUses >=
         FREE_AI_USES;
 
-      /* -----------------------------------------------------
+      /* =====================================================
          PAYMENT REQUIRED
-      ----------------------------------------------------- */
+      ===================================================== */
 
       if (
         usingPaidCredit &&
@@ -2208,9 +1581,9 @@ const cleanUserId =
         });
       }
 
-      /* -----------------------------------------------------
+      /* =====================================================
          LANGUAGE
-      ----------------------------------------------------- */
+      ===================================================== */
 
       const languageInstruction =
         {
@@ -2224,9 +1597,9 @@ const cleanUserId =
             "Write the result in English."
         }[language];
 
-      /* -----------------------------------------------------
+      /* =====================================================
          PROMPT
-      ----------------------------------------------------- */
+      ===================================================== */
 
       const prompt = `
 أنت مساعد متخصص في تحسين السير الذاتية.
@@ -2290,11 +1663,13 @@ ${cleanText}
       const maxAttempts = 3;
 
       let response = null;
+
       let data = null;
 
       for (
         let attempt = 1;
-        attempt <= maxAttempts;
+        attempt <=
+          maxAttempts;
         attempt++
       ) {
         try {
@@ -2488,7 +1863,8 @@ ${cleanText}
           data =
             await response.json();
         } catch {
-          data = null;
+          data =
+            null;
         }
 
         if (
@@ -2507,7 +1883,6 @@ ${cleanText}
             attempt <
             maxAttempts
           ) {
-            
             continue;
           }
         }
@@ -2580,11 +1955,12 @@ ${cleanText}
         data
           ?.candidates?.[0]
           ?.content?.parts
-          ?.map(part =>
-            typeof part?.text ===
-            "string"
-              ? part.text
-              : ""
+          ?.map(
+            part =>
+              typeof part?.text ===
+              "string"
+                ? part.text
+                : ""
           )
           .join("")
           .trim();
@@ -2609,92 +1985,103 @@ ${cleanText}
       }
 
       /* =====================================================
-   CONSUME CREDIT
-===================================================== */
+         CONSUME CREDIT
+      ===================================================== */
 
-if (usingPaidCredit) {
-  let creditUsed;
+      if (usingPaidCredit) {
+        let creditUsed;
 
-  console.log(
-    "PAID CREDIT DEBUG - BEFORE",
-    {
-      userId: cleanUserId,
-      paidCredits,
-      successfulUses,
-      usingPaidCredit
-    }
-  );
+        console.log(
+          "PAID CREDIT DEBUG - BEFORE",
+          {
+            userId:
+              cleanUserId,
 
-  try {
-    creditUsed =
-      await supabaseRequest(
-        "rpc/use_ai_credit",
-        {
-          method: "POST",
+            paidCredits,
 
-          headers: {
-            Prefer:
-              "return=representation"
-          },
+            successfulUses,
 
-          body:
-            JSON.stringify({
-              p_user_id:
-                cleanUserId
-            })
+            usingPaidCredit
+          }
+        );
+
+        try {
+          creditUsed =
+            await supabaseRequest(
+              "rpc/use_ai_credit",
+              {
+                method:
+                  "POST",
+
+                headers: {
+                  Prefer:
+                    "return=representation"
+                },
+
+                body:
+                  JSON.stringify({
+                    p_user_id:
+                      cleanUserId
+                  })
+              }
+            );
+
+          console.log(
+            "PAID CREDIT DEBUG - RPC RESULT",
+            {
+              userId:
+                cleanUserId,
+
+              creditUsed
+            }
+          );
+
+        } catch (
+          creditError
+        ) {
+          console.error(
+            "Failed to consume paid AI credit:",
+            creditError
+          );
+
+          return res.status(503).json({
+            error:
+              "تعذر خصم رصيد الذكاء الاصطناعي. حاول مرة أخرى."
+          });
         }
-      );
 
-    console.log(
-      "PAID CREDIT DEBUG - RPC RESULT",
-      {
-        userId: cleanUserId,
-        creditUsed
-      }
-    );
+        const creditWasUsed =
+          rpcReturnedTrue(
+            creditUsed
+          );
 
-  } catch (
-    creditError
-  ) {
-    console.error(
-      "Failed to consume paid AI credit:",
-      creditError
-    );
+        console.log(
+          "PAID CREDIT DEBUG - PARSED",
+          {
+            userId:
+              cleanUserId,
 
-    return res.status(503).json({
-      error:
-        "تعذر خصم رصيد الذكاء الاصطناعي. حاول مرة أخرى."
-    });
-  }
+            creditWasUsed
+          }
+        );
 
-  const creditWasUsed =
-    rpcReturnedTrue(
-      creditUsed
-    );
+        if (
+          !creditWasUsed
+        ) {
+          return res.status(402).json({
+            error:
+              "لا يوجد رصيد كافٍ للمتابعة. اختر خطة للمتابعة.",
 
-  console.log(
-    "PAID CREDIT DEBUG - PARSED",
-    {
-      userId: cleanUserId,
-      creditWasUsed
-    }
-  );
+            code:
+              "PAYMENT_REQUIRED",
 
-  if (!creditWasUsed) {
-    return res.status(402).json({
-      error:
-        "لا يوجد رصيد كافٍ للمتابعة. اختر خطة للمتابعة.",
+            requiresPayment:
+              true
+          });
+        }
 
-      code:
-        "PAYMENT_REQUIRED",
+      } else {
 
-      requiresPayment:
-        true
-    });
-  }
-
-} else {
-            
         /* ---------------------------------------------------
            FIRST TWO SUCCESSFUL USES ARE FREE
         --------------------------------------------------- */
@@ -2703,6 +2090,7 @@ if (usingPaidCredit) {
           await incrementFreeAiUsage(
             accessToken
           );
+
         } catch (
           usageError
         ) {
@@ -2762,7 +2150,8 @@ if (usingPaidCredit) {
 
         requiresPayment:
           usingPaidCredit
-            ? remainingPaidCredits <= 0
+            ? remainingPaidCredits <=
+              0
             : newUsageCount >=
               FREE_AI_USES
       });
@@ -2820,3 +2209,5 @@ app.use(
 ========================================================= */
 
 export default app;
+
+ 
