@@ -3298,7 +3298,7 @@ document.body.appendChild(modal);
 
 
 /* =====================================================
-   PADDLE PLAN BUTTONS
+   PLISIO PLAN BUTTONS
 ===================================================== */
 
 const monthlyPlanBtn =
@@ -3306,56 +3306,143 @@ const monthlyPlanBtn =
     'monthly-plan-btn'
   );
 
-
 const oneTimePlanBtn =
   document.getElementById(
     'one-time-plan-btn'
   );
 
 
+async function createPlisioInvoice(plan) {
+
+  const {
+    data: sessionData,
+    error: sessionError
+  } =
+    await supabaseClient.auth.getSession();
+
+
+  if (sessionError) {
+    throw sessionError;
+  }
+
+
+  const accessToken =
+    sessionData?.session?.access_token;
+
+
+  if (!accessToken) {
+
+    alert(
+      'يرجى تسجيل الدخول أولًا.'
+    );
+
+    return;
+
+  }
+
+
+  const response =
+    await fetch(
+      'https://cv-genius-ai-backend.vercel.app/api/create-plisio-invoice',
+      {
+        method: 'POST',
+
+        headers: {
+          'Content-Type':
+            'application/json',
+
+          'Authorization':
+            `Bearer ${accessToken}`
+        },
+
+        body:
+          JSON.stringify({
+            plan
+          })
+      }
+    );
+
+
+  let data = null;
+
+
+  try {
+
+    data =
+      await response.json();
+
+  } catch {
+
+    data =
+      null;
+
+  }
+
+
+  if (!response.ok) {
+
+    throw new Error(
+      data?.error ||
+      'تعذر إنشاء فاتورة الدفع.'
+    );
+
+  }
+
+
+  if (!data?.invoiceUrl) {
+
+    throw new Error(
+      'لم يتم الحصول على رابط الدفع من Plisio.'
+    );
+
+  }
+
+
+  window.location.href =
+    data.invoiceUrl;
+
+}
+
+
 monthlyPlanBtn.addEventListener(
   'click',
   async () => {
 
-    const {
-      data,
-      error
-    } =
-      await supabaseClient.auth.getUser();
+    try {
+
+      monthlyPlanBtn.disabled =
+        true;
+
+      monthlyPlanBtn.textContent =
+        'جارٍ إنشاء الدفع...';
 
 
-    if (
-      error ||
-      !data?.user
-    ) {
-
-      alert(
-        'يرجى تسجيل الدخول أولًا.'
+      await createPlisioInvoice(
+        'monthly'
       );
 
-      return;
+
+    } catch (error) {
+
+      console.error(
+        'Plisio monthly payment error:',
+        error
+      );
+
+
+      alert(
+        error?.message ||
+        'حدث خطأ أثناء إنشاء الدفع.'
+      );
+
+
+      monthlyPlanBtn.disabled =
+        false;
+
+      monthlyPlanBtn.textContent =
+        'اختيار الخطة الشهرية';
 
     }
-
-
-    Paddle.Checkout.open({
-
-      items: [
-        {
-          priceId:
-            PADDLE_PRICE_ID_MONTHLY,
-
-          quantity:
-            1
-        }
-      ],
-
-      customData: {
-        user_id:
-          data.user.id
-        }
-
-    });
 
   }
 );
@@ -3365,51 +3452,44 @@ oneTimePlanBtn.addEventListener(
   'click',
   async () => {
 
-    const {
-      data,
-      error
-    } =
-      await supabaseClient.auth.getUser();
+    try {
+
+      oneTimePlanBtn.disabled =
+        true;
+
+      oneTimePlanBtn.textContent =
+        'جارٍ إنشاء الدفع...';
 
 
-    if (
-      error ||
-      !data?.user
-    ) {
-
-      alert(
-        'يرجى تسجيل الدخول أولًا.'
+      await createPlisioInvoice(
+        'one-time'
       );
 
-      return;
+
+    } catch (error) {
+
+      console.error(
+        'Plisio one-time payment error:',
+        error
+      );
+
+
+      alert(
+        error?.message ||
+        'حدث خطأ أثناء إنشاء الدفع.'
+      );
+
+
+      oneTimePlanBtn.disabled =
+        false;
+
+      oneTimePlanBtn.textContent =
+        'اختيار الخطة';
 
     }
 
-
-    Paddle.Checkout.open({
-
-      items: [
-        {
-          priceId:
-            PADDLE_PRICE_ID_ONE_TIME,
-
-          quantity:
-            1
-        }
-      ],
-
-      customData: {
-        user_id:
-          data.user.id
-        }
-
-    });
-
   }
 );
-
-
-}
       
     /* =========================================================
        AI
