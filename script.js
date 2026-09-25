@@ -1653,7 +1653,7 @@ setText('.free-trial-note span', t('freeTrialText'));
 
       setPlaceholder(
         '#phone',
-        '+213 555 123 456'
+        '+201012345678'
       );
 
 
