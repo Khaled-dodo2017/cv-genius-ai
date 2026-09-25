@@ -178,7 +178,7 @@ const supabaseClient = window.supabase.createClient(
           'الموقع',
 
         locationPlaceholder:
-          'الجزائر، الجزائر',
+          'مصر، مصر',
 
         summary:
           'نبذة مختصرة',
@@ -313,7 +313,7 @@ const supabaseClient = window.supabase.createClient(
           'المؤسسة التعليمية',
 
         schoolPlaceholder:
-          'مثال: جامعة الجزائر',
+          'مثال: جامعة القاهرة',
 
         year:
           'السنة',
@@ -428,7 +428,7 @@ freeTrialText:
           'Localisation',
 
         locationPlaceholder:
-          'Alger, Algérie',
+          'Égypte, Égypte',
 
         summary:
           'Résumé professionnel',
@@ -563,7 +563,7 @@ freeTrialText:
           'Établissement',
 
         schoolPlaceholder:
-          'Exemple : Université d’Alger',
+          'Exemple : Université du caire',
 
         year:
           'Année',
@@ -678,7 +678,7 @@ freeTrialText:
           'Location',
 
         locationPlaceholder:
-          'Algiers, Algeria',
+          'cairo, Egypt',
 
         summary:
           'Professional Summary',
