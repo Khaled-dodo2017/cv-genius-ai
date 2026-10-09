@@ -3,94 +3,166 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>سياسة الخصوصية - CV Genius AI</title>
-
   <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
-  <main class="legal-page">
+<main class="legal-page">
 
-    <h1>سياسة الخصوصية</h1>
+  <h1 id="pageTitle">سياسة الخصوصية</h1>
 
-<p>
-  يُدار CV Genius AI من طرف <strong>Am </strong>
-</p>
+  <p id="managedBy">يُدار CV Genius AI من طرف <strong>Am</strong></p>
 
-    <p>
-      آخر تحديث: 24 أغسطس 2026
-    </p>
+  <p id="updated">آخر تحديث: 24 أغسطس 2026</p>
 
-    <h2>1. المعلومات التي نجمعها</h2>
+  <h2 id="h1">1. المعلومات التي نجمعها</h2>
+  <p id="p1"></p>
 
-    <p>
-      قد نجمع المعلومات التي تقدمها عند إنشاء حساب أو استخدام برنامج CV Genius AI،
-      مثل البريد الإلكتروني ومعلومات السيرة الذاتية التي تقوم بإدخالها.
-    </p>
+  <h2 id="h2">2. كيفية استخدام المعلومات</h2>
+  <p id="p2"></p>
 
-    <h2>2. كيفية استخدام المعلومات</h2>
+  <h2 id="h3">3. محتوى السيرة الذاتية</h2>
+  <p id="p3"></p>
 
-    <p>
-      نستخدم المعلومات لتشغيل أدوات CV Genius AI بشكل أوتوماتيكي،
-      وإدارة حسابك، وتحسين أداء البرنامج،
-      ومعالجة الاستخدامات والاشتراكات عند توفرها.
-    </p>
+  <h2 id="h4">4. المدفوعات</h2>
+  <p id="p4"></p>
 
-    <h2>3. محتوى السيرة الذاتية</h2>
+  <h2 id="h5">5. حماية المعلومات</h2>
+  <p id="p5"></p>
 
-    <p>
-      يتم استخدام محتوى السيرة الذاتية الذي ترسله لتشغيل أدوات
-      الذكاء الاصطناعي في CV Genius AI بشكل أوتوماتيكي.
-      تتم معالجة هذا المحتوى لتوليد أو تحسين محتوى السيرة الذاتية
-      استنادًا إلى المعلومات التي يقدمها المستخدم.
-      نوصي بعدم إدخال معلومات حساسة غير ضرورية.
-    </p>
+  <h2 id="h6">6. مشاركة المعلومات</h2>
+  <p id="p6"></p>
 
-    <h2>4. المدفوعات</h2>
+  <h2 id="h7">7. التواصل معنا</h2>
+  <p id="p7"></p>
 
-    <p>
-      تتم معالجة المدفوعات من خلال مزود دفع خارجي.
-      لا نقوم بتخزين بيانات بطاقتك البنكية على خوادمنا.
-    </p>
+  <p><a href="contact.html" id="contactLink">صفحة اتصل بنا</a></p>
+  <p><a href="index.html" id="homeLink">العودة إلى الصفحة الرئيسية</a></p>
 
-    <h2>5. حماية المعلومات</h2>
+</main>
 
-    <p>
-      نتخذ إجراءات معقولة للمساعدة في حماية المعلومات والحسابات،
-      إلا أنه لا توجد وسيلة نقل أو تخزين إلكتروني آمنة بنسبة 100%.
-    </p>
+<script>
+const content = {
+  ar: {
+    title: "سياسة الخصوصية",
+    managedBy: "يُدار CV Genius AI من طرف",
+    updated: "آخر تحديث: 24 أغسطس 2026",
+    headings: [
+      "1. المعلومات التي نجمعها",
+      "2. كيفية استخدام المعلومات",
+      "3. محتوى السيرة الذاتية",
+      "4. المدفوعات",
+      "5. حماية المعلومات",
+      "6. مشاركة المعلومات",
+      "7. التواصل معنا"
+    ],
+    paragraphs: [
+      "قد نجمع المعلومات التي تقدمها عند إنشاء حساب أو استخدام برنامج CV Genius AI، مثل البريد الإلكتروني ومعلومات السيرة الذاتية التي تقوم بإدخالها.",
+      "نستخدم المعلومات لتشغيل أدوات CV Genius AI بشكل أوتوماتيكي، وإدارة حسابك، وتحسين أداء البرنامج، ومعالجة الاستخدامات والاشتراكات عند توفرها.",
+      "يتم استخدام محتوى السيرة الذاتية الذي ترسله لتشغيل أدوات الذكاء الاصطناعي في CV Genius AI بشكل أوتوماتيكي. تتم معالجة هذا المحتوى لتوليد أو تحسين محتوى السيرة الذاتية استنادًا إلى المعلومات التي يقدمها المستخدم. نوصي بعدم إدخال معلومات حساسة غير ضرورية.",
+      "تتم معالجة المدفوعات من خلال مزود دفع خارجي. لا نقوم بتخزين بيانات بطاقتك البنكية على خوادمنا.",
+      "نتخذ إجراءات معقولة للمساعدة في حماية المعلومات والحسابات، إلا أنه لا توجد وسيلة نقل أو تخزين إلكتروني آمنة بنسبة 100%.",
+      "لا نبيع معلوماتك الشخصية. قد تتم معالجة بعض البيانات بواسطة مزودي خدمات تقنية ضروريين لتشغيل الموقع والبرنامج وأدوات الذكاء الاصطناعي وإدارة الحسابات ومعالجة المدفوعات.",
+      "إذا كان لديك سؤال حول سياسة الخصوصية أو بياناتك، يمكنك التواصل معنا عبر:"
+    ],
+    contact: "صفحة اتصل بنا",
+    home: "العودة إلى الصفحة الرئيسية"
+  },
 
-    <h2>6. مشاركة المعلومات</h2>
+  fr: {
+    title: "Politique de confidentialité",
+    managedBy: "CV Genius AI est géré par",
+    updated: "Dernière mise à jour : 24 août 2026",
+    headings: [
+      "1. Informations collectées",
+      "2. Utilisation des informations",
+      "3. Contenu du CV",
+      "4. Paiements",
+      "5. Protection des informations",
+      "6. Partage des informations",
+      "7. Nous contacter"
+    ],
+    paragraphs: [
+      "Nous pouvons collecter les informations que vous fournissez lors de la création d’un compte ou de l’utilisation de CV Genius AI, telles que votre adresse e-mail et les informations de CV que vous saisissez.",
+      "Nous utilisons ces informations pour faire fonctionner automatiquement les outils de CV Genius AI, gérer votre compte, améliorer les performances du logiciel et traiter les utilisations et abonnements lorsqu’ils sont disponibles.",
+      "Le contenu du CV que vous soumettez est utilisé automatiquement par les outils d’intelligence artificielle de CV Genius AI. Ce contenu est traité afin de générer ou d’améliorer le CV à partir des informations fournies par l’utilisateur. Nous vous recommandons de ne pas saisir d’informations sensibles inutiles.",
+      "Les paiements sont traités par un prestataire de paiement externe. Nous ne stockons pas les données de votre carte bancaire sur nos serveurs.",
+      "Nous prenons des mesures raisonnables pour contribuer à protéger les informations et les comptes. Toutefois, aucun moyen de transmission ou de stockage électronique n’est sécurisé à 100 %.",
+      "Nous ne vendons pas vos informations personnelles. Certaines données peuvent être traitées par des prestataires techniques nécessaires au fonctionnement du site, du logiciel et des outils d’intelligence artificielle, à la gestion des comptes et au traitement des paiements.",
+      "Si vous avez une question concernant la politique de confidentialité ou vos données, vous pouvez nous contacter via :"
+    ],
+    contact: "Page de contact",
+    home: "Retour à la page d’accueil"
+  },
 
-    <p>
-      لا نبيع معلوماتك الشخصية.
-      قد تتم معالجة بعض البيانات بواسطة مزودي خدمات تقنية ضروريين
-      لتشغيل الموقع والبرنامج وأدوات الذكاء الاصطناعي وإدارة الحسابات
-      ومعالجة المدفوعات.
-    </p>
+  en: {
+    title: "Privacy Policy",
+    managedBy: "CV Genius AI is managed by",
+    updated: "Last updated: August 24, 2026",
+    headings: [
+      "1. Information We Collect",
+      "2. How We Use Information",
+      "3. Resume Content",
+      "4. Payments",
+      "5. Information Security",
+      "6. Sharing Information",
+      "7. Contact Us"
+    ],
+    paragraphs: [
+      "We may collect information you provide when creating an account or using CV Genius AI, such as your email address and the resume information you enter.",
+      "We use this information to operate CV Genius AI tools automatically, manage your account, improve software performance, and process usage and subscriptions when available.",
+      "The resume content you submit is automatically used by CV Genius AI's artificial intelligence tools. This content is processed to generate or improve resume content based on the information provided by the user. We recommend that you do not enter unnecessary sensitive information.",
+      "Payments are processed by an external payment provider. We do not store your bank card details on our servers.",
+      "We take reasonable measures to help protect information and accounts. However, no method of electronic transmission or storage is 100% secure.",
+      "We do not sell your personal information. Some data may be processed by technical service providers necessary to operate the website, software, and AI tools, manage accounts, and process payments.",
+      "If you have a question about this Privacy Policy or your data, you can contact us through:"
+    ],
+    contact: "Contact page",
+    home: "Back to homepage"
+  }
+};
 
-    <h2>7. التواصل معنا</h2>
+function applyPrivacyLanguage() {
+  let saved = "ar";
 
-    <p>
-      إذا كان لديك سؤال حول سياسة الخصوصية أو بياناتك،
-      يمكنك التواصل معنا عبر:
-    </p>
+  try {
+    saved = localStorage.getItem("cvGeniusAI_language") || "ar";
+  } catch (error) {
+    saved = "ar";
+  }
 
-    <p>
-      <a href="contact.html">
-        صفحة اتصل بنا
-      </a>
-    </p>
+  const lang = ["ar", "fr", "en"].includes(saved) ? saved : "ar";
+  const data = content[lang];
 
-    <p>
-      <a href="index.html">
-        العودة إلى الصفحة الرئيسية
-      </a>
-    </p>
+  document.documentElement.lang = lang;
+  document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
 
-  </main>
+  document.getElementById("pageTitle").textContent = data.title;
+
+  const managedBy = document.getElementById("managedBy");
+  managedBy.replaceChildren(
+    document.createTextNode(data.managedBy + " "),
+    Object.assign(document.createElement("strong"), { textContent: "Am" })
+  );
+
+  document.title = data.title + " - CV Genius AI";
+  document.getElementById("updated").textContent = data.updated;
+
+  data.headings.forEach((text, i) => {
+    document.getElementById("h" + (i + 1)).textContent = text;
+  });
+
+  data.paragraphs.forEach((text, i) => {
+    document.getElementById("p" + (i + 1)).textContent = text;
+  });
+
+  document.getElementById("contactLink").textContent = data.contact;
+  document.getElementById("homeLink").textContent = data.home;
+}
+
+applyPrivacyLanguage();
+</script>
 
 </body>
 </html>
