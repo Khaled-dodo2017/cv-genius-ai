@@ -356,6 +356,23 @@ freeTrialTitle:
 
 freeTrialText:
   'لديك تجربتان مجانيتان لاستخدام الذكاء الاصطناعي. بعد ذلك يمكنك اختيار شراء الخطة المناسبة لك للمتابعة.',
+accountTitle: 'حسابي',
+        emailAddress: 'البريد الإلكتروني',
+        password: 'كلمة المرور',
+        createAccount: 'إنشاء حساب',
+        login: 'تسجيل الدخول',
+        notLoggedIn: 'لم يتم تسجيل الدخول.',
+        terms: 'الشروط والأحكام',
+        privacy: 'سياسة الخصوصية',
+        policy: 'سياسة',
+        refund: 'الاسترجاع',
+        contactUs: 'اتصل بنا',
+        copyright: 'جميع الحقوق محفوظة',
+        projectOwner: 'صاحب المشروع:',
+        plansTitle: 'الخطط والأسعار',
+        monthlyPlan: 'الخطة الشهرية:',
+        oneTimePlan: 'الخطة لمرة واحدة:',
+        month: 'شهر',
 
         aiEmpty:
           'لم يتم الحصول على نتيجة من الذكاء الاصطناعي.'
@@ -366,6 +383,23 @@ freeTrialText:
 
         direction:
           'ltr',
+accountTitle: 'Mon compte',
+        emailAddress: 'Adresse e-mail',
+        password: 'Mot de passe',
+        createAccount: 'Créer un compte',
+        login: 'Se connecter',
+        notLoggedIn: 'Vous n’êtes pas connecté.',
+        terms: 'Conditions générales',
+        privacy: 'Politique de confidentialité',
+        policy: 'Politique',
+        refund: 'Remboursement',
+        contactUs: 'Contactez-nous',
+        copyright: 'Tous droits réservés',
+        projectOwner: 'Propriétaire du projet :',
+        plansTitle: 'Offres et tarifs',
+        monthlyPlan: 'Abonnement mensuel :',
+        oneTimePlan: 'Offre unique :',
+        month: 'mois',
 
         pageTitle:
           'CV Genius AI — Créateur de CV',
