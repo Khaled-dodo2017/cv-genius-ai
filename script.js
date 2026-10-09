@@ -2217,66 +2217,130 @@ setText('.free-trial-note span', t('freeTrialText'));
 
     }
 
-/* =========================================================
-   TRANSLATE ACCOUNT AND PRICING TEXT
-========================================================= */
 
 function translateAccountAndPricing() {
-  const keys = {
-    'حسابي': 'accountTitle',
-    'البريد الإلكتروني': 'emailAddress',
-    'كلمة المرور': 'password',
-    'إنشاء حساب': 'createAccount',
-    'تسجيل الدخول': 'login',
-    'لم يتم تسجيل الدخول.': 'notLoggedIn',
-    'الشروط والأحكام': 'terms',
-    'سياسة الخصوصية': 'privacy',
-    'سياسة': 'policy',
-    'الاسترجاع': 'refund',
-    'اتصل بنا': 'contactUs',
-    'جميع الحقوق محفوظة': 'copyright',
-    'صاحب المشروع:': 'projectOwner',
-    'الخطط والأسعار': 'plansTitle',
-    'الخطة الشهرية:': 'monthlyPlan',
-    'الخطة لمرة واحدة:': 'oneTimePlan',
-    'شهر': 'month'
-  };
-
   const language = translations[currentLanguage];
   if (!language) return;
 
-  const walker = document.createTreeWalker(
-    document.body,
-    NodeFilter.SHOW_TEXT
-  );
+  const translationsMap = {
+    'حسابي': 'accountTitle',
+    'My Account': 'accountTitle',
+    'Mon compte': 'accountTitle',
 
-  let node;
+    'البريد الإلكتروني': 'emailAddress',
+    'Adresse e-mail': 'emailAddress',
+    'Email Address': 'emailAddress',
 
-  while ((node = walker.nextNode())) {
-    const parent = node.parentElement;
+    'كلمة المرور': 'password',
+    'Mot de passe': 'password',
+    'Password': 'password',
+
+    'إنشاء حساب': 'createAccount',
+    'Créer un compte': 'createAccount',
+    'Create Account': 'createAccount',
+
+    'تسجيل الدخول': 'login',
+    'Se connecter': 'login',
+    'Log In': 'login',
+
+    'لم يتم تسجيل الدخول.': 'notLoggedIn',
+    'Vous n’êtes pas connecté.': 'notLoggedIn',
+    'You are not logged in.': 'notLoggedIn',
+
+    'الشروط والأحكام': 'terms',
+    'Conditions générales': 'terms',
+    'Terms and Conditions': 'terms',
+
+    'سياسة الخصوصية': 'privacy',
+    'Politique de confidentialité': 'privacy',
+    'Privacy Policy': 'privacy',
+
+    'اتصل بنا': 'contactUs',
+    'Contactez-nous': 'contactUs',
+    'Contact Us': 'contactUs',
+
+    'جميع الحقوق محفوظة': 'copyright',
+    'Tous droits réservés': 'copyright',
+    'All rights reserved': 'copyright',
+
+    'صاحب المشروع:': 'projectOwner',
+    'Propriétaire du projet :': 'projectOwner',
+    'Project Owner:': 'projectOwner',
+
+    'الخطط والأسعار': 'plansTitle',
+    'Offres et tarifs': 'plansTitle',
+    'Plans and Pricing': 'plansTitle',
+
+    'الخطة الشهرية:': 'monthlyPlan',
+    'Abonnement mensuel :': 'monthlyPlan',
+    'Monthly Plan:': 'monthlyPlan',
+
+    'الخطة لمرة واحدة:': 'oneTimePlan',
+    'Offre unique :': 'oneTimePlan',
+    'One-Time Plan:': 'oneTimePlan',
+
+    'شهر': 'month',
+    'mois': 'month'
+  };
+
+  // ترجمة النصوص الظاهرة
+  document.querySelectorAll('body *').forEach(element => {
+    if (element.children.length > 0) return;
 
     if (
-      !parent ||
-      parent.closest('script, style, textarea, input, select, option')
-    ) {
-      continue;
+      element.closest('script, style, textarea')
+    ) return;
+
+    if (!element.dataset.originalText) {
+      element.dataset.originalText =
+        element.textContent;
     }
 
-    if (node.__cvOriginalText === undefined) {
-      node.__cvOriginalText = node.nodeValue;
-    }
+    let text = element.dataset.originalText;
 
-    let text = node.__cvOriginalText;
-
-    for (const [arabic, key] of Object.entries(keys)) {
-      if (language[key]) {
-        text = text.split(arabic).join(language[key]);
+    for (const [original, key] of Object.entries(translationsMap)) {
+      if (text.includes(original) && language[key]) {
+        text = text.split(original).join(language[key]);
       }
     }
 
-    node.nodeValue = text;
-  }
+    element.textContent = text;
+  });
+
+  // ترجمة حقول الإدخال والأزرار
+  document.querySelectorAll('input, button').forEach(element => {
+    const placeholderKey = {
+      'البريد الإلكتروني': 'emailAddress',
+      'Email Address': 'emailAddress',
+      'Adresse e-mail': 'emailAddress',
+      'كلمة المرور': 'password',
+      'Password': 'password',
+      'Mot de passe': 'password'
+    };
+
+    if (element.placeholder && placeholderKey[element.placeholder]) {
+      element.placeholder = language[placeholderKey[element.placeholder]];
+    }
+
+    const valueKey = {
+      'إنشاء حساب': 'createAccount',
+      'Create Account': 'createAccount',
+      'Créer un compte': 'createAccount',
+      'تسجيل الدخول': 'login',
+      'Log In': 'login',
+      'Se connecter': 'login'
+    };
+
+    if (element.value && valueKey[element.value]) {
+      element.value = language[valueKey[element.value]];
+    }
+
+    if (element.textContent && valueKey[element.textContent.trim()]) {
+      element.textContent = language[valueKey[element.textContent.trim()]];
+    }
+  });
 }
+
 
     /* =========================================================
        EXPERIENCE
