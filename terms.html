@@ -157,8 +157,7 @@ const content = {
   }
 };
 
-function applyTermsLanguage() {
-  const saved = localStorage.getItem("language");
+  const saved = localStorage.getItem("cvGeniusAI_language");
   const lang = ["ar", "fr", "en"].includes(saved) ? saved : "ar";
   const data = content[lang];
 
