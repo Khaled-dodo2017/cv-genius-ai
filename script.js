@@ -1067,7 +1067,7 @@ async function getCurrentUser() {
       if (!email || !password) {
 
         showAuthStatus(
-          'أدخل البريد الإلكتروني وكلمة المرور.'
+          t('enterCredentials')
         );
 
         return;
@@ -1124,7 +1124,7 @@ async function getCurrentUser() {
       if (!email || !password) {
 
         showAuthStatus(
-          'أدخل البريد الإلكتروني وكلمة المرور.'
+          t('enterCredentials')
         );
 
         return;
