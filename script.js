@@ -650,6 +650,23 @@ accountTitle: 'Mon compte',
 
         direction:
           'ltr',
+accountTitle: 'My Account',
+    emailAddress: 'Email Address',
+    password: 'Password',
+    createAccount: 'Create Account',
+    login: 'Log In',
+    notLoggedIn: 'You are not logged in.',
+    terms: 'Terms and Conditions',
+    privacy: 'Privacy Policy',
+    policy: 'Policy',
+    refund: 'Refund Policy',
+    contactUs: 'Contact Us',
+    copyright: 'All rights reserved',
+    projectOwner: 'Project Owner:',
+    plansTitle: 'Plans and Pricing',
+    monthlyPlan: 'Monthly Plan:',
+    oneTimePlan: 'One-Time Plan:',
+    month: 'month',
 
         pageTitle:
           'CV Genius AI — Resume Builder',
