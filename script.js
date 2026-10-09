@@ -922,12 +922,11 @@ enterCredentials: 'Enter your email address and password.',
     ========================================================= */
 
     let currentLanguage =
-      localStorage.getItem('cvGeniusAI_language') || 'ar';
+  localStorage.getItem('cvGeniusAI_language') || 'en';
 
-    if (!translations[currentLanguage]) {
-      currentLanguage = 'ar';
-    }
-
+if (!translations[currentLanguage]) {
+  currentLanguage = 'en';
+}
 
     function t(key) {
 
