@@ -3,58 +3,145 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>اتصل بنا - CV Genius AI</title>
-
   <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
+<main class="legal-page">
 
-  <main class="legal-page">
+  <h1 id="pageTitle">اتصل بنا</h1>
 
-    <h1>اتصل بنا</h1>
+  <p id="managedBy">
+    يُدار CV Genius AI من طرف <strong>Am</strong>
+  </p>
 
-<p>
-  يُدار CV Genius AI من طرف <strong>Am </strong>
-</p>
+  <p id="intro">
+    نحن هنا لمساعدتك في أي سؤال أو مشكلة تتعلق باستخدام برنامج CV Genius AI.
+  </p>
 
-   <p>
-  نحن هنا لمساعدتك في أي سؤال أو مشكلة تتعلق باستخدام برنامج CV Genius AI.
-</p>
+  <h2 id="h1">الدعم الفني</h2>
 
-    <h2>الدعم الفني</h2>
+  <p id="p1">
+    إذا واجهت مشكلة في استخدام الموقع أو تسجيل الدخول أو توليد السيرة الذاتية،
+    يمكنك التواصل معنا عبر البريد الإلكتروني:
+  </p>
 
-    <p>
-      إذا واجهت مشكلة في استخدام الموقع أو تسجيل الدخول أو توليد السيرة الذاتية،
-      يمكنك التواصل معنا عبر البريد الإلكتروني:
-    </p>
+  <p>
+    <a href="mailto:support.cvgeniusai@gmail.com">
+      support.cvgeniusai@gmail.com
+    </a>
+  </p>
 
-    <p>
-      <a href="mailto:support.cvgeniusai@gmail.com">
-        support.cvgeniusai@gmail.com
-      </a>
-    </p>
+  <h2 id="h2">مشاكل الدفع والرصيد</h2>
 
-    <h2>مشاكل الدفع والرصيد</h2>
+  <p id="p2">
+    إذا قمت بعملية دفع ولم يظهر رصيد الذكاء الاصطناعي في حسابك،
+    يرجى التواصل معنا مع ذكر البريد الإلكتروني المستخدم في الحساب
+    وتفاصيل العملية.
+  </p>
 
-    <p>
-      إذا قمت بعملية دفع ولم يظهر رصيد الذكاء الاصطناعي في حسابك،
-      يرجى التواصل معنا مع ذكر البريد الإلكتروني المستخدم في الحساب
-      وتفاصيل العملية.
-    </p>
+  <p id="p3">
+    سنعمل على مراجعة طلبك والرد عليك في أقرب وقت ممكن.
+  </p>
 
-    <p>
-      سنعمل على مراجعة طلبك والرد عليك في أقرب وقت ممكن.
-    </p>
+  <p>
+    <a href="index.html" id="homeLink">العودة إلى الصفحة الرئيسية</a>
+  </p>
 
-    <p>
-      <a href="index.html">
-        العودة إلى الصفحة الرئيسية
-      </a>
-    </p>
+</main>
 
-  </main>
+<script>
+const content = {
+  ar: {
+    title: "اتصل بنا",
+    managedBy: "يُدار CV Genius AI من طرف",
+    intro: "نحن هنا لمساعدتك في أي سؤال أو مشكلة تتعلق باستخدام برنامج CV Genius AI.",
+    headings: [
+      "الدعم الفني",
+      "مشاكل الدفع والرصيد"
+    ],
+    paragraphs: [
+      "إذا واجهت مشكلة في استخدام الموقع أو تسجيل الدخول أو توليد السيرة الذاتية، يمكنك التواصل معنا عبر البريد الإلكتروني:",
+      "إذا قمت بعملية دفع ولم يظهر رصيد الذكاء الاصطناعي في حسابك، يرجى التواصل معنا مع ذكر البريد الإلكتروني المستخدم في الحساب وتفاصيل العملية.",
+      "سنعمل على مراجعة طلبك والرد عليك في أقرب وقت ممكن."
+    ],
+    home: "العودة إلى الصفحة الرئيسية"
+  },
+
+  fr: {
+    title: "Contactez-nous",
+    managedBy: "CV Genius AI est géré par",
+    intro: "Nous sommes là pour vous aider si vous avez des questions ou des problèmes liés à l’utilisation de CV Genius AI.",
+    headings: [
+      "Assistance technique",
+      "Problèmes de paiement et de crédits"
+    ],
+    paragraphs: [
+      "Si vous rencontrez un problème lors de l’utilisation du site, de la connexion ou de la génération de votre CV, vous pouvez nous contacter par e-mail :",
+      "Si un paiement a été effectué mais que vos crédits d’intelligence artificielle n’apparaissent pas dans votre compte, veuillez nous contacter en indiquant l’adresse e-mail associée à votre compte et les détails de la transaction.",
+      "Nous examinerons votre demande et vous répondrons dans les meilleurs délais."
+    ],
+    home: "Retour à la page d’accueil"
+  },
+
+  en: {
+    title: "Contact Us",
+    managedBy: "CV Genius AI is managed by",
+    intro: "We are here to help with any questions or issues related to using CV Genius AI.",
+    headings: [
+      "Technical Support",
+      "Payment and Credit Issues"
+    ],
+    paragraphs: [
+      "If you experience a problem using the website, signing in, or generating your resume, you can contact us by email:",
+      "If you made a payment but your AI credits do not appear in your account, please contact us with the email address associated with your account and the transaction details.",
+      "We will review your request and respond as soon as possible."
+    ],
+    home: "Back to homepage"
+  }
+};
+
+function applyContactLanguage() {
+  let saved = "ar";
+
+  try {
+    saved = localStorage.getItem("cvGeniusAI_language") || "ar";
+  } catch (error) {
+    saved = "ar";
+  }
+
+  const lang = ["ar", "fr", "en"].includes(saved) ? saved : "ar";
+  const data = content[lang];
+
+  document.documentElement.lang = lang;
+  document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+
+  document.getElementById("pageTitle").textContent = data.title;
+  document.title = data.title + " - CV Genius AI";
+  document.getElementById("intro").textContent = data.intro;
+
+  const managedBy = document.getElementById("managedBy");
+  managedBy.replaceChildren(
+    document.createTextNode(data.managedBy + " "),
+    Object.assign(document.createElement("strong"), {
+      textContent: "Am"
+    })
+  );
+
+  data.headings.forEach((text, i) => {
+    document.getElementById("h" + (i + 1)).textContent = text;
+  });
+
+  data.paragraphs.forEach((text, i) => {
+    document.getElementById("p" + (i + 1)).textContent = text;
+  });
+
+  document.getElementById("homeLink").textContent = data.home;
+}
+
+applyContactLanguage();
+</script>
 
 </body>
 </html>
