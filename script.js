@@ -3379,7 +3379,7 @@ console.log(
               white-space:nowrap;
             ">
         
-    $4.99 / ${t('month')}
+    <div>$4.99 / ${t('month')}</div>
 
     </strong>
 
