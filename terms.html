@@ -156,8 +156,32 @@ const content = {
     home: "Back to homepage"
   }
 };
-
+function applyTermsLanguage() {
   const saved = localStorage.getItem("cvGeniusAI_language");
+  const lang = ["ar", "fr", "en"].includes(saved) ? saved : "ar";
+  const data = content[lang];
+
+  document.documentElement.lang = lang;
+  document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+
+  document.getElementById("pageTitle").textContent = data.title;
+  document.title = data.title + " - CV Genius AI";
+  document.getElementById("updated").textContent = data.updated;
+
+  data.headings.forEach((text, i) => {
+    document.getElementById("h" + (i + 1)).textContent = text;
+  });
+
+  data.paragraphs.forEach((text, i) => {
+    document.getElementById("p" + (i + 1)).textContent = text;
+  });
+
+  document.getElementById("contactLink").textContent = data.contact;
+  document.getElementById("homeLink").textContent = data.home;
+}
+
+applyTermsLanguage();
+  
   const lang = ["ar", "fr", "en"].includes(saved) ? saved : "ar";
   const data = content[lang];
 
