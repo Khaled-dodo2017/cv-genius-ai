@@ -1226,6 +1226,7 @@ async function getCurrentUser() {
           `تم تسجيل الدخول: ${user.email}`
         );
 
+      
       } else {
 
         if (signupBtn)
@@ -1237,11 +1238,19 @@ async function getCurrentUser() {
         if (logoutBtn)
           logoutBtn.hidden = true;
 
+        const loginStatusMessages = {
+          ar: 'لم يتم تسجيل الدخول.',
+          fr: 'Vous n’êtes pas connecté.',
+          en: 'You are not logged in.'
+        };
+
         showAuthStatus(
-          'لم يتم تسجيل الدخول.'
+          loginStatusMessages[currentLanguage] ||
+          loginStatusMessages.ar
         );
 
       }
+
 
     }
 
