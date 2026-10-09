@@ -2165,6 +2165,66 @@ setText('.free-trial-note span', t('freeTrialText'));
 
     }
 
+/* =========================================================
+   TRANSLATE ACCOUNT AND PRICING TEXT
+========================================================= */
+
+function translateAccountAndPricing() {
+  const keys = {
+    'حسابي': 'accountTitle',
+    'البريد الإلكتروني': 'emailAddress',
+    'كلمة المرور': 'password',
+    'إنشاء حساب': 'createAccount',
+    'تسجيل الدخول': 'login',
+    'لم يتم تسجيل الدخول.': 'notLoggedIn',
+    'الشروط والأحكام': 'terms',
+    'سياسة الخصوصية': 'privacy',
+    'سياسة': 'policy',
+    'الاسترجاع': 'refund',
+    'اتصل بنا': 'contactUs',
+    'جميع الحقوق محفوظة': 'copyright',
+    'صاحب المشروع:': 'projectOwner',
+    'الخطط والأسعار': 'plansTitle',
+    'الخطة الشهرية:': 'monthlyPlan',
+    'الخطة لمرة واحدة:': 'oneTimePlan',
+    'شهر': 'month'
+  };
+
+  const language = translations[currentLanguage];
+  if (!language) return;
+
+  const walker = document.createTreeWalker(
+    document.body,
+    NodeFilter.SHOW_TEXT
+  );
+
+  let node;
+
+  while ((node = walker.nextNode())) {
+    const parent = node.parentElement;
+
+    if (
+      !parent ||
+      parent.closest('script, style, textarea, input, select, option')
+    ) {
+      continue;
+    }
+
+    if (node.__cvOriginalText === undefined) {
+      node.__cvOriginalText = node.nodeValue;
+    }
+
+    let text = node.__cvOriginalText;
+
+    for (const [arabic, key] of Object.entries(keys)) {
+      if (language[key]) {
+        text = text.split(arabic).join(language[key]);
+      }
+    }
+
+    node.nodeValue = text;
+  }
+}
 
     /* =========================================================
        EXPERIENCE
