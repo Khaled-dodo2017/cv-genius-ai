@@ -2319,6 +2319,24 @@ function translateAccountAndPricing() {
 
     element.textContent = text;
   });
+  // ترجمة روابط صفحات الموقع
+  const footerLinks = {
+    'terms.html': 'terms',
+    'privacy.html': 'privacy',
+    'refund.html': 'refund',
+    'contact.html': 'contactUs'
+  };
+
+  document.querySelectorAll('a[href]').forEach(link => {
+    const href = link.getAttribute('href') || '';
+    const key = Object.keys(footerLinks).find(page =>
+      href.includes(page)
+    );
+
+    if (key && language[footerLinks[key]]) {
+      link.textContent = language[footerLinks[key]];
+    }
+  });
 
   // ترجمة حقول الإدخال والأزرار
   document.querySelectorAll('input, button').forEach(element => {
