@@ -1900,6 +1900,7 @@ setText('.free-trial-note span', t('freeTrialText'));
 
       translateExistingEntries();
 
+      translateAccountAndPricing();
     }
 
 
