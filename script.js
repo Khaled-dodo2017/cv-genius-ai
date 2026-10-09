@@ -2255,6 +2255,10 @@ function translateAccountAndPricing() {
     'Politique de confidentialité': 'privacy',
     'Privacy Policy': 'privacy',
 
+    'سياسة الاسترجاع': 'refund',
+    'Politique de remboursement': 'refund',
+    'Refund Policy': 'refund',
+
     'اتصل بنا': 'contactUs',
     'Contactez-nous': 'contactUs',
     'Contact Us': 'contactUs',
