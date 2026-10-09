@@ -2293,10 +2293,8 @@ function translateAccountAndPricing() {
     'الخطة لمرة واحدة:': 'oneTimePlan',
     'Offre unique :': 'oneTimePlan',
     'One-Time Plan:': 'oneTimePlan',
-
-    'شهر': 'month',
-    'mois': 'month'
-  };
+     'شهر': 'month'
+      };
 
   // ترجمة النصوص الظاهرة
   document.querySelectorAll('body *').forEach(element => {
@@ -3380,7 +3378,9 @@ console.log(
               font-size:22px;
               white-space:nowrap;
             ">
-    $4.99 / شهر     
+        
+    $4.99 / ${t('month')}
+
     </strong>
 
           </div>
