@@ -2320,27 +2320,6 @@ function translateAccountAndPricing() {
     element.textContent = text;
   });
 
-  // تصحيح ترجمة كلمة شهر في الأسعار
-  document.querySelectorAll('body *').forEach(element => {
-    if (element.children.length > 0) return;
-    if (element.closest('script, style, textarea')) return;
-
-    const text = element.textContent;
-    if (!text || !text.includes(' / شهر')) return;
-
-    const monthLabel = {
-      ar: 'شهر',
-      fr: 'mois',
-      en: 'month'
-    };
-
-    const label = monthLabel[currentLanguage];
-    if (label) {
-      element.textContent = text.replace(/\/\s*شهر/g, `/ ${label}`);
-      element.dataset.originalText = element.textContent;
-    }
-  });
-
   // ترجمة حقول الإدخال والأزرار
   document.querySelectorAll('input, button').forEach(element => {
     const placeholderKey = {
