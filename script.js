@@ -3212,128 +3212,97 @@ async function getAIUsage() {
 /* =========================================================
    PAID CREDITS
 ========================================================= */
-
 async function getPaidCredits() {
+
   const {
     data: sessionData,
     error: sessionError
-  } = await supabaseClient.auth.getSession();
+  } =
+    await supabaseClient.auth.getSession();
+
 
   if (sessionError) {
     throw sessionError;
   }
 
+
   const accessToken =
     sessionData?.session?.access_token;
+console.log(
+  "ACCESS TOKEN EXISTS:",
+  !!accessToken
+);
+
+console.log(
+  "SESSION EXISTS:",
+  !!sessionData?.session
+);
 
   if (!accessToken) {
     return 0;
   }
 
-  const response = await fetch(
+
+  const response =
+  await fetch(
     'https://cv-genius-ai-backend.vercel.app/paid-credits',
     {
       method: 'GET',
+
       headers: {
-        Authorization: `Bearer ${accessToken}`
+        'Authorization':
+          `Bearer ${accessToken}`
       }
     }
   );
 
+
   let data = null;
 
+
   try {
-    data = await response.json();
+    data =
+      await response.json();
   } catch {
     data = null;
   }
 
+
   if (!response.ok) {
+
     throw new Error(
-      data?.error || 'Failed to get paid credits'
+      data?.error ||
+      'Failed to get paid credits'
     );
+
   }
 
-  return Number(data?.credits || 0);
+
+  return Number(
+    data?.credits || 0
+  );
+
 }
 
 
-/* =========================================================
-   AI USAGE MESSAGE
-========================================================= */
+    function showAIUsageMessage(count) {
 
-function showAIUsageMessage(count) {
-  if (count !== 1) return;
+  if (count === 1) {
 
-  const messages = {
-    ar: 'تم استخدامك الأول للذكاء الاصطناعي.\n\nتبقى لك استعمال مجاني واحد.',
-    en: 'You have used your first AI attempt.\n\nOne free attempt remains.',
-    fr: 'Vous avez utilisé votre premier essai IA.\n\nIl vous reste un essai gratuit.'
-  };
+    alert(
+      'تم استخدامك الأول للذكاء الاصطناعي.\n\nتبقى لك استعمال مجاني واحد.'
+    );
 
-  alert(messages[currentLanguage] || messages.ar);
+  }
+
 }
 
+    function showPaymentOptions() {
 
-/* =========================================================
-   PAYMENT PLANS — MULTILINGUAL
-========================================================= */
-
-function showPaymentOptions() {
+  // منع فتح النافذة أكثر من مرة
   if (document.getElementById('aiPlansModal')) {
     return;
   }
-
-  const lang =
-    typeof currentLanguage !== 'undefined'
-      ? currentLanguage
-      : 'ar';
-
-  const translations = {
-    ar: {
-      direction: 'rtl',
-      title: 'اختر خطة للمتابعة',
-      subtitle: 'انتهت الاستعمالات المجانية للذكاء الاصطناعي.',
-      monthly: 'الخطة الشهرية',
-      monthlyCredits: '30 رصيدًا للذكاء الاصطناعي شهريًا',
-      month: 'شهر',
-      chooseMonthly: 'اختيار الخطة الشهرية',
-      oneTime: 'خطة الاستخدام الواحد',
-      oneTimeCredits: '60 رصيدًا للذكاء الاصطناعي',
-      chooseOneTime: 'اختيار الخطة',
-      close: 'إغلاق'
-    },
-
-    en: {
-      direction: 'ltr',
-      title: 'Choose a Plan to Continue',
-      subtitle: 'Your free AI uses have ended.',
-      monthly: 'Monthly Plan',
-      monthlyCredits: '30 AI credits per month',
-      month: 'month',
-      chooseMonthly: 'Choose Monthly Plan',
-      oneTime: 'One-Time Plan',
-      oneTimeCredits: '60 AI credits',
-      chooseOneTime: 'Choose Plan',
-      close: 'Close'
-    },
-
-    fr: {
-      direction: 'ltr',
-      title: 'Choisissez un forfait pour continuer',
-      subtitle: 'Vos utilisations gratuites de l’IA sont terminées.',
-      monthly: 'Forfait mensuel',
-      monthlyCredits: '30 crédits IA par mois',
-      month: 'mois',
-      chooseMonthly: 'Choisir le forfait mensuel',
-      oneTime: 'Forfait à usage unique',
-      oneTimeCredits: '60 crédits IA',
-      chooseOneTime: 'Choisir le forfait',
-      close: 'Fermer'
-    }
-  };
-
-  const t = translations[lang] || translations.ar;
 
   const modal = document.createElement('div');
   modal.id = 'aiPlansModal';
@@ -3347,16 +3316,13 @@ function showPaymentOptions() {
       align-items:center;
       justify-content:center;
       z-index:99999;
-      padding:16px;
-      direction:${t.direction};
-      overflow-y:auto;
+      padding:20px;
+      direction:rtl;
     ">
 
       <div style="
         width:100%;
         max-width:520px;
-        max-height:90vh;
-        overflow-y:auto;
         background:#fff;
         border-radius:20px;
         padding:24px;
@@ -3369,16 +3335,21 @@ function showPaymentOptions() {
           margin:0 0 10px;
           text-align:center;
           font-size:24px;
-        ">${t.title}</h2>
+        ">
+          اختر خطة للمتابعة
+        </h2>
 
         <p style="
           text-align:center;
           margin:0 0 22px;
           color:#6b7280;
           line-height:1.7;
-        ">${t.subtitle}</p>
+        ">
+          انتهت الاستعمالات المجانية للذكاء الاصطناعي.
+        </p>
 
-        <!-- Monthly Plan -->
+
+        <!-- الخطة الشهرية -->
         <div style="
           border:2px solid #0f766e;
           border-radius:16px;
@@ -3386,41 +3357,57 @@ function showPaymentOptions() {
           margin-bottom:14px;
         ">
 
-          <strong style="font-size:19px;">
-            ${t.monthly}
-          </strong>
-
           <div style="
-            margin-top:8px;
-            color:#6b7280;
-            line-height:1.6;
-          ">${t.monthlyCredits}</div>
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            gap:10px;
+          ">
 
-          <strong style="
-            display:block;
-            font-size:22px;
-            margin-top:8px;
-          ">$4.99 / ${t.month}</strong>
+            <div>
+              <strong style="font-size:19px;">
+                الخطة الشهرية
+              </strong>
+
+              <div style="
+                margin-top:6px;
+                color:#6b7280;
+              ">
+30 رصيدًا للذكاء الاصطناعي شهريًا              
+            </div>
+
+            <strong style="
+              font-size:22px;
+              white-space:nowrap;
+            ">
+    $4.99 / شهر     
+    </strong>
+
+          </div>
 
           <button
-            id="monthly-plan-btn"
-            type="button"
-            style="
-              width:100%;
-              margin-top:15px;
-              padding:13px;
-              border:0;
-              border-radius:10px;
-              background:#0f766e;
-              color:white;
-              font-size:16px;
-              font-weight:600;
-              cursor:pointer;
-            "
-          >${t.chooseMonthly}</button>
+  id="monthly-plan-btn"
+  type="button"
+  style="
+    width:100%;
+    margin-top:15px;
+    padding:13px;
+    border:0;
+    border-radius:10px;
+    background:#0f766e;
+    color:white;
+    font-size:16px;
+    font-weight:600;
+    cursor:pointer;
+  "
+>
+  اختيار الخطة الشهرية
+</button>
+
         </div>
 
-        <!-- One-Time Plan -->
+
+        <!-- الخطة مرة واحدة -->
         <div style="
           border:1px solid #d1d5db;
           border-radius:16px;
@@ -3428,25 +3415,37 @@ function showPaymentOptions() {
           margin-bottom:18px;
         ">
 
-          <strong style="font-size:19px;">
-            ${t.oneTime}
-          </strong>
-
           <div style="
-            margin-top:8px;
-            color:#6b7280;
-            line-height:1.6;
-          ">${t.oneTimeCredits}</div>
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            gap:10px;
+          ">
 
-          <strong style="
-            display:block;
-            font-size:22px;
-            margin-top:8px;
-          ">$9.99</strong>
+            <div>
+              <strong style="font-size:19px;">
+                خطة الاستخدام الواحد
+              </strong>
+
+              <div style="
+                margin-top:6px;
+                color:#6b7280;
+              ">
+60 رصيدًا للذكاء الاصطناعي             
+            </div>
+
+            <strong style="
+              font-size:22px;
+              white-space:nowrap;
+            ">
+              $9.99
+            </strong>
+
+          </div>
 
           <button
-            id="one-time-plan-btn"
-            type="button"
+  id="one-time-plan-btn"
+  type="button"
             style="
               width:100%;
               margin-top:15px;
@@ -3459,12 +3458,16 @@ function showPaymentOptions() {
               font-weight:600;
               cursor:pointer;
             "
-          >${t.chooseOneTime}</button>
+          >
+            اختيار الخطة
+          </button>
+
         </div>
 
+
         <button
-          id="close-ai-plans-btn"
           type="button"
+          onclick="document.getElementById('aiPlansModal').remove()"
           style="
             width:100%;
             padding:11px;
@@ -3475,25 +3478,16 @@ function showPaymentOptions() {
             font-size:15px;
             cursor:pointer;
           "
-        >${t.close}</button>
+        >
+          إغلاق
+        </button>
 
       </div>
+
     </div>
   `;
 
-  document.body.appendChild(modal);
-
-  document
-    .getElementById('close-ai-plans-btn')
-    .addEventListener('click', () => {
-      modal.remove();
-    });
-
-  // ملاحظة:
-  // يجب أن تبقى معالجات الدفع الأصلية المرتبطة
-  // بـ monthly-plan-btn و one-time-plan-btn
-  // موجودة في كودك حتى تعمل عملية الدفع.
-}
+document.body.appendChild(modal);
 
 
 /* =====================================================
