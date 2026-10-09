@@ -3,56 +3,49 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>شروط الاستخدام - CV Genius AI</title>
-
   <meta name="description" content="شروط استخدام CV Genius AI">
-
   <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
 <main class="legal-page">
-
   <h1 id="pageTitle">شروط الاستخدام</h1>
-
   <p id="updated">آخر تحديث: 24 أغسطس 2026</p>
 
   <h2 id="h1">1. قبول الشروط</h2>
-  <p id="p1">باستخدامك لموقع CV Genius AI، فإنك توافق على شروط الاستخدام هذه. إذا كنت لا توافق على هذه الشروط، يرجى عدم استخدام الموقع أو البرنامج.</p>
+  <p id="p1"></p>
 
   <h2 id="h2">2. وصف البرنامج</h2>
-  <p id="p2">CV Genius AI هو برنامج SaaS وأداة برمجية تعتمد على تقنيات الذكاء الاصطناعي، تُمكّن المستخدم من توليد وتنسيق وتحسين سيرته الذاتية بشكل آلي استنادًا إلى البيانات التي يُدخلها بنفسه.</p>
-  <p id="p3">CV Genius AI هو برنامج آلي وليس خدمة كتابة سيرة ذاتية بشرية، ولا يوفر استشارات مهنية أو توظيفًا أو مراجعة بشرية للسير الذاتية.</p>
+  <p id="p2"></p>
+  <p id="p3"></p>
 
   <h2 id="h3">3. مسؤولية المستخدم</h2>
-  <p id="p4">أنت مسؤول عن المعلومات التي تقوم بإدخالها في السيرة الذاتية. يجب أن تكون المعلومات صحيحة ودقيقة ولا تنتهك حقوق الآخرين.</p>
+  <p id="p4"></p>
 
   <h2 id="h4">4. الذكاء الاصطناعي</h2>
-  <p id="p5">تعمل أدوات الذكاء الاصطناعي بشكل أوتوماتيكي على إنشاء وتنسيق وصياغة محتوى السيرة الذاتية استنادًا إلى البيانات التي يُدخلها المستخدم، دون مراجعة أو تدخل بشري من طرفنا.</p>
-  <p id="p6">قد تحتوي النتائج التي يتم إنشاؤها بواسطة الذكاء الاصطناعي على أخطاء أو معلومات غير دقيقة. يجب على المستخدم مراجعة النتائج والتأكد من دقتها قبل استخدامها أو إرسالها إلى أصحاب العمل.</p>
+  <p id="p5"></p>
+  <p id="p6"></p>
 
   <h2 id="h5">5. الاستخدام المجاني والمدفوع</h2>
-  <p id="p7">قد يحصل المستخدم على عدد محدود من الاستخدامات المجانية لبعض أدوات الذكاء الاصطناعي.</p>
-  <p id="p8">بعد انتهاء الاستخدامات المجانية، قد تتطلب بعض الأدوات والميزات شراء خطة أو رصيد مدفوع وفقًا للأسعار والخيارات المعروضة على الموقع.</p>
+  <p id="p7"></p>
+  <p id="p8"></p>
 
   <h2 id="h6">6. المدفوعات</h2>
-  <p id="p9">تتم معالجة المدفوعات من خلال مزود دفع إلكتروني خارجي. تعتمد الخطط والأرصدة والميزات المدفوعة على الأسعار والشروط المعروضة للمستخدم قبل إتمام عملية الشراء.</p>
+  <p id="p9"></p>
 
   <h2 id="h7">7. تعليق أو إيقاف الاستخدام</h2>
-  <p id="p10">نحتفظ بالحق في تعليق أو إيقاف الوصول إلى البرنامج في حال إساءة الاستخدام أو محاولة التحايل على أنظمة الحماية أو الدفع أو مخالفة شروط الاستخدام.</p>
+  <p id="p10"></p>
 
   <h2 id="h8">8. إخلاء المسؤولية</h2>
-  <p id="p11">يتم تقديم CV Genius AI والميزات المرتبطة به كما هي ووفقًا للتوفر.</p>
-  <p id="p12">لا نضمن الحصول على وظيفة أو مقابلة عمل أو قبول مهني نتيجة استخدام البرنامج أو السيرة الذاتية أو المحتوى الذي يتم إنشاؤه أو تحسينه باستخدام أدوات الذكاء الاصطناعي.</p>
+  <p id="p11"></p>
+  <p id="p12"></p>
 
   <h2 id="h9">9. التواصل</h2>
-  <p id="p13">لأي سؤال يتعلق بشروط الاستخدام، يرجى التواصل معنا عبر:</p>
+  <p id="p13"></p>
 
   <p><a href="contact.html" id="contactLink">صفحة اتصل بنا</a></p>
   <p><a href="index.html" id="homeLink">العودة إلى الصفحة الرئيسية</a></p>
-
 </main>
 
 <script>
@@ -156,32 +149,16 @@ const content = {
     home: "Back to homepage"
   }
 };
+
 function applyTermsLanguage() {
-  const saved = localStorage.getItem("cvGeniusAI_language");
-  const lang = ["ar", "fr", "en"].includes(saved) ? saved : "ar";
-  const data = content[lang];
+  let saved = "ar";
 
-  document.documentElement.lang = lang;
-  document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+  try {
+    saved = localStorage.getItem("cvGeniusAI_language") || "ar";
+  } catch (error) {
+    saved = "ar";
+  }
 
-  document.getElementById("pageTitle").textContent = data.title;
-  document.title = data.title + " - CV Genius AI";
-  document.getElementById("updated").textContent = data.updated;
-
-  data.headings.forEach((text, i) => {
-    document.getElementById("h" + (i + 1)).textContent = text;
-  });
-
-  data.paragraphs.forEach((text, i) => {
-    document.getElementById("p" + (i + 1)).textContent = text;
-  });
-
-  document.getElementById("contactLink").textContent = data.contact;
-  document.getElementById("homeLink").textContent = data.home;
-}
-
-applyTermsLanguage();
-  
   const lang = ["ar", "fr", "en"].includes(saved) ? saved : "ar";
   const data = content[lang];
 
