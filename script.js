@@ -3332,7 +3332,7 @@ console.log(
       justify-content:center;
       z-index:99999;
       padding:20px;
-      direction:rtl;
+      direction:${currentLanguage ===   'ar' ? 'rtl' : 'ltr'};
     ">
 
       <div style="
