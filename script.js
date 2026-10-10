@@ -5078,11 +5078,11 @@ const response =
 
       if (!user) {
 
-        alert(
-          'يرجى تسجيل الدخول أولاً.'
-        );
+          alert(
+           t('loginFirst')
+        ); 
 
-        return;
+       return;
       }
 
 
@@ -5132,7 +5132,7 @@ const response =
 
 
         alert(
-          t('loadCvError')
+         t('deleteCvError')
         );
       }
 
