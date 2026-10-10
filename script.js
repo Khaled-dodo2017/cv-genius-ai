@@ -4644,8 +4644,8 @@ const response =
 
 
             alert(
-              'حدث خطأ أثناء حفظ السيرة الذاتية.'
-            );
+              t('saveCvError')
+           );
 
           }
 
