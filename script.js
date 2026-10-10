@@ -4883,12 +4883,11 @@ const response =
       if (!user) {
 
         alert(
-          'يرجى تسجيل الدخول أولاً.'
-        );
+         t('loginFirst')
+      );
 
-        return;
-      }
-
+      return;
+     }
 
       try {
 
@@ -5060,9 +5059,8 @@ const response =
 
 
         alert(
-          'حدث خطأ أثناء تحميل السيرة الذاتية.'
+         t('loadCvError')
         );
-
       }
 
     }
@@ -5134,9 +5132,8 @@ const response =
 
 
         alert(
-          'حدث خطأ أثناء حذف السيرة الذاتية.'
+          t('loadCvError')
         );
-
       }
 
     }
