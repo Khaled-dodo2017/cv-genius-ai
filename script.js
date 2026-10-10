@@ -3411,14 +3411,14 @@ console.log(
 
             <div>
               <strong style="font-size:19px;">
-                الخطة الشهرية
+                ${t('monthlyPlan')}
               </strong>
 
               <div style="
                 margin-top:6px;
                 color:#6b7280;
               ">
-30 رصيدًا للذكاء الاصطناعي شهريًا              
+                ${t('monthlyCredits')}       
             </div>
 
             <strong style="
@@ -3448,7 +3448,7 @@ console.log(
     cursor:pointer;
   "
 >
-  اختيار الخطة الشهرية
+  ${t('chooseMonthly')}
 </button>
 
         </div>
@@ -3471,14 +3471,14 @@ console.log(
 
             <div>
               <strong style="font-size:19px;">
-                خطة الاستخدام الواحد
+               ${t('oneTimePlan')}
               </strong>
 
               <div style="
                 margin-top:6px;
                 color:#6b7280;
               ">
-60 رصيدًا للذكاء الاصطناعي             
+                ${t('oneTimeCredits')}   
             </div>
 
             <strong style="
@@ -3506,7 +3506,7 @@ console.log(
               cursor:pointer;
             "
           >
-            اختيار الخطة
+            ${t('chooseOneTime')}
           </button>
 
         </div>
@@ -3526,7 +3526,7 @@ console.log(
             cursor:pointer;
           "
         >
-          إغلاق
+          ${t('close')}
         </button>
 
       </div>
