@@ -2199,6 +2199,9 @@ function translateAccountAndPricing() {
     'Se connecter': 'login',
     'Log In': 'login',
 
+    'تسجيل الخروج': 'logout',
+    'Se déconnecter': 'logout',
+    'Log out': 'logout',
     'لم يتم تسجيل الدخول.': 'notLoggedIn',
     'Vous n’êtes pas connecté.': 'notLoggedIn',
     'You are not logged in.': 'notLoggedIn',
@@ -2299,13 +2302,17 @@ function translateAccountAndPricing() {
     }
 
     const valueKey = {
-      'إنشاء حساب': 'createAccount',
-      'Create Account': 'createAccount',
-      'Créer un compte': 'createAccount',
-      'تسجيل الدخول': 'login',
-      'Log In': 'login',
-      'Se connecter': 'login'
-    };
+  'إنشاء حساب': 'createAccount',
+  'Create Account': 'createAccount',
+  'Créer un compte': 'createAccount',
+  'تسجيل الدخول': 'login',
+  'Log In': 'login',
+  'Se connecter': 'login',
+
+  'تسجيل الخروج': 'logout',
+  'Log out': 'logout',
+  'Se déconnecter': 'logout'
+};
 
     if (element.value && valueKey[element.value]) {
       element.value = language[valueKey[element.value]];
