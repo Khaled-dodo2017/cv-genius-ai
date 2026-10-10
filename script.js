@@ -4861,9 +4861,9 @@ const response =
 
         savedCvsList.innerHTML = `
           <p class="saved-cv-empty">
-            حدث خطأ أثناء تحميل السير الذاتية.
-          </p>
-        `;
+           ${t('loadCvsError')}
+        </p>
+      `;
 
       }
 
