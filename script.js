@@ -393,6 +393,7 @@ chooseOneTime: 'اختيار الخطة',
 close: 'إغلاق',
 creatingPayment: 'جارٍ إنشاء الدفع...',
 loginFirst: 'يرجى تسجيل الدخول أولًا.',
+savingCv: 'جارٍ حفظ السيرة الذاتية...',
 fillRequiredFields: 'يرجى ملء البيانات المطلوبة قبل استخدام الذكاء الاصطناعي.',
         aiEmpty:
           'لم يتم الحصول على نتيجة من الذكاء الاصطناعي.'
@@ -439,6 +440,7 @@ logoutError: 'Une erreur est survenue lors de la déconnexion.',
     close: 'Fermer',
     creatingPayment: 'Création du paiement...',
     loginFirst: 'Veuillez vous connecter d’abord.',
+savingCv: 'Enregistrement du CV...',
 fillRequiredFields: 'Veuillez remplir les champs obligatoires avant d’utiliser l’IA.',
         pageTitle:
           'CV Genius AI — Créateur de CV',
@@ -733,6 +735,7 @@ chooseOneTime: 'Choose Plan',
 close: 'Close',
 creatingPayment: 'Creating payment...',
 loginFirst: 'Please log in first.',
+savingCv: 'Saving resume...',
 fillRequiredFields: 'Please fill in the required fields before using AI.',
         pageTitle:
           'CV Genius AI — Resume Builder',
@@ -4580,8 +4583,7 @@ const response =
 
 
             saveCvBtn.textContent =
-              'جارٍ الحفظ...';
-
+               t('savingCv');
 
             const {
               error
