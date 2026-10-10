@@ -1170,9 +1170,8 @@ async function getCurrentUser() {
         console.error('Login error:', error);
 
         showAuthStatus(
-          error.message ||
-          'حدث خطأ أثناء تسجيل الدخول.'
-        );
+  t('loginError')
+);
       }
     }
 
