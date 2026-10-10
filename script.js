@@ -366,6 +366,7 @@ accountTitle: 'حسابي',
         logout: 'تسجيل الخروج',
         loginSuccess: 'تم تسجيل الدخول بنجاح',
         accountCreatedSuccess: 'تم إنشاء الحساب بنجاح',
+signUpError: 'حدث خطأ أثناء إنشاء الحساب.',
         loggedInAs: 'تم تسجيل الدخول:',
         logoutSuccess: 'تم تسجيل الخروج بنجاح',
         terms: 'الشروط والأحكام',
@@ -409,6 +410,7 @@ accountTitle: 'Mon compte',
         logout: 'Se déconnecter',
         loginSuccess: 'Connexion réussie',
         accountCreatedSuccess: 'Compte créé avec succès',
+signUpError: 'Une erreur est survenue lors de la création du compte.',
         loggedInAs: 'Connecté en tant que :',
         logoutSuccess: 'Déconnexion réussie',
         terms: 'Conditions générales',
@@ -691,6 +693,7 @@ fillRequiredFields: 'Veuillez remplir les champs obligatoires avant d’utiliser
         logout: 'Log out',
     loginSuccess: 'Logged in successfully',
     accountCreatedSuccess: 'Account created successfully',
+signUpError: 'An error occurred while creating the account.',
     loggedInAs: 'Logged in as:',
     logoutSuccess: 'Logged out    successfully',
     terms: 'Terms and Conditions',
@@ -1130,9 +1133,8 @@ async function getCurrentUser() {
         console.error('Sign up error:', error);
 
         showAuthStatus(
-          error.message ||
-          'حدث خطأ أثناء إنشاء الحساب.'
-        );
+  t('signUpError')
+);
       }
     }
 
