@@ -370,6 +370,7 @@ loginError: 'حدث خطأ أثناء تسجيل الدخول.',
 signUpError: 'حدث خطأ أثناء إنشاء الحساب.',
         loggedInAs: 'تم تسجيل الدخول:',
         logoutSuccess: 'تم تسجيل الخروج بنجاح',
+logoutError: 'حدث خطأ أثناء تسجيل الخروج.',
         terms: 'الشروط والأحكام',
         privacy: 'سياسة الخصوصية',
         policy: 'سياسة',
@@ -415,6 +416,7 @@ loginError: 'Une erreur est survenue lors de la connexion.',
 signUpError: 'Une erreur est survenue lors de la création du compte.',
         loggedInAs: 'Connecté en tant que :',
         logoutSuccess: 'Déconnexion réussie',
+logoutError: 'Une erreur est survenue lors de la déconnexion.',
         terms: 'Conditions générales',
         privacy: 'Politique de confidentialité',
         policy: 'Politique',
@@ -699,6 +701,7 @@ loginError: 'An error occurred while logging in.',
 signUpError: 'An error occurred while creating the account.',
     loggedInAs: 'Logged in as:',
     logoutSuccess: 'Logged out    successfully',
+logoutError: 'An error occurred while logging out.',
     terms: 'Terms and Conditions',
     privacy: 'Privacy Policy',
     policy: 'Policy',
@@ -1196,9 +1199,8 @@ async function getCurrentUser() {
         console.error('Logout error:', error);
 
         showAuthStatus(
-          error.message ||
-          'حدث خطأ أثناء تسجيل الخروج.'
-        );
+  t('logoutError')
+);
       }
     }
 
