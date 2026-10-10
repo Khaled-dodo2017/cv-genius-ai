@@ -744,6 +744,7 @@ loginFirst: 'Please log in first.',
 loadCvsError: 'An error occurred while loading resumes.',
 loadCvError: 'An error occurred while loading the resume.',
 saveCvError: 'An error occurred while saving the resume.',
+deleteCvError: 'An error occurred while deleting the resume.',
 savingCv: 'Saving resume...',
 fillRequiredFields: 'Please fill in the required fields before using AI.',
         pageTitle:
