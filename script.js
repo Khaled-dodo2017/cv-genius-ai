@@ -3577,8 +3577,7 @@ monthlyPlanBtn.addEventListener(
         true;
 
       monthlyPlanBtn.textContent =
-        'جارٍ إنشاء الدفع...';
-
+        t('creatingPayment');
 
       await createPlisioInvoice(
         'monthly'
@@ -3603,7 +3602,7 @@ monthlyPlanBtn.addEventListener(
         false;
 
       monthlyPlanBtn.textContent =
-        'اختيار الخطة الشهرية';
+        t('chooseMonthly');
 
     }
 
@@ -3621,7 +3620,7 @@ oneTimePlanBtn.addEventListener(
         true;
 
       oneTimePlanBtn.textContent =
-        'جارٍ إنشاء الدفع...';
+        t('creatingPayment');
 
 
       await createPlisioInvoice(
@@ -3647,8 +3646,7 @@ oneTimePlanBtn.addEventListener(
         false;
 
       oneTimePlanBtn.textContent =
-        'اختيار الخطة';
-
+        t('chooseOneTime');
     }
 
   }
