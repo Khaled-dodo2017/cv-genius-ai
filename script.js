@@ -3495,9 +3495,7 @@ async function createPlisioInvoice(plan) {
 
   if (!accessToken) {
 
-    alert(
-      'يرجى تسجيل الدخول أولًا.'
-    );
+    alert(t('loginFirst'));
 
     return;
 
@@ -3545,9 +3543,9 @@ async function createPlisioInvoice(plan) {
   if (!response.ok) {
 
     throw new Error(
-      data?.error ||
-      'تعذر إنشاء فاتورة الدفع.'
-    );
+  data?.error ||
+  t('paymentInvoiceError')
+);
 
   }
 
@@ -3555,8 +3553,8 @@ async function createPlisioInvoice(plan) {
   if (!data?.invoiceUrl) {
 
     throw new Error(
-      'لم يتم الحصول على رابط الدفع من Plisio.'
-    );
+  t('paymentUrlError')
+);
 
   }
 
@@ -3593,9 +3591,9 @@ monthlyPlanBtn.addEventListener(
 
 
       alert(
-        error?.message ||
-        'حدث خطأ أثناء إنشاء الدفع.'
-      );
+  error?.message ||
+  t('paymentError')
+);
 
 
       monthlyPlanBtn.disabled =
@@ -3637,9 +3635,9 @@ oneTimePlanBtn.addEventListener(
 
 
       alert(
-        error?.message ||
-        'حدث خطأ أثناء إنشاء الدفع.'
-      );
+  error?.message ||
+  t('paymentError')
+);
 
 
       oneTimePlanBtn.disabled =
@@ -3695,14 +3693,11 @@ oneTimePlanBtn.addEventListener(
 
           if (!user) {
 
-            alert(
-              'يجب تسجيل الدخول أولاً لاستخدام الذكاء الاصطناعي.'
-            );
+  alert(t('aiLoginRequired'));
 
-            return;
+  return;
 
-          }
-
+}
 /* =====================================================
    CHECK AI USAGE / PAID CREDITS BEFORE REQUEST
 ===================================================== */
