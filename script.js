@@ -389,7 +389,7 @@ chooseOneTime: 'اختيار الخطة',
 close: 'إغلاق',
 creatingPayment: 'جارٍ إنشاء الدفع...',
 loginFirst: 'يرجى تسجيل الدخول أولًا.',
-
+fillRequiredFields: 'يرجى ملء البيانات المطلوبة قبل استخدام الذكاء الاصطناعي.',
         aiEmpty:
           'لم يتم الحصول على نتيجة من الذكاء الاصطناعي.'
       },
@@ -432,7 +432,7 @@ accountTitle: 'Mon compte',
     close: 'Fermer',
     creatingPayment: 'Création du paiement...',
     loginFirst: 'Veuillez vous connecter d’abord.',
-
+fillRequiredFields: 'Veuillez remplir les champs obligatoires avant d’utiliser l’IA.',
         pageTitle:
           'CV Genius AI — Créateur de CV',
 
@@ -714,7 +714,7 @@ chooseOneTime: 'Choose Plan',
 close: 'Close',
 creatingPayment: 'Creating payment...',
 loginFirst: 'Please log in first.',
-
+fillRequiredFields: 'Please fill in the required fields before using AI.',
         pageTitle:
           'CV Genius AI — Resume Builder',
 
@@ -3698,6 +3698,26 @@ oneTimePlanBtn.addEventListener(
   return;
 
 }
+
+/* CHECK REQUIRED CV DATA */
+
+const requiredFields = [
+  'fullName',
+  'jobTitle',
+  'targetJob',
+  'email',
+  'phone'
+];
+
+const missingFields = requiredFields.filter(
+  id => !getValue(id).trim()
+);
+
+if (missingFields.length > 0) {
+  alert(t('fillRequiredFields'));
+  return;
+}
+
 /* =====================================================
    CHECK AI USAGE / PAID CREDITS BEFORE REQUEST
 ===================================================== */
