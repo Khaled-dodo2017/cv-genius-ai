@@ -3351,7 +3351,7 @@ console.log(
           text-align:center;
           font-size:24px;
         ">
-          اختر خطة للمتابعة
+          ${t('choosePlan')}
         </h2>
 
         <p style="
@@ -3360,7 +3360,7 @@ console.log(
           color:#6b7280;
           line-height:1.7;
         ">
-          انتهت الاستعمالات المجانية للذكاء الاصطناعي.
+          ${t('freeUsesEnded')}
         </p>
 
 
