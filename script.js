@@ -4539,14 +4539,16 @@ const response =
             await getCurrentUser();
 
 
-          if (!user) {
+          
+     if (!user) {
 
-            alert(
-              'يرجى تسجيل الدخول أولاً.'
-            );
+       alert(
+         t('loginFirst')
+       );
 
-            return;
-          }
+      return;
+     } 
+
 
 
           const cv =
