@@ -4680,10 +4680,10 @@ const response =
       if (!user) {
 
         savedCvsList.innerHTML = `
-          <p class="saved-cv-empty">
-            يرجى تسجيل الدخول لعرض سيرك الذاتية.
-          </p>
-        `;
+         <p class="saved-cv-empty">
+           ${escapeHTML(t('loginFirst'))}
+         </p>
+       `;
 
         return;
       }
