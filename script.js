@@ -356,6 +356,7 @@ freeTrialTitle:
 
 freeTrialText:
   'لديك تجربتان مجانيتان لاستخدام الذكاء الاصطناعي. بعد ذلك يمكنك اختيار شراء الخطة المناسبة لك للمتابعة.',
+aiFirstUseMessage: 'لقد استخدمت أول تجربة مجانية للذكاء الاصطناعي.\n\nتبقى لك تجربة مجانية واحدة.',
 accountTitle: 'حسابي',
         emailAddress: 'البريد الإلكتروني',
         password: 'كلمة المرور',
@@ -676,18 +677,27 @@ fillRequiredFields: 'Veuillez remplir les champs obligatoires avant d’utiliser
         freeTrialTitle:
           '🎁 Commencez gratuitement !',
 
-        freeTrialText:
-          'Vous disposez de deux essais gratuits pour utiliser l’intelligence artificielle. Ensuite, vous pouvez choisir le forfait qui vous convient pour continuer.',
+        
+freeTrialText:
+  'Vous disposez de deux essais gratuits pour utiliser l’intelligence artificielle. Ensuite, vous pouvez choisir le forfait qui vous convient pour continuer.',
 
-        aiEmpty:
-          'Aucun résultat reçu de l’intelligence artificielle.'
+aiFirstUseMessage:
+  'Vous avez utilisé votre premier essai gratuit de l’IA.\n\nIl vous reste un essai gratuit.',
+
+aiEmpty:
+  'Aucun résultat reçu de l’intelligence artificielle.'
+
       },
 
 
-      en: {
+      
+en: {
     direction: 'ltr',
 
+    aiFirstUseMessage: 'You have used your first free AI trial.\n\nOne free trial remains.',
+
     accountTitle: 'My Account',
+
     emailAddress: 'Email Address',
     password: 'Password',
     createAccount: 'Create Account',
