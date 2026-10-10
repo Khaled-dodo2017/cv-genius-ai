@@ -3271,13 +3271,11 @@ console.log(
 
     function showAIUsageMessage(count) {
 
-  if (count === 1) {
+  
+if (count === 1) {
+  alert(t('aiFirstUseMessage'));
+}
 
-    alert(
-      'تم استخدامك الأول للذكاء الاصطناعي.\n\nتبقى لك استعمال مجاني واحد.'
-    );
-
-  }
 
 }
 
