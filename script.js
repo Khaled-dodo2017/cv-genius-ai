@@ -1103,28 +1103,16 @@ async function getCurrentUser() {
 
 
     async function signUp() {
-
-      const email =
-        authEmail?.value.trim();
-
-      const password =
-        authPassword?.value || '';
+      const email = authEmail?.value.trim();
+      const password = authPassword?.value || '';
 
       if (!email || !password) {
-
-        showAuthStatus(
-          t('enterCredentials')
-        );
-
+        showAuthStatus(t('enterCredentials'));
         return;
       }
 
       try {
-
-        const {
-          data,
-          error
-        } =
+        const { data, error } =
           await supabaseClient.auth.signUp({
             email,
             password
@@ -1135,52 +1123,31 @@ async function getCurrentUser() {
         }
 
         if (data?.user) {
-
-          showAuthStatus(
-            'تم إنشاء الحساب بنجاح.'
-          );
-
+          showAuthStatus(t('accountCreatedSuccess'));
         }
 
       } catch (error) {
-
-        console.error(
-          'Sign up error:',
-          error
-        );
+        console.error('Sign up error:', error);
 
         showAuthStatus(
           error.message ||
           'حدث خطأ أثناء إنشاء الحساب.'
         );
-
       }
-
     }
 
 
     async function login() {
-
-      const email =
-        authEmail?.value.trim();
-
-      const password =
-        authPassword?.value || '';
+      const email = authEmail?.value.trim();
+      const password = authPassword?.value || '';
 
       if (!email || !password) {
-
-        showAuthStatus(
-          t('enterCredentials')
-        );
-
+        showAuthStatus(t('enterCredentials'));
         return;
       }
 
       try {
-
-        const {
-          error
-        } =
+        const { error } =
           await supabaseClient.auth.signInWithPassword({
             email,
             password
@@ -1190,45 +1157,31 @@ async function getCurrentUser() {
           throw error;
         }
 
-        showAuthStatus(
-          'تم تسجيل الدخول بنجاح.'
-        );
+        showAuthStatus(t('loginSuccess'));
 
         await renderSavedCVs();
 
       } catch (error) {
-
-        console.error(
-          'Login error:',
-          error
-        );
+        console.error('Login error:', error);
 
         showAuthStatus(
           error.message ||
           'حدث خطأ أثناء تسجيل الدخول.'
         );
-
       }
-
     }
 
 
     async function logout() {
-
       try {
-
-        const {
-          error
-        } =
+        const { error } =
           await supabaseClient.auth.signOut();
 
         if (error) {
           throw error;
         }
 
-        showAuthStatus(
-          'تم تسجيل الخروج.'
-        );
+        showAuthStatus(t('logoutSuccess'));
 
         if (savedCvsList) {
           savedCvsList.innerHTML = '';
@@ -1236,106 +1189,54 @@ async function getCurrentUser() {
         }
 
       } catch (error) {
-
-        console.error(
-          'Logout error:',
-          error
-        );
+        console.error('Logout error:', error);
 
         showAuthStatus(
           error.message ||
           'حدث خطأ أثناء تسجيل الخروج.'
         );
-
       }
-
     }
 
 
     async function updateAuthUI() {
-
-      const user =
-        await getCurrentUser();
+      const user = await getCurrentUser();
 
       if (user) {
-
-        if (signupBtn)
-          signupBtn.hidden = true;
-
-        if (loginBtn)
-          loginBtn.hidden = true;
-
-        if (logoutBtn)
-          logoutBtn.hidden = false;
+        if (signupBtn) signupBtn.hidden = true;
+        if (loginBtn) loginBtn.hidden = true;
+        if (logoutBtn) logoutBtn.hidden = false;
 
         showAuthStatus(
-          `تم تسجيل الدخول: ${user.email}`
+          `${t('loggedInAs')} ${user.email}`
         );
 
-      
       } else {
+        if (signupBtn) signupBtn.hidden = false;
+        if (loginBtn) loginBtn.hidden = false;
+        if (logoutBtn) logoutBtn.hidden = true;
 
-        if (signupBtn)
-          signupBtn.hidden = false;
-
-        if (loginBtn)
-          loginBtn.hidden = false;
-
-        if (logoutBtn)
-          logoutBtn.hidden = true;
-
-        const loginStatusMessages = {
-          ar: 'لم يتم تسجيل الدخول.',
-          fr: 'Vous n’êtes pas connecté.',
-          en: 'You are not logged in.'
-        };
-
-        showAuthStatus(
-          loginStatusMessages[currentLanguage] ||
-          loginStatusMessages.ar
-        );
-
+        showAuthStatus(t('notLoggedIn'));
       }
-
-
     }
 
 
     if (signupBtn) {
-
-      signupBtn.addEventListener(
-        'click',
-        signUp
-      );
-
+      signupBtn.addEventListener('click', signUp);
     }
-
 
     if (loginBtn) {
-
-      loginBtn.addEventListener(
-        'click',
-        login
-      );
-
+      loginBtn.addEventListener('click', login);
     }
-
 
     if (logoutBtn) {
-
-      logoutBtn.addEventListener(
-        'click',
-        logout
-      );
-
+      logoutBtn.addEventListener('click', logout);
     }
 
 
-    supabaseClient.auth.onAuthStateChange(
-      () => {
-        updateAuthUI();
-      }
-    );
+    supabaseClient.auth.onAuthStateChange(() => {
+      updateAuthUI();
+    });
 
 
     /* =========================================================
